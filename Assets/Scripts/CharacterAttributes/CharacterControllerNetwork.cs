@@ -61,10 +61,12 @@ namespace CharacterAttributes
         
         [Space(5)]
         [Header("PlayerInput")]
+        [Header("알 수 없는 오류 때문에 수동으로 콜백 연결해줘야 함")]
         #region PlayerInputs
         public  PlayerInput         playerInput;
         public Vector2 MoveInput { get; set; }
         public Vector2 LookInput { get; set; }
+        public bool    IsAttack  { get; set; }
 
         public void OnMove(InputAction.CallbackContext context)
         {
@@ -74,6 +76,15 @@ namespace CharacterAttributes
         public void OnLook(InputAction.CallbackContext context)
         {
             LookInput = context.ReadValue<Vector2>();
+        }
+
+        public void OnAttack(InputAction.CallbackContext context)
+        {
+            if (!context.performed) return;
+
+            if (_fsm.IsStateActive(FSMType.ATTACK)) return;
+
+            _fsm.SetState(FSMType.ATTACK);
         }
         
         #endregion

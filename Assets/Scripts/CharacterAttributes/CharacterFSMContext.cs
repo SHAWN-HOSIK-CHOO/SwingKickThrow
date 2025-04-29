@@ -17,7 +17,7 @@ namespace CharacterAttributes
       public void Initialize() 
       {
          statePool[FSMType.MOVEMENT] = new MovementState();
-         //statePool[FSMType.ATTACK]   = new AttackState();
+         statePool[FSMType.ATTACK]   = new AttackState();
          //statePool[FSMType.HIT]      = new HitState();
          //statePool[FSMType.SKILL]    = new SkillState();
          //statePool[FSMType.DEATH]    = new DeathState();
@@ -31,8 +31,10 @@ namespace CharacterAttributes
          if (currentStates.TryGetValue(type, out var current)) 
          {
             current.OnExit();
+            Debug.Log($"FSMType : {type.ToString()} has exited");
          }
 
+         Debug.Log($"{type.ToString()} is added to current states");
          var next = statePool[type];
          currentStates[type] = next;
          next.OnEnter();
@@ -44,15 +46,22 @@ namespace CharacterAttributes
          {
             currentStates[type].OnExit();
             currentStates.Remove(type);
+            Debug.Log($"{type.ToString()} is removed from current states : {!IsStateActive(type)}");
          }
       }
 
+      public bool IsStateActive(FSMType type)
+      {
+         return currentStates.ContainsKey(type);
+      }
+
+      
       public void OnUpdate() 
       {
          // 실행 순서 명시
          //if (currentStates.ContainsKey(FSMType.Hit)) currentStates[FSMType.Hit].OnUpdate();
          //if (currentStates.ContainsKey(FSMType.Skill)) currentStates[FSMType.Skill].OnUpdate();
-         //if (currentStates.ContainsKey(FSMType.Attack)) currentStates[FSMType.Attack].OnUpdate();
+         if (currentStates.ContainsKey(FSMType.ATTACK)) currentStates[FSMType.ATTACK].OnUpdate();
          if (currentStates.ContainsKey(FSMType.MOVEMENT)) currentStates[FSMType.MOVEMENT].OnUpdate();
       }
       

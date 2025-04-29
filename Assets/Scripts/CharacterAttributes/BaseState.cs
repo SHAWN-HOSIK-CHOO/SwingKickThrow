@@ -1,3 +1,5 @@
+using UnityEngine;
+
 namespace CharacterAttributes
 {
    public enum FSMType

@@ -66,7 +66,7 @@ namespace CharacterAttributes
 
       public override void OnExit()
       {
-         Finish(FSMType.MOVEMENT);
+         //Finish(FSMType.MOVEMENT);
       }
 
       private void Move()
