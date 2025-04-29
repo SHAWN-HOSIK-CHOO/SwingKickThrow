@@ -16,6 +16,10 @@ namespace CharacterAttributes
       public NetworkVariable<float> attackPower = new NetworkVariable<float>(10f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       public NetworkVariable<float> defense     = new NetworkVariable<float>(5f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
+      [Header("Pushed time after collide")] 
+      public NetworkVariable<float> pushedTime = new NetworkVariable<float>(0.3f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      public NetworkVariable<float> pushedSpeed = new NetworkVariable<float>(20f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      
       public void Initialize(float initHealth, float initAttackPower, float initDefense)
       {
          if(!IsOwner)

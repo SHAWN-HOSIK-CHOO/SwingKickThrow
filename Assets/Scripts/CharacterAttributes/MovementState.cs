@@ -22,6 +22,7 @@ namespace CharacterAttributes
       private float               _groundedRadius;
       private LayerMask           _groundLayers;
       private float               _terminalVelocity;
+      private float               _originOffset;
       private float               _rayOffset;
       private float               _rayLength;
       
@@ -48,6 +49,7 @@ namespace CharacterAttributes
          _terminalVelocity    = Owner.terminalVelocity;
          _rayOffset           = Owner.rayOffset;
          _rayLength           = Owner.rayLength;
+         _originOffset        = Owner.originOffset;
          
          _fallTimeoutDelta = _fallTimeout;
       }
@@ -166,7 +168,7 @@ namespace CharacterAttributes
       
       private void GroundedCheck()
       {
-         Vector3 spherePosition = new Vector3(Owner.transform.position.x, Owner.transform.position.y - 0.6f - _groundOffset,
+         Vector3 spherePosition = new Vector3(Owner.transform.position.x, Owner.transform.position.y - _originOffset - _groundOffset,
                                               Owner.transform.position.z);
          
          _grounded = Physics.CheckSphere(spherePosition, _groundedRadius, _groundLayers,

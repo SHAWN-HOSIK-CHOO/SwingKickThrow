@@ -38,10 +38,10 @@ namespace CharacterAttributes
         public        float     cameraYawSensitivity   = 0.5f;
         public        float     cameraPitchSensitivity = 0.5f;
         #endregion
-
+        
         [Space(5)]
         [Header("Player Settings")]
-        private CharacterStatusNetwork _characterStatusNetwork;
+        public CharacterStatusNetwork characterStatusNetwork;
         public float speed           = 20f;
         public float speedChangeRate = 10f;
         public float groundOffset    = -0.14f;
@@ -58,6 +58,13 @@ namespace CharacterAttributes
         [Tooltip("What layers the character uses as ground")]
         public LayerMask groundLayers;
         public float terminalVelocity = 53f;
+        [Tooltip("How high is the origin from the ground")]
+        public float originOffset = 0.6f;
+
+        [Header("Player Dash(Skill)")] 
+        public float dashDuration = 0.3f;
+        public float dashSpeed = 35f;
+        public float bounceBackForce = 2f;
         
         [Space(5)]
         [Header("PlayerInput")]
@@ -80,11 +87,25 @@ namespace CharacterAttributes
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (!context.performed) return;
+            if (!context.performed) 
+                return;
 
-            if (_fsm.IsStateActive(FSMType.ATTACK)) return;
+            if (_fsm.IsStateActive(FSMType.ATTACK)) 
+                return;
 
             _fsm.SetState(FSMType.ATTACK);
+        }
+
+        public void OnSkill(InputAction.CallbackContext context)
+        {
+            if (!context.performed) 
+                return;
+            
+            if(_fsm.IsStateActive(FSMType.SKILL))
+                return;
+            
+            _fsm.FinishAllStates();
+            _fsm.SetState(FSMType.SKILL);
         }
         
         #endregion
@@ -99,16 +120,19 @@ namespace CharacterAttributes
         {
             characterController     = this.GetComponent<CharacterController>();
             playerInput             = this.GetComponent<PlayerInput>();
-            _characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
+            characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
             
             //TODO: 장비에서 스텟 받아오기
-            _characterStatusNetwork.Initialize(100f,10f,10f);
+            characterStatusNetwork.Initialize(100f,10f,10f);
             
             if (!IsOwner)
             {
                 playerInput.enabled = false;
+                this.transform.tag  = "Hostile";
                 return;
             }
+
+            this.transform.tag = "Player";
             
             mainCamera = Camera.main;
 
@@ -158,6 +182,58 @@ namespace CharacterAttributes
             }
         }
 
+        private void OnTriggerEnter(Collider other)
+        {
+            if(!IsOwner)
+                return;
+
+            if (other.CompareTag("Hostile"))
+            {
+                var otherController = other.GetComponent<CharacterControllerNetwork>();
+                if (otherController == null)
+                    return;
+
+                // 본인과 상대방의 NetworkObjectId 전송 (ClientId 사용도 가능)
+                ReportHitServerRpc(NetworkObjectId, otherController.NetworkObjectId);
+            }
+        }
+
+        [ServerRpc]
+        private void ReportHitServerRpc(ulong senderId, ulong targetId)
+        {
+            if (senderId >= targetId)
+                return; // 항상 낮은 ID를 가진 쪽만 처리 주체
+
+            var senderObj = NetworkManager.SpawnManager.SpawnedObjects[senderId];
+            var targetObj = NetworkManager.SpawnManager.SpawnedObjects[targetId];
+
+            var senderController = senderObj.GetComponent<CharacterControllerNetwork>();
+            var targetController = targetObj.GetComponent<CharacterControllerNetwork>();
+
+            if (senderController != null)
+            {
+                senderController.ReceiveHitClientRpc();
+            }
+
+            if (targetController != null)
+            {
+                targetController.ReceiveHitClientRpc();
+            }
+        }
+
+
+        [ClientRpc]
+        private void ReceiveHitClientRpc(ClientRpcParams rpcParams = default)
+        {
+            if (!IsOwner)
+                return;
+
+            Debug.Log("Received Hit -> FSM Set HIT");
+            _fsm.FinishAllStates();
+            _fsm.SetState(FSMType.HIT);
+        }
+
+        
         #region Static 
 
         private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
