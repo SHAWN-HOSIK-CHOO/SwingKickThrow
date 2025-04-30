@@ -210,6 +210,11 @@ namespace CharacterAttributes
             var senderController = senderObj.GetComponent<CharacterControllerNetwork>();
             var targetController = targetObj.GetComponent<CharacterControllerNetwork>();
 
+            //TODO: 더 강하게 들이받은 쪽은 그대로 있고, 상대방만 튕겨져 나가도록 조치
+
+            float senderVelocity = senderController.characterController.velocity.magnitude;
+            float targetVelocity = targetController.characterController.velocity.magnitude;
+            
             if (senderController != null)
             {
                 senderController.ReceiveHitClientRpc();
