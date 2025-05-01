@@ -864,6 +864,7 @@ GameObject:
   - component: {fileID: 4709475432739958000}
   - component: {fileID: 762052554837967487}
   - component: {fileID: 7699289980036974714}
+  - component: {fileID: 8572458798320354437}
   m_Layer: 7
   m_Name: pfMoose
   m_TagString: Player
@@ -1235,6 +1236,20 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.4, y: 1.56, z: 2.35}
   m_Center: {x: 0, y: 0.71, z: 0.27}
+--- !u!114 &8572458798320354437
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3586687850627241105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e3c468c30d1f9e4696d1854f4856067, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pfBlackoutUI: {fileID: 6916688688158047514, guid: d2e5f8ecfe2328444ae0a98954614379, type: 3}
+  pauseDuration: 1
 --- !u!1 &3769866024630682532
 GameObject:
   m_ObjectHideFlags: 0
@@ -1820,7 +1835,7 @@ GameObject:
   - component: {fileID: 1204280832032677520}
   - component: {fileID: 2921457925730027919}
   - component: {fileID: 7119751847607507010}
-  m_Layer: 10
+  m_Layer: 7
   m_Name: pfHoverBoard
   m_TagString: Untagged
   m_Icon: {fileID: 0}

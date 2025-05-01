@@ -1,4 +1,5 @@
 using System;
+using GameEvents;
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
@@ -123,7 +124,7 @@ namespace CharacterAttributes
             characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
             
             //TODO: 장비에서 스텟 받아오기
-            characterStatusNetwork.Initialize(100f,10f,10f);
+            characterStatusNetwork.Initialize(100f,10f,10f, 1f, 20f);
             
             if (!IsOwner)
             {
@@ -233,6 +234,7 @@ namespace CharacterAttributes
             if (!IsOwner)
                 return;
 
+            GameEvents.GameEvents.Publish(GameEventType.PLAYERCRASH);
             Debug.Log("Received Hit -> FSM Set HIT");
             _fsm.FinishAllStates();
             _fsm.SetState(FSMType.HIT);

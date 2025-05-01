@@ -17,23 +17,25 @@ namespace CharacterAttributes
       public NetworkVariable<float> defense     = new NetworkVariable<float>(5f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
       [Header("Pushed time after collide")] 
-      public NetworkVariable<float> pushedTime = new NetworkVariable<float>(0.3f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      public NetworkVariable<float> pushedTime = new NetworkVariable<float>(1f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       public NetworkVariable<float> pushedSpeed = new NetworkVariable<float>(20f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       
-      public void Initialize(float initHealth, float initAttackPower, float initDefense)
+      public void Initialize(float initHealth, float initAttackPower, float initDefense, float pTime, float pSpeed)
       {
          if(!IsOwner)
             return;
          
-         InitializeServerRPC(initHealth,initAttackPower, initDefense);
+         InitializeServerRPC(initHealth,initAttackPower, initDefense, pTime, pSpeed);
       }
 
       [ServerRpc]
-      private void InitializeServerRPC(float initHealth, float initAttackPower, float initDefense)
+      private void InitializeServerRPC(float initHealth, float initAttackPower, float initDefense, float pTime, float pSpeed)
       {
          health.Value      = Mathf.Max(initHealth,      1f);
          attackPower.Value = Mathf.Max(initAttackPower, 1f);
          defense.Value     = Mathf.Max(initDefense,     0f);
+         pushedTime.Value  = pTime;
+         pushedSpeed.Value = pSpeed;
       }
       
       public void TakeDamage(float damage)

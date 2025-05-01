@@ -48,7 +48,7 @@ namespace CharacterAttributes
             _characterController.Move(displacement);
 
             // 회전 (빙글빙글)
-            float rotationSpeed = 360f; // 도/초
+            float rotationSpeed = 480f; // 도/초
             Owner.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
 
             _elapsedTime += Time.deltaTime;
