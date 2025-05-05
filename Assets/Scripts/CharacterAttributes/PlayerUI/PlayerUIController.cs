@@ -15,7 +15,7 @@ namespace CharacterAttributes.PlayerUI
         
         private void OnEnable()
         {
-            GameEvents.GameEvents.Subscribe(GameEventType.PLAYERCRASH,CoStartBlackoutSequence);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_CRASH,CoStartBlackoutSequence);
             // 씬에 있는 Canvas 찾기
             Canvas canvas = FindAnyObjectByType<Canvas>();
             if (canvas != null && _blackoutUI == null)
@@ -27,7 +27,7 @@ namespace CharacterAttributes.PlayerUI
 
         private void OnDisable()
         {
-            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYERCRASH,CoStartBlackoutSequence);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH,CoStartBlackoutSequence);
         }
 
         private void CoStartBlackoutSequence()

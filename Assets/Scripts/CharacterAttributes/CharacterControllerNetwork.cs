@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using GameEvents;
+using GameProps;
 using Unity.Cinemachine;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,6 +13,7 @@ namespace CharacterAttributes
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(CharacterStatusNetwork))]
+    [RequireComponent(typeof(AnimationCurve))]
     public class CharacterControllerNetwork : NetworkBehaviour
     {
         public  CharacterController characterController;
@@ -43,8 +46,8 @@ namespace CharacterAttributes
         [Space(5)]
         [Header("Player Settings")]
         public CharacterStatusNetwork characterStatusNetwork;
-        public float speed           = 20f;
-        public float speedChangeRate = 10f;
+        public float speed           = 10f;
+        public float speedChangeRate = 20f;
         public float groundOffset    = -0.14f;
         public float gravity         = -15f;
         [Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
@@ -62,10 +65,15 @@ namespace CharacterAttributes
         [Tooltip("How high is the origin from the ground")]
         public float originOffset = 0.6f;
 
+        [Header("Default tag ball count")] public int tagBalls = 5;
+
+        [Header("Mass")] public float mass = 60f;
+        
         [Header("Player Dash(Skill)")] 
-        public float dashDuration = 0.3f;
-        public float dashSpeed = 35f;
-        public float bounceBackForce = 2f;
+        public float dashDuration = 3f;
+        public float          dashSpeed       = 60f;
+        public float          bounceBackForce = 2f;
+        public AnimationCurve dashCurve;
         
         [Space(5)]
         [Header("PlayerInput")]
@@ -75,7 +83,7 @@ namespace CharacterAttributes
         public Vector2 MoveInput { get; set; }
         public Vector2 LookInput { get; set; }
         public bool    IsAttack  { get; set; }
-
+        
         public void OnMove(InputAction.CallbackContext context)
         {
             MoveInput = context.ReadValue<Vector2>();
@@ -88,7 +96,7 @@ namespace CharacterAttributes
 
         public void OnAttack(InputAction.CallbackContext context)
         {
-            if (!context.performed) 
+            if (!context.performed || !IsOwner) 
                 return;
 
             if (_fsm.IsStateActive(FSMType.ATTACK)) 
@@ -99,7 +107,7 @@ namespace CharacterAttributes
 
         public void OnSkill(InputAction.CallbackContext context)
         {
-            if (!context.performed) 
+            if (!context.performed || !IsOwner) 
                 return;
             
             if(_fsm.IsStateActive(FSMType.SKILL))
@@ -111,6 +119,14 @@ namespace CharacterAttributes
         
         #endregion
 
+        #region Server_Only
+
+        // 클래스 안에 추가
+        private static Dictionary<(ulong, ulong), Dictionary<ulong, float>> _crashBuffer = new();
+        public         float                                                crashFactor;
+        private        HashSet<ulong>                                       _alreadyCrashedWith = new HashSet<ulong>();
+        #endregion
+        
         [Space(5)]
         [Header("Animations")]
         #region Animations
@@ -123,8 +139,6 @@ namespace CharacterAttributes
             playerInput             = this.GetComponent<PlayerInput>();
             characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
             
-            //TODO: 장비에서 스텟 받아오기
-            characterStatusNetwork.Initialize(100f,10f,10f, 1f, 20f);
             
             if (!IsOwner)
             {
@@ -133,6 +147,13 @@ namespace CharacterAttributes
                 return;
             }
 
+            //if (IsServer && IsOwner)
+            {
+                //TODO: 장비에서 스텟 받아오기
+                characterStatusNetwork.Initialize(100f,10f, 1f, speed, tagBalls, mass);
+                crashFactor = speed;
+            }
+            
             this.transform.tag = "Player";
             
             mainCamera = Camera.main;
@@ -193,53 +214,92 @@ namespace CharacterAttributes
                 var otherController = other.GetComponent<CharacterControllerNetwork>();
                 if (otherController == null)
                     return;
+                
+                ulong otherId = otherController.NetworkObjectId;
 
-                // 본인과 상대방의 NetworkObjectId 전송 (ClientId 사용도 가능)
-                ReportHitServerRpc(NetworkObjectId, otherController.NetworkObjectId);
+                if (_alreadyCrashedWith.Contains(otherId)) return;
+
+                _alreadyCrashedWith.Add(otherId);
+                
+                Debug.Log($"My Speed is {crashFactor}");
+                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, crashFactor);
+            }
+            else if (other.CompareTag($"NetworkProp"))
+            {
+                var food = other.GetComponent<FoodBase>();
+                if (food != null)
+                {
+                    // 요청은 클라이언트가 하지만, 체력 감소는 서버에서만 실행됨
+                    food.TakeDamage(100f);
+                }
             }
         }
 
         [ServerRpc]
-        private void ReportHitServerRpc(ulong senderId, ulong targetId)
+        private void ReportCrashDataServerRpc(ulong senderId, ulong otherId, float crashFactor_)
         {
-            if (senderId >= targetId)
-                return; // 항상 낮은 ID를 가진 쪽만 처리 주체
+            var key = senderId < otherId ? (senderId, otherId) : (otherId, senderId);
 
-            var senderObj = NetworkManager.SpawnManager.SpawnedObjects[senderId];
-            var targetObj = NetworkManager.SpawnManager.SpawnedObjects[targetId];
-
-            var senderController = senderObj.GetComponent<CharacterControllerNetwork>();
-            var targetController = targetObj.GetComponent<CharacterControllerNetwork>();
-
-            //TODO: 더 강하게 들이받은 쪽은 그대로 있고, 상대방만 튕겨져 나가도록 조치
-
-            float senderVelocity = senderController.characterController.velocity.magnitude;
-            float targetVelocity = targetController.characterController.velocity.magnitude;
-            
-            if (senderController != null)
+            if (!_crashBuffer.ContainsKey(key))
             {
-                senderController.ReceiveHitClientRpc();
+                _crashBuffer[key] = new Dictionary<ulong, float>();
             }
 
-            if (targetController != null)
+            _crashBuffer[key][senderId] = crashFactor_;
+
+            Debug.Log($"REPORTED, {_crashBuffer[key].Count}");
+            Debug.Log($"key : {key} and values :{_crashBuffer[key].Values.ToString()}");
+            
+            // 양쪽 모두 전송한 경우
+            if (_crashBuffer[key].Count == 2)
             {
-                targetController.ReceiveHitClientRpc();
+                float senderCrash = _crashBuffer[key][key.Item1];
+                float targetCrash = _crashBuffer[key][key.Item2];
+
+                var senderObj = NetworkManager.SpawnManager.SpawnedObjects[key.Item1];
+                var targetObj = NetworkManager.SpawnManager.SpawnedObjects[key.Item2];
+
+                var senderController = senderObj.GetComponent<CharacterControllerNetwork>();
+                var targetController = targetObj.GetComponent<CharacterControllerNetwork>();
+
+                Debug.Log($"Collision! {key.Item1} speed: {senderCrash}, {key.Item2} speed: {targetCrash}");
+
+                if (senderController != null)
+                    senderController.ReceiveHitClientRpc(targetCrash);
+
+                if (targetController != null)
+                    targetController.ReceiveHitClientRpc(senderCrash);
+
+                _crashBuffer.Remove(key); // 처리 후 버퍼 제거
             }
         }
 
-
         [ClientRpc]
-        private void ReceiveHitClientRpc(ClientRpcParams rpcParams = default)
+        private void ReceiveHitClientRpc(float damage,ClientRpcParams rpcParams = default)
         {
             if (!IsOwner)
                 return;
 
-            GameEvents.GameEvents.Publish(GameEventType.PLAYERCRASH);
-            Debug.Log("Received Hit -> FSM Set HIT");
+            _alreadyCrashedWith.Clear();
+            GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH);
+            Debug.Log($"Received Hit damage : {damage}");
+            characterStatusNetwork.TakeDamage(damage);
             _fsm.FinishAllStates();
             _fsm.SetState(FSMType.HIT);
         }
 
+        [ServerRpc(RequireOwnership = false)]
+        private void ApplyDamageServerRpc(float damage)
+        {
+            characterStatusNetwork.TakeDamage(damage);
+
+            if (IsOwner)
+            {
+                GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH);
+                _fsm.FinishAllStates();
+                _fsm.SetState(FSMType.HIT);
+            }
+        }
         
         #region Static 
 

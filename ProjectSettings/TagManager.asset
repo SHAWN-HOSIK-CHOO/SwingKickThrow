@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Hostile
   - Camera
+  - NetworkProp
   layers:
   - Default
   - TransparentFX

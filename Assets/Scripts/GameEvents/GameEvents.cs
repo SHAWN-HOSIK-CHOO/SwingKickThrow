@@ -7,7 +7,8 @@ namespace GameEvents
    {
       START,
       DEATH,
-      PLAYERCRASH,
+      PLAYER_CRASH,
+      BOX_GEN,
       Count
    }
    

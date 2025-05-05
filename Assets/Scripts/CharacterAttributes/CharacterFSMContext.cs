@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Netcode;
 
 namespace CharacterAttributes
 {
@@ -28,13 +29,16 @@ namespace CharacterAttributes
 
       public void SetState(FSMType type) 
       {
+         if(!_owner.IsOwner)
+            return;
+         
          if (currentStates.TryGetValue(type, out var current)) 
          {
             current.OnExit();
             Debug.Log($"FSMType : {type.ToString()} has exited");
          }
 
-         Debug.Log($"{type.ToString()} is added to current states");
+         //Debug.Log($"{type.ToString()} is added to current states");
          var next = statePool[type];
          currentStates[type] = next;
          next.OnEnter();
@@ -46,13 +50,13 @@ namespace CharacterAttributes
          {
             currentStates[type].OnExit();
             currentStates.Remove(type);
-            Debug.Log($"{type.ToString()} is removed from current states : {!IsStateActive(type)}");
+            //Debug.Log($"{type.ToString()} is removed from current states : {!IsStateActive(type)}");
          }
 
          if (type is FSMType.HIT or FSMType.SKILL)
          {
             SetState(FSMType.MOVEMENT);
-            Debug.Log("Movement state is activated after hit state exit");
+            //Debug.Log("Movement state is activated after hit state exit");
          }
       }
 
@@ -64,7 +68,7 @@ namespace CharacterAttributes
          }
 
          currentStates.Clear();
-         Debug.Log("All states have been finished and cleared.");
+         //Debug.Log("All states have been finished and cleared.");
       }
       
       public bool IsStateActive(FSMType type)
