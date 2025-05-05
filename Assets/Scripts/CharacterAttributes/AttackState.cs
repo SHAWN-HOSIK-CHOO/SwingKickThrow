@@ -26,7 +26,7 @@ namespace CharacterAttributes
          var stateInfo = _animator.GetCurrentAnimatorStateInfo(0); 
          if (stateInfo.IsName("MooseThrowAction") && stateInfo.normalizedTime >= 1f)
          {
-            Debug.Log("Called Finish from AttackState");
+            //Debug.Log("Called Finish from AttackState");
             Finish(FSMType.ATTACK);
          }
       }

@@ -1,3 +1,4 @@
+using Unity.Netcode;
 using UnityEngine;
 
 namespace CharacterAttributes
@@ -56,9 +57,9 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
-         
+         Owner.crashFactor = _moveSpeed;
       }
-
+      
       public override void OnUpdate()
       {
          Gravity();

@@ -12,30 +12,36 @@ namespace CharacterAttributes
 {
    public class CharacterStatusNetwork : NetworkBehaviour, IDamageable
    {
-      public NetworkVariable<float> health      = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server );
-      public NetworkVariable<float> attackPower = new NetworkVariable<float>(10f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-      public NetworkVariable<float> defense     = new NetworkVariable<float>(5f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      public  NetworkVariable<float> health  = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server );
+      public NetworkVariable<float> speed   = new NetworkVariable<float>(10f,  NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      public  NetworkVariable<float> defense = new NetworkVariable<float>(5f,   NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+      public NetworkVariable<float> mass = new NetworkVariable<float>();
 
       [Header("Pushed time after collide")] 
       public NetworkVariable<float> pushedTime = new NetworkVariable<float>(1f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       public NetworkVariable<float> pushedSpeed = new NetworkVariable<float>(20f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
+      [Header("Current tag balls")] 
+      public NetworkVariable<int> tagBalls = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       
-      public void Initialize(float initHealth, float initAttackPower, float initDefense, float pTime, float pSpeed)
+      public void Initialize(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
       {
          if(!IsOwner)
             return;
          
-         InitializeServerRPC(initHealth,initAttackPower, initDefense, pTime, pSpeed);
+         InitializeServerRPC(initHealth, initDefense, pTime, pSpeed, tags, _mass);
       }
 
-      [ServerRpc]
-      private void InitializeServerRPC(float initHealth, float initAttackPower, float initDefense, float pTime, float pSpeed)
+      [ServerRpc(RequireOwnership = false)]
+      private void InitializeServerRPC(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
       {
-         health.Value      = Mathf.Max(initHealth,      1f);
-         attackPower.Value = Mathf.Max(initAttackPower, 1f);
-         defense.Value     = Mathf.Max(initDefense,     0f);
+         health.Value      = Mathf.Max(initHealth, 1f);
+         speed.Value       = pSpeed;
+         defense.Value     = Mathf.Max(initDefense, 0f);
          pushedTime.Value  = pTime;
          pushedSpeed.Value = pSpeed;
+         tagBalls.Value    = tags;
+         mass.Value        = _mass;
       }
       
       public void TakeDamage(float damage)
@@ -46,7 +52,7 @@ namespace CharacterAttributes
          TakeDamageServerRPC(damage);
       }
 
-      [ServerRpc]
+      [ServerRpc(RequireOwnership = false)]
       private void TakeDamageServerRPC(float damage)
       {
          float damageTaken = Mathf.Max(damage - defense.Value, 1f);
