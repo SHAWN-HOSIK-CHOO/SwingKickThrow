@@ -23,9 +23,9 @@ namespace GameFlow
     {
         public Dictionary<GameStateType, BaseGameState>   statePool    = new();
         public KeyValuePair<GameStateType, BaseGameState> currentState = new();
-        public GameSceneFlowController                    Owner;
+        public GameSceneManager                    Owner;
 
-        public void Initialize(GameSceneFlowController gameSceneFlowController)
+        public void Initialize(GameSceneManager gameSceneManager)
         {
             //TODO: Initialize all states
             statePool[GameStateType.GAME_START]   = new GameStartState();
@@ -33,7 +33,7 @@ namespace GameFlow
             statePool[GameStateType.GAME_END]     = new GameEndState();
             statePool[GameStateType.GAME_BOX_GEN] = new GameBoxGenState();
             
-            Owner = gameSceneFlowController;
+            Owner = gameSceneManager;
 
             foreach (var state in statePool)
             {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CameraUtils;
 using CharacterAttributes.PlayerUI;
 using GameEvents;
 using GameProps;
@@ -15,6 +16,7 @@ namespace CharacterAttributes
     [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(CharacterStatusNetwork))]
     [RequireComponent(typeof(AnimationCurve))]
+    [RequireComponent(typeof(CinemachineImpulseSource))]
     public class CharacterControllerNetwork : NetworkBehaviour
     {
         public  CharacterController characterController;
@@ -136,7 +138,12 @@ namespace CharacterAttributes
         public PlayerUIController playerUIController;
 
         #endregion
-        
+
+        #region Cinemachine
+
+        public CinemachineImpulseSource impulseSource;        
+
+        #endregion
         [Space(5)]
         [Header("Animations")]
         #region Animations
@@ -163,16 +170,33 @@ namespace CharacterAttributes
                 characterStatusNetwork.Initialize(100f,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
                 crashFactor = speed;
             }
+
+            impulseSource = this.GetComponent<CinemachineImpulseSource>();
             
             playerUIController.Initialize(this);
             this.transform.tag = "Player";
             
             mainCamera = Camera.main;
 
-            GameObject.FindAnyObjectByType<CinemachineCamera>().Follow = cinemachineCameraTarget;
-
-            _cinemachineTargetYaw = cinemachineCameraTarget.eulerAngles.y;
+            var vCams = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
+            foreach (var cam in vCams)
+            {
+                cam.Follow = cinemachineCameraTarget;
+            }
+            //GameObject.FindAnyObjectByType<CinemachineCamera>().Follow = cinemachineCameraTarget;
             
+            _cinemachineTargetYaw = cinemachineCameraTarget.eulerAngles.y;
+
+            if (!GameObject.FindAnyObjectByType<PlayerEffectCameraController>())
+            {
+                Debug.Log("Failed to find Effect Camera");
+            }
+            else
+            {
+                //Debug.Log("Found Effect Camera... Setting....");
+                var effectCam = GameObject.FindAnyObjectByType<PlayerEffectCameraController>();
+                effectCam.cinemachineImpulseSource = impulseSource;
+            }
             
             _fsm = new CharacterFSMContext(this);
             _fsm.Initialize();

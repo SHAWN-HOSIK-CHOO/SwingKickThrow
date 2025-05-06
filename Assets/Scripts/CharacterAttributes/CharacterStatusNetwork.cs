@@ -42,6 +42,16 @@ namespace CharacterAttributes
          pushedSpeed.Value = pSpeed;
          tagBalls.Value    = tags;
          mass.Value        = _mass;
+
+         health.OnValueChanged += OnHealthChanged;
+      }
+
+      private void OnHealthChanged(float previousValue, float newValue)
+      {
+         if (health.Value == 0f)
+         {
+            
+         }
       }
       
       public void TakeDamage(float damage)
@@ -59,6 +69,20 @@ namespace CharacterAttributes
          health.Value = Mathf.Max(health.Value - damageTaken, 0f);
       }
 
+      public void AddOrMinusTagBalls(int count)
+      {
+         if(!IsOwner)
+            return;
+         
+         AddOrMinusTagBallsServerRPC(count);
+      }
+
+      [ServerRpc(RequireOwnership = false)]
+      private void AddOrMinusTagBallsServerRPC(int count)
+      {
+         tagBalls.Value += count;
+      }
+      
       public float GetHealth()
       {
          return health.Value;

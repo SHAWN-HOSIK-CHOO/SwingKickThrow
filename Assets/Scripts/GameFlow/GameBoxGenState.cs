@@ -8,9 +8,9 @@ namespace GameFlow
       private List<Transform>  _boxTransforms;
       private List<GameObject> _boxGameObjects;
       
-      public override void SetUp(GameSceneFlowController gameSceneFlowController, GameSceneFlowContext gameSceneFlowContext)
+      public override void SetUp(GameSceneManager gameSceneManager, GameSceneFlowContext gameSceneFlowContext)
       {
-         base.SetUp(gameSceneFlowController, gameSceneFlowContext);
+         base.SetUp(gameSceneManager, gameSceneFlowContext);
          _boxTransforms = Owner.boxTransforms;
       }
 
