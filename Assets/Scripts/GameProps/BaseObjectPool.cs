@@ -14,7 +14,7 @@ namespace GameProps
 
         public float GetHealth()
         {
-            
+            return 0;
         }
     }
 }
