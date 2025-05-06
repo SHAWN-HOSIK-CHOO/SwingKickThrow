@@ -1140,7 +1140,7 @@ CharacterController:
     m_Bits: 40
   m_LayerOverridePriority: 0
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
   m_Height: 2
   m_Radius: 1.09
@@ -1175,6 +1175,8 @@ MonoBehaviour:
   pushedSpeed:
     m_InternalValue: 20
   tagBalls:
+    m_InternalValue: 0
+  scoreBalls:
     m_InternalValue: 0
 --- !u!114 &762052554837967487
 MonoBehaviour:
@@ -1285,9 +1287,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e3c468c30d1f9e4696d1854f4856067, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pfBlackoutUI: {fileID: 6916688688158047514, guid: d2e5f8ecfe2328444ae0a98954614379, type: 3}
-  pauseDuration: 0.4
   rendererData: {fileID: 11400000, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
+  tagBallCountText: {fileID: 0}
+  playerScoreText: {fileID: 0}
+  enemyScoreText: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
