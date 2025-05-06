@@ -1,3 +1,4 @@
+using GameEvents;
 using UnityEngine;
 
 namespace CharacterAttributes
@@ -48,7 +49,7 @@ namespace CharacterAttributes
             _characterController.Move(displacement);
 
             // 회전 (빙글빙글)
-            float rotationSpeed = 480f; // 도/초
+            float rotationSpeed = 720f; // 도/초
             Owner.transform.Rotate(Vector3.up, rotationSpeed * Time.deltaTime);
 
             _elapsedTime += Time.deltaTime;
@@ -61,7 +62,7 @@ namespace CharacterAttributes
 
       public override void OnExit()
       {
-         
+         GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH_END);
       }
    }
 }

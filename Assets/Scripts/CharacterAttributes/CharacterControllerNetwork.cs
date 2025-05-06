@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CharacterAttributes.PlayerUI;
 using GameEvents;
 using GameProps;
 using Unity.Cinemachine;
@@ -64,6 +65,9 @@ namespace CharacterAttributes
         public float terminalVelocity = 53f;
         [Tooltip("How high is the origin from the ground")]
         public float originOffset = 0.6f;
+        [Header("Pushed")] 
+        public float pushedSpeed = 80f;
+        public float pushedTime = 0.4f;
 
         [Header("Default tag ball count")] public int tagBalls = 5;
 
@@ -126,6 +130,12 @@ namespace CharacterAttributes
         public         float                                                crashFactor;
         private        HashSet<ulong>                                       _alreadyCrashedWith = new HashSet<ulong>();
         #endregion
+
+        #region PlayerUI
+
+        public PlayerUIController playerUIController;
+
+        #endregion
         
         [Space(5)]
         [Header("Animations")]
@@ -135,10 +145,10 @@ namespace CharacterAttributes
         
         public override void OnNetworkSpawn()
         {
-            characterController     = this.GetComponent<CharacterController>();
-            playerInput             = this.GetComponent<PlayerInput>();
+            characterController    = this.GetComponent<CharacterController>();
+            playerInput            = this.GetComponent<PlayerInput>();
             characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
-            
+            playerUIController     = this.GetComponent<PlayerUIController>();
             
             if (!IsOwner)
             {
@@ -150,10 +160,11 @@ namespace CharacterAttributes
             //if (IsServer && IsOwner)
             {
                 //TODO: 장비에서 스텟 받아오기
-                characterStatusNetwork.Initialize(100f,10f, 1f, speed, tagBalls, mass);
+                characterStatusNetwork.Initialize(100f,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
                 crashFactor = speed;
             }
             
+            playerUIController.Initialize(this);
             this.transform.tag = "Player";
             
             mainCamera = Camera.main;
@@ -246,11 +257,7 @@ namespace CharacterAttributes
             }
 
             _crashBuffer[key][senderId] = crashFactor_;
-
-            Debug.Log($"REPORTED, {_crashBuffer[key].Count}");
-            Debug.Log($"key : {key} and values :{_crashBuffer[key].Values.ToString()}");
             
-            // 양쪽 모두 전송한 경우
             if (_crashBuffer[key].Count == 2)
             {
                 float senderCrash = _crashBuffer[key][key.Item1];
@@ -286,19 +293,6 @@ namespace CharacterAttributes
             characterStatusNetwork.TakeDamage(damage);
             _fsm.FinishAllStates();
             _fsm.SetState(FSMType.HIT);
-        }
-
-        [ServerRpc(RequireOwnership = false)]
-        private void ApplyDamageServerRpc(float damage)
-        {
-            characterStatusNetwork.TakeDamage(damage);
-
-            if (IsOwner)
-            {
-                GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH);
-                _fsm.FinishAllStates();
-                _fsm.SetState(FSMType.HIT);
-            }
         }
         
         #region Static 
