@@ -43,13 +43,14 @@ namespace ConnectionUtils
             Transform spawnTransform = GameSceneManager.Instance.spawnTransforms[(int)playerID];
             int       selectionInt   = ( (int)playerID == 0 ) ? player0Selection.Value : player1Selection.Value;
 
-            GameObject playerObject = Instantiate(GameSceneManager.Instance.pfPlayers[selectionInt]);
-            playerObject.GetComponent<CharacterController>().enabled = false;
+            GameObject playerObject = Instantiate(GameSceneManager.Instance.pfPlayers[selectionInt], new Vector3(spawnTransform.position.x,spawnTransform.position.y, spawnTransform.position.z),spawnTransform.rotation);
+            //playerObject.GetComponent<CharacterController>().enabled = false;
 
-            playerObject.transform.position = new Vector3(spawnTransform.position.x,spawnTransform.position.y, spawnTransform.position.z);
-            playerObject.transform.rotation = spawnTransform.rotation;
-
-            playerObject.GetComponent<CharacterController>().enabled = true;
+            // playerObject.transform.position = new Vector3(spawnTransform.position.x,spawnTransform.position.y, spawnTransform.position.z);
+            // playerObject.transform.rotation = spawnTransform.rotation;
+            // 여기서 enable하는거 소용 없음 ServerRPC라 호스트가 아니면 적용 안받음 OnNetworkSpawn()에서 직접 해줘야 함
+            //playerObject.GetComponent<CharacterController>().enabled = true;
+            //playerObject.GetComponent<CharacterController>().Move(Vector3.zero);
             
             playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(playerID);
         }

@@ -86,7 +86,7 @@ namespace ConnectionUtils
                 if (!_hasLoadedMainScene && NetworkManager.Singleton.IsHost)
                 {
                     _hasLoadedMainScene = true;
-                    NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_", LoadSceneMode.Additive);
+                    NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
                 }
 
                 if (!_hasSpawnCalled)

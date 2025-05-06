@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ConnectionUtils;
+using TMPro;
 using UnityEngine;
 
 namespace GameFlow
@@ -28,6 +29,16 @@ namespace GameFlow
         //PlayerSelectionHandler 본인이 스스로 세팅
         private PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
 
+        #region UI
+
+        [Header("Tag ball")] 
+        public TMP_Text tagBallCountText;
+
+        [Header("Score")] 
+        public TMP_Text playerScoreText;
+        public TMP_Text enemyScoreText;
+        #endregion
+        
         public void SetPlayerSelectionHandler(PlayerSelectionAndSpawnHandler andSpawnHandler)
         {
             _playerSelectionAndSpawnHandler = andSpawnHandler;

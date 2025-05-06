@@ -152,10 +152,11 @@ namespace CharacterAttributes
         
         public override void OnNetworkSpawn()
         {
-            characterController    = this.GetComponent<CharacterController>();
-            playerInput            = this.GetComponent<PlayerInput>();
-            characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
-            playerUIController     = this.GetComponent<PlayerUIController>();
+            characterController         = this.GetComponent<CharacterController>();
+            characterController.enabled = true;
+            playerInput                 = this.GetComponent<PlayerInput>();
+            characterStatusNetwork      = this.GetComponent<CharacterStatusNetwork>();
+            playerUIController          = this.GetComponent<PlayerUIController>();
             
             if (!IsOwner)
             {

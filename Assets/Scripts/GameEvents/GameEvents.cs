@@ -6,7 +6,8 @@ namespace GameEvents
    public enum GameEventType
    {
       START,
-      DEATH,
+      ENEMY_DEATH,
+      PLAYER_DEATH,
       PLAYER_CRASH,
       PLAYER_CRASH_END,
       PLAYER_DASH,

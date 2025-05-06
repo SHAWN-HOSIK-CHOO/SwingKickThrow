@@ -1,85 +1,262 @@
+// using System;
+// using System.Collections;
+// using UnityEngine;
+// using GameEvents;
+// using GameFlow;
+// using TMPro;
+// using UnityEngine.Rendering;
+// using UnityEngine.Rendering.Universal;
+// using UnityEngine.Serialization;
+//
+// namespace CharacterAttributes.PlayerUI
+// {
+//     public class PlayerUIController : MonoBehaviour {
+//         public  UniversalRendererData     rendererData;
+//         private ScriptableRendererFeature _targetFeature;
+//
+//         private CharacterControllerNetwork _Owner;
+//         private bool                       _isOwner = false;
+//
+//         #region TagBallStatus
+//
+//         public TMP_Text tagBallCountText;
+//         public void SetTagBallCount(int prevVal, int newVal)
+//         {
+//             tagBallCountText.text = newVal.ToString();
+//         }
+//         
+//         #endregion
+//
+//         #region ScoreStatus
+//
+//         public TMP_Text playerScoreText;
+//         public TMP_Text enemyScoreText;
+//
+//         public void SetPlayerScore(int prevVal, int newVal)
+//         {
+//             playerScoreText.text = newVal.ToString();
+//         }
+//         public void SetEnemyScore(int prevVal, int newVal)
+//         {
+//             enemyScoreText.text = newVal.ToString();
+//         }
+//
+//         #endregion
+//         
+//         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
+//         {
+//             //Debug.Log($"Initialized : {characterControllerNetwork.IsOwner}");
+//             _isOwner = characterControllerNetwork.IsOwner;
+//             
+//             foreach (var feature in rendererData.rendererFeatures)
+//             {
+//                 if (feature.name == "FullScreenPassRendererFeature") 
+//                 {
+//                     _targetFeature = feature;
+//                     break;
+//                 }
+//             }
+//             
+//             if(_targetFeature == null)
+//                 Debug.Log("There is no feature as such : Full Screen Pass Renderer Feature");
+//             else
+//             {
+//                 _targetFeature.SetActive(false);
+//             }
+//
+//             if (_isOwner)
+//             {
+//                 _Owner = characterControllerNetwork;
+//                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+//                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+//
+//                 tagBallCountText = GameSceneManager.Instance.tagBallCountText;
+//                 playerScoreText  = GameSceneManager.Instance.playerScoreText;
+//                 enemyScoreText   = GameSceneManager.Instance.enemyScoreText;
+//             }
+//         }
+//
+//         private void Start()
+//         {
+//             if (_isOwner)
+//             {
+//                 SetTagBallCount(0, _Owner.characterStatusNetwork.tagBalls.Value);
+//                 _Owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
+//                 _Owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
+//             }
+//             else
+//             {
+//                 this.GetComponent<CharacterStatusNetwork>().scoreBalls.OnValueChanged += SetEnemyScore;
+//             }
+//         }
+//
+//         private void OnDisable()
+//         {
+//             if (!_isOwner)
+//             {
+//                 return;
+//             }
+//             
+//             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+//             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+//         }
+//
+//         private void ActivateSpeedLine()
+//         {
+//             _targetFeature.SetActive(true);
+//         }
+//
+//         private void InActivateSpeedLine()
+//         {
+//             _targetFeature.SetActive(false);
+//         }
+//     }
+// }
 using System;
 using System.Collections;
 using UnityEngine;
 using GameEvents;
+using GameFlow;
+using TMPro;
 using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
+using Unity.Netcode;
+using CharacterAttributes;
 
 namespace CharacterAttributes.PlayerUI
 {
-    public class PlayerUIController : MonoBehaviour {
-        public GameObject pfBlackoutUI;
-        public float      pauseDuration = 0.4f;
-        
-        private GameObject _blackoutUI;
-
-        public  UniversalRendererData     rendererData;
+    public class PlayerUIController : MonoBehaviour
+    {
+        public UniversalRendererData rendererData;
         private ScriptableRendererFeature _targetFeature;
 
+        private CharacterControllerNetwork _Owner;
         private bool _isOwner = false;
-        
+
+        #region TagBallStatus
+
+        public TMP_Text tagBallCountText;
+        public void SetTagBallCount(int prevVal, int newVal)
+        {
+            tagBallCountText.text = newVal.ToString();
+        }
+
+        #endregion
+
+        #region ScoreStatus
+
+        public TMP_Text playerScoreText;
+        public TMP_Text enemyScoreText;
+
+        public void SetPlayerScore(int prevVal, int newVal)
+        {
+            playerScoreText.text = newVal.ToString();
+        }
+
+        public void SetEnemyScore(int prevVal, int newVal)
+        {
+            if (enemyScoreText != null)
+                enemyScoreText.text = newVal.ToString();
+            else
+                Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
+        }
+
+        #endregion
+
         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
-            //Debug.Log($"Initialized : {characterControllerNetwork.IsOwner}");
             _isOwner = characterControllerNetwork.IsOwner;
-            
+
             foreach (var feature in rendererData.rendererFeatures)
             {
-                if (feature.name == "FullScreenPassRendererFeature") 
+                if (feature.name == "FullScreenPassRendererFeature")
                 {
                     _targetFeature = feature;
                     break;
                 }
             }
-            
-            if(_targetFeature == null)
-                Debug.Log("There is no feature as such : Full Screen Pass Renderer Feature");
+
+            if (_targetFeature == null)
+                Debug.Log("There is no feature named 'FullScreenPassRendererFeature'");
             else
-            {
                 _targetFeature.SetActive(false);
-            }
 
             if (_isOwner)
             {
-                GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+                _Owner = characterControllerNetwork;
+                GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+
+                tagBallCountText = GameSceneManager.Instance.tagBallCountText;
+                playerScoreText = GameSceneManager.Instance.playerScoreText;
+                enemyScoreText = GameSceneManager.Instance.enemyScoreText;
+
+                if (enemyScoreText == null)
+                    Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
             }
         }
-        
+
+        private void Start()
+        {
+            if (_isOwner)
+            {
+                SetTagBallCount(0, _Owner.characterStatusNetwork.tagBalls.Value);
+                _Owner.characterStatusNetwork.tagBalls.OnValueChanged += SetTagBallCount;
+                _Owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
+
+                // 적 점수 업데이트용 구독 시작
+                StartCoroutine(SubscribeToEnemyScore());
+            }
+        }
+
+        private IEnumerator SubscribeToEnemyScore()
+        {
+            // 상대 플레이어가 생성될 때까지 기다림
+            yield return new WaitUntil(() =>
+                NetworkManager.Singleton != null &&
+                NetworkManager.Singleton.ConnectedClients.Count == 2);
+
+            ulong myClientId = NetworkManager.Singleton.LocalClientId;
+
+            foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
+            {
+                if (kvp.Key != myClientId)
+                {
+                    var enemyStatus = kvp.Value.PlayerObject.GetComponent<CharacterStatusNetwork>();
+                    if (enemyStatus != null)
+                    {
+                        SetEnemyScore(0, enemyStatus.scoreBalls.Value);
+                        enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Enemy CharacterStatusNetwork not found.");
+                    }
+                    break;
+                }
+            }
+        }
+
         private void OnDisable()
         {
             if (!_isOwner)
-            {
                 return;
-            }
-            
-            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
         }
 
         private void ActivateSpeedLine()
         {
-            _targetFeature.SetActive(true);
+            if (_targetFeature != null)
+                _targetFeature.SetActive(true);
         }
 
         private void InActivateSpeedLine()
         {
-            _targetFeature.SetActive(false);
-        }
-        
-        private void CoStartBlackoutSequence()
-        {
-            StartCoroutine(BlackoutCoroutine());
-        }
-
-        private IEnumerator BlackoutCoroutine()
-        {
-            _blackoutUI.SetActive(true);
-            Time.timeScale = 0f;
-            yield return new WaitForSecondsRealtime(pauseDuration);
-            Time.timeScale = 1f;
-            _blackoutUI.SetActive(false);
+            if (_targetFeature != null)
+                _targetFeature.SetActive(false);
         }
     }
 }
