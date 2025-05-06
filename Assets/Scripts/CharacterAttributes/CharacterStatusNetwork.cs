@@ -24,19 +24,19 @@ namespace CharacterAttributes
       [Header("Current tag balls")] 
       public NetworkVariable<int> tagBalls = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
       
-      public void Initialize(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
+      public void Initialize(float initHealth, float locoSpeed, float initDefense, float pTime, float pSpeed, int tags, float _mass)
       {
          if(!IsOwner)
             return;
          
-         InitializeServerRPC(initHealth, initDefense, pTime, pSpeed, tags, _mass);
+         InitializeServerRPC(initHealth, locoSpeed,initDefense, pTime, pSpeed, tags, _mass);
       }
 
       [ServerRpc(RequireOwnership = false)]
-      private void InitializeServerRPC(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
+      private void InitializeServerRPC(float initHealth, float locoSpeed ,float initDefense, float pTime, float pSpeed, int tags, float _mass)
       {
          health.Value      = Mathf.Max(initHealth, 1f);
-         speed.Value       = pSpeed;
+         speed.Value       = locoSpeed;
          defense.Value     = Mathf.Max(initDefense, 0f);
          pushedTime.Value  = pTime;
          pushedSpeed.Value = pSpeed;

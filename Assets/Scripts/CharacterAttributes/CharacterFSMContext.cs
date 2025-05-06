@@ -35,7 +35,7 @@ namespace CharacterAttributes
          if (currentStates.TryGetValue(type, out var current)) 
          {
             current.OnExit();
-            Debug.Log($"FSMType : {type.ToString()} has exited");
+            //Debug.Log($"FSMType : {type.ToString()} has exited");
          }
 
          //Debug.Log($"{type.ToString()} is added to current states");

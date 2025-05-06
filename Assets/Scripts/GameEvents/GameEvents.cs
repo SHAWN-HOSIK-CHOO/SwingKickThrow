@@ -8,6 +8,9 @@ namespace GameEvents
       START,
       DEATH,
       PLAYER_CRASH,
+      PLAYER_CRASH_END,
+      PLAYER_DASH,
+      PLAYER_DASH_END,
       BOX_GEN,
       Count
    }

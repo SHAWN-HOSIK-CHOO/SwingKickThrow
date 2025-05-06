@@ -1,3 +1,4 @@
+using GameEvents;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace CharacterAttributes
       
       private float _currentSpeed;
       private float _rotationSpeed = 6f;
-      //private float _acceleration = 20f;
+      //private float _targetPitch   = -40f;
       
       public override void Setup(CharacterFSMContext context, CharacterControllerNetwork owner)
       {
@@ -42,6 +43,7 @@ namespace CharacterAttributes
 
          _currentSpeed     = 0f;
          Owner.crashFactor = _dashSpeed;
+         GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH);
       }
       
       public override void OnUpdate()
@@ -70,6 +72,11 @@ namespace CharacterAttributes
                Finish(FSMType.SKILL);
                return;
             }
+            
+            // float currentPitch  = Owner.transform.eulerAngles.x;
+            // float smoothedPitch = Mathf.LerpAngle(currentPitch, _targetPitch, Time.deltaTime * 10f);
+            //
+            // Owner.transform.rotation = Quaternion.Euler(smoothedPitch, 0f,0f);
 
             _dashTimeRemaining -= Time.deltaTime;
          }
@@ -81,7 +88,7 @@ namespace CharacterAttributes
 
       public override void OnExit()
       {
-         
+         GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_END);
       }
    }
 }
