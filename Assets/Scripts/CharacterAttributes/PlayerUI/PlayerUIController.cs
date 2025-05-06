@@ -2,34 +2,72 @@ using System;
 using System.Collections;
 using UnityEngine;
 using GameEvents;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 
 namespace CharacterAttributes.PlayerUI
 {
-    public class PlayerUIController : MonoBehaviour
-    {
+    public class PlayerUIController : MonoBehaviour {
         public GameObject pfBlackoutUI;
-        public float      pauseDuration = 1f;
-
-        private GameObject _blackoutUI;
+        public float      pauseDuration = 0.4f;
         
-        private void OnEnable()
+        private GameObject _blackoutUI;
+
+        public  UniversalRendererData     rendererData;
+        private ScriptableRendererFeature _targetFeature;
+
+        private bool _isOwner = false;
+        
+        public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
-            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_CRASH,CoStartBlackoutSequence);
-            // 씬에 있는 Canvas 찾기
-            Canvas canvas = FindAnyObjectByType<Canvas>();
-            if (canvas != null && _blackoutUI == null)
+            //Debug.Log($"Initialized : {characterControllerNetwork.IsOwner}");
+            _isOwner = characterControllerNetwork.IsOwner;
+            
+            foreach (var feature in rendererData.rendererFeatures)
             {
-                _blackoutUI = Instantiate(pfBlackoutUI, canvas.transform);
-                _blackoutUI.SetActive(false);
+                if (feature.name == "FullScreenPassRendererFeature") 
+                {
+                    _targetFeature = feature;
+                    break;
+                }
+            }
+            
+            if(_targetFeature == null)
+                Debug.Log("There is no feature as such : Full Screen Pass Renderer Feature");
+            else
+            {
+                _targetFeature.SetActive(false);
+            }
+
+            if (_isOwner)
+            {
+                GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+                GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
             }
         }
-
+        
         private void OnDisable()
         {
-            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH,CoStartBlackoutSequence);
+            if (!_isOwner)
+            {
+                return;
+            }
+            
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH,     ActivateSpeedLine);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
         }
 
+        private void ActivateSpeedLine()
+        {
+            _targetFeature.SetActive(true);
+        }
+
+        private void InActivateSpeedLine()
+        {
+            _targetFeature.SetActive(false);
+        }
+        
         private void CoStartBlackoutSequence()
         {
             StartCoroutine(BlackoutCoroutine());

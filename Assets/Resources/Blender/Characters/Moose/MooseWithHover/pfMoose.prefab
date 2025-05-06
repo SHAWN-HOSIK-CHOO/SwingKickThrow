@@ -1215,10 +1215,12 @@ MonoBehaviour:
     m_Bits: 1616
   terminalVelocity: 53
   originOffset: 0.6
+  pushedSpeed: 80
+  pushedTime: 0.4
   tagBalls: 5
   mass: 60
-  dashDuration: 3
-  dashSpeed: 40
+  dashDuration: 2
+  dashSpeed: 60
   bounceBackForce: 1
   dashCurve:
     serializedVersion: 2
@@ -1226,8 +1228,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -1235,8 +1237,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 1
       value: 1
-      inSlope: 2
-      outSlope: 2
+      inSlope: 0
+      outSlope: 0
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -1246,6 +1248,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   playerInput: {fileID: 3216707243182190217}
   crashFactor: 0
+  playerUIController: {fileID: 0}
   animator: {fileID: 7318235746921636461}
 --- !u!65 &7699289980036974714
 BoxCollider:
@@ -1281,7 +1284,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pfBlackoutUI: {fileID: 6916688688158047514, guid: d2e5f8ecfe2328444ae0a98954614379, type: 3}
-  pauseDuration: 1
+  pauseDuration: 0.4
+  rendererData: {fileID: 11400000, guid: f288ae1f4751b564a96ac7587541f7a2, type: 2}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
