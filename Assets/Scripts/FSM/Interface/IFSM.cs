@@ -14,6 +14,9 @@ namespace FSM
     {
         StateEnum currentState { get;}
         IState<StateEnum, OwnerType> GetState(StateEnum type);
+
+        ITransition<StateEnum> GetTransition(StateEnum before, StateEnum after);
+
         void AddState(StateEnum type, IState<StateEnum, OwnerType> state);
         void AddTransition(ITransition<StateEnum> transition);
         void TriggerTransition(StateEnum nextState , bool force = false);

@@ -4,6 +4,6 @@ namespace FSM
 {
     public interface IOwner<T>
     {
-
+        T Get { get; }
     }
 }

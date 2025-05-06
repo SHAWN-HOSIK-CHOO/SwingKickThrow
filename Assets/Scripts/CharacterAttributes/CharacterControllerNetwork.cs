@@ -12,7 +12,6 @@ using UnityEngine.Serialization;
 namespace CharacterAttributes
 {
     [RequireComponent(typeof(CharacterController))]
-    [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(CharacterStatusNetwork))]
     [RequireComponent(typeof(AnimationCurve))]
     public class CharacterControllerNetwork : NetworkBehaviour
@@ -33,7 +32,7 @@ namespace CharacterAttributes
         [Space(5)]
         [Header("Camera Settings")]
         #region Camera
-        public        Camera    mainCamera;
+        public CinemachineCamera playerCamera;
         public        Transform cinemachineCameraTarget;
         private       float     _cinemachineTargetYaw;
         private       float     _cinemachineTargetPitch;
@@ -81,11 +80,11 @@ namespace CharacterAttributes
         
         [Space(5)]
         [Header("PlayerInput")]
-        [Header("알 수 없는 오류 때문에 수동으로 콜백 연결해줘야 함")]
+        private InputActionMap inputActions;
         #region PlayerInputs
-        public  PlayerInput         playerInput;
         public Vector2 MoveInput { get; set; }
         public Vector2 LookInput { get; set; }
+        public bool JumpInput { get; set; }
         public bool    IsAttack  { get; set; }
         
         public void OnMove(InputAction.CallbackContext context)
@@ -108,7 +107,10 @@ namespace CharacterAttributes
 
             _fsm.SetState(FSMType.ATTACK);
         }
-
+        public void OnJump(InputAction.CallbackContext context)
+        {
+            JumpInput = context.ReadValue<float>() == 1;
+        }
         public void OnSkill(InputAction.CallbackContext context)
         {
             if (!context.performed || !IsOwner) 
@@ -140,21 +142,35 @@ namespace CharacterAttributes
         [Space(5)]
         [Header("Animations")]
         #region Animations
-        public Animator animator;        
+        public Animator animator;
         #endregion
-        
+        public void BindInput()
+        {
+            inputActions["Move"].performed += OnMove;
+            inputActions["Look"].performed += OnLook;
+            inputActions["Attack"].performed += OnAttack;
+            inputActions["Skill"].performed += OnSkill;
+            inputActions["Jump"].performed += OnJump;
+            inputActions.Enable();
+        }
         public override void OnNetworkSpawn()
         {
             characterController    = this.GetComponent<CharacterController>();
-            playerInput            = this.GetComponent<PlayerInput>();
+            inputActions = InputSingleton.Singleton.playerInput.actions.FindActionMap("Player");
             characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
             playerUIController     = this.GetComponent<PlayerUIController>();
             
             if (!IsOwner)
             {
-                playerInput.enabled = false;
+                playerCamera.gameObject.SetActive(false);
                 this.transform.tag  = "Hostile";
                 return;
+            }
+            else
+            {
+                playerCamera.gameObject.SetActive(true);
+                BindInput();
+                this.transform.tag = "Player";
             }
 
             //if (IsServer && IsOwner)
@@ -165,9 +181,6 @@ namespace CharacterAttributes
             }
             
             playerUIController.Initialize(this);
-            this.transform.tag = "Player";
-            
-            mainCamera = Camera.main;
 
             GameObject.FindAnyObjectByType<CinemachineCamera>().Follow = cinemachineCameraTarget;
 
@@ -176,7 +189,6 @@ namespace CharacterAttributes
             
             _fsm = new CharacterFSMContext(this);
             _fsm.Initialize();
-
             _fsm.SetState(FSMType.MOVEMENT); // 기본 상태
         }
 

@@ -1,18 +1,13 @@
+using Character;
 using System.Collections.Generic;
 using UnityEngine;
 
 namespace FSM
 {
-    public abstract class FSM<StateEnum, OwnerType> : IFSM<StateEnum, OwnerType>
+    public abstract class BaseFSM<StateEnum, OwnerType> : BaseState<StateEnum, OwnerType>, IFSM<StateEnum, OwnerType>
     {
         StateEnum _currentState;
-        IFSM<StateEnum, OwnerType> _upperFSM;
-
         StateEnum IFSM<StateEnum, OwnerType>.currentState => _currentState;
-        IFSM<StateEnum, OwnerType> IState<StateEnum, OwnerType>._upperFSM => _upperFSM;
-        IOwner<OwnerType> _owner;
-        IOwner<OwnerType> IState<StateEnum, OwnerType>._owner => _owner;
-
 
         Dictionary<StateEnum, IState<StateEnum, OwnerType>> _states = new();
         DoubleKeyDict<StateEnum, StateEnum, ITransition<StateEnum>> _transitions = new();
@@ -59,42 +54,29 @@ namespace FSM
 
         }
 
-        void IState<StateEnum, OwnerType>.OnEnter()
-        {
-            OnEnter();
-        }
 
-        protected virtual void OnEnter() 
+        protected override void OnEnter() 
         { 
         
         }
 
-        void IState<StateEnum, OwnerType>.OnUpdate()
+        protected override void OnUpdate()
         {
+
+            IFSM<StateEnum, OwnerType> fsm = this;
             OnUpdate();
+            fsm.GetState(_currentState).OnUpdate();
         }
-        protected virtual void OnUpdate()
+
+        protected override void OnExit()
         {
 
         }
 
-        void IState<StateEnum, OwnerType>.OnExit()
+        public ITransition<StateEnum> GetTransition(StateEnum before, StateEnum after)
         {
-            OnExit();
-        }
-        protected virtual void OnExit()
-        {
-
-        }
-
-        void IState<StateEnum, OwnerType>.Setup(IFSM<StateEnum, OwnerType> fsm)
-        {
-            _upperFSM = fsm;
-        }
-
-        void IState<StateEnum, OwnerType>.Setup(IOwner<OwnerType> owner)
-        {
-            _owner = owner;
+            _transitions.TryGetValue(before, after, out var val);
+            return val;
         }
     }
 }
