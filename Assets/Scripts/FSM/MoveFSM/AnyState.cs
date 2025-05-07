@@ -1,11 +1,12 @@
 using Character;
+using CharacterAttributes;
 using FSM;
 
 namespace Character.MoveFSM
 {
-    public class AnyState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MoveController
+    public class AnyState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MovementState
     {
-        MoveController _controller;
+        MovementState _controller;
         override protected void OnEnter()
         {
             _controller = _owner.Get;

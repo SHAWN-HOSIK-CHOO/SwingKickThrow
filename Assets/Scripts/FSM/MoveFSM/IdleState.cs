@@ -1,10 +1,11 @@
+using CharacterAttributes;
 using FSM;
 using UnityEngine;
 namespace Character.MoveFSM
 {
-    public class IdleState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MoveController
+    public class IdleState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MovementState
     {
-        MoveController _controller;
+        MovementState _controller;
       
         override protected void OnEnter()
         {
@@ -13,7 +14,9 @@ namespace Character.MoveFSM
 
         override protected void OnUpdate()
         {
-
+            _controller.Gravity();
+            _controller.GroundedCheck();
+            _controller.Move();
 
         }
         override protected void OnExit()

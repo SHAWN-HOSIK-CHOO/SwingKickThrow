@@ -10,7 +10,7 @@ namespace Character
     {
         Any,
         IDLE,
-        Jump, 
+        Walk, 
         Dash,
     }
 
@@ -19,14 +19,14 @@ namespace Character
         public override MoveState _before => MoveState.Any;
         public override MoveState _after => MoveState.IDLE;
     }
-    class T_IDLE_Jump : BsaeTanstition<MoveState>
+    class T_IDLE_Walk : BsaeTanstition<MoveState>
     {
         public override MoveState _before => MoveState.IDLE;
-        public override MoveState _after => MoveState.Jump;
+        public override MoveState _after => MoveState.Walk;
     }
-    class T_Jump_IDLE : BsaeTanstition<MoveState>
+    class T_Walk_IDLE : BsaeTanstition<MoveState>
     {
-        public override MoveState _before => MoveState.Jump;
+        public override MoveState _before => MoveState.Walk;
         public override MoveState _after => MoveState.IDLE;
     }
     class T_IDLE_Dash : BsaeTanstition<MoveState>
@@ -39,18 +39,19 @@ namespace Character
         public override MoveState _before => MoveState.Dash;
         public override MoveState _after => MoveState.IDLE;
     }
-    class T_Jump_Dash : BsaeTanstition<MoveState>
-    {
-        public override MoveState _before => MoveState.Jump;
-        public override MoveState _after => MoveState.Dash;
-    }
-    class T_Dash_Jump : BsaeTanstition<MoveState>
+
+    class T_Dash_Walk : BsaeTanstition<MoveState>
     {
         public override MoveState _before => MoveState.Dash;
-        public override MoveState _after => MoveState.Jump;
+        public override MoveState _after => MoveState.Walk;
+    }
+    class T_Walk_Dash : BsaeTanstition<MoveState>
+    {
+        public override MoveState _before => MoveState.Walk;
+        public override MoveState _after => MoveState.Dash;
     }
 
-    public class MoveFSM<OwnerType>  : BaseFSM<MoveState, OwnerType> where OwnerType : MoveController 
+    public class MoveFSM<OwnerType>  : BaseFSM<MoveState, OwnerType> where OwnerType : MovementState
     {
         IFSM<MoveState, OwnerType> _fsm;
         public MoveFSM(IOwner<OwnerType> controller)
@@ -60,17 +61,22 @@ namespace Character
             AddState(controller);
             SetInitState();
             AddTransition();
-
             AddCondition();
         }
         void SetInitState()
         {
-            _fsm.TriggerTransition(MoveState.Any,true);
+            _fsm.TriggerTransition(MoveState.Any, true);
         }
         void AddTransition()
         {
             ITransition<MoveState> any_idle = new T_Any_IDLE();
             _fsm.AddTransition(any_idle);
+
+            ITransition<MoveState> idle_walk = new T_IDLE_Walk();
+            _fsm.AddTransition(idle_walk);
+
+            ITransition<MoveState> walk_idle = new T_Walk_IDLE();
+            _fsm.AddTransition(walk_idle);
 
             ITransition<MoveState> idle_dash = new T_IDLE_Dash();
             _fsm.AddTransition(idle_dash);
@@ -78,17 +84,11 @@ namespace Character
             ITransition<MoveState> dash_idle = new T_Dash_IDLE();
             _fsm.AddTransition(dash_idle);
 
-            ITransition<MoveState> idle_jump = new T_IDLE_Jump();
-            _fsm.AddTransition(idle_jump);
+            ITransition<MoveState> walk_dash = new T_Walk_Dash();
+            _fsm.AddTransition(walk_dash);
 
-            ITransition<MoveState> jump_idle = new T_Jump_IDLE();
-            _fsm.AddTransition(jump_idle);
-
-            ITransition<MoveState> jump_dash = new T_Jump_Dash();
-            _fsm.AddTransition(jump_dash);
-
-            ITransition<MoveState> dash_jump = new T_Dash_Jump();
-            _fsm.AddTransition(dash_jump);
+            ITransition<MoveState> dash_walk = new T_Dash_Walk();
+            _fsm.AddTransition(dash_walk);
         }
         void AddState(IOwner<OwnerType> controller)
         {
@@ -102,10 +102,9 @@ namespace Character
             idleState.Setup(controller);
             fsm.AddState(MoveState.IDLE, idleState);
 
-
-            FSM.IState<MoveState, OwnerType> jumpState = new Character.MoveFSM.JumpState<OwnerType>();
-            jumpState.Setup(controller);
-            fsm.AddState(MoveState.Jump, jumpState);
+            FSM.IState<MoveState, OwnerType> walkState = new Character.MoveFSM.WalkState<OwnerType>();
+            idleState.Setup(controller);
+            fsm.AddState(MoveState.Walk, walkState);
 
 
             FSM.IState<MoveState, OwnerType> dashState = new Character.MoveFSM.DashState<OwnerType>();
@@ -114,7 +113,7 @@ namespace Character
         }
         void AddCondition()
         {
-            
+            //To do : add Transition Condition
         }
     }
 }

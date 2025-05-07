@@ -1,9 +1,11 @@
+using Character;
+using FSM;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace CharacterAttributes
 {
-   public class MovementState : BaseState
+   public class MovementState : BaseState , FSM.IOwner<MovementState>
    {
       private CharacterController _characterController;
       private Transform           _cameraTransform;
@@ -28,7 +30,9 @@ namespace CharacterAttributes
       private float               _rayLength;
       
       private float _fallTimeoutDelta;
-      
+
+      MovementState IOwner<MovementState>.Get => this;
+      IFSM<MoveState, MovementState> _fsm;
 
       public override void Setup(CharacterFSMContext context, CharacterControllerNetwork owner)
       {
@@ -51,28 +55,38 @@ namespace CharacterAttributes
          _rayOffset           = Owner.rayOffset;
          _rayLength           = Owner.rayLength;
          _originOffset        = Owner.originOffset;
-         
          _fallTimeoutDelta = _fallTimeout;
-      }
+         _fsm = new MoveFSM<MovementState>(this);
+       }
 
       public override void OnEnter()
       {
          Owner.crashFactor = _moveSpeed;
+         _fsm.OnEnter();
       }
       
       public override void OnUpdate()
       {
-         Gravity();
-         GroundedCheck();
-         Move();
+         Vector2 move = Owner.MoveInput;
+         if (move == Vector2.zero)
+         {
+                _fsm.TriggerTransition(MoveState.IDLE);
+         }
+         else
+         {
+                _fsm.TriggerTransition(MoveState.Dash);
+
+         }
+         _fsm.OnUpdate();
       }
 
       public override void OnExit()
       {
-         //Finish(FSMType.MOVEMENT);
+         _fsm.OnExit();
+            //Finish(FSMType.MOVEMENT);
       }
 
-      private void Move()
+      public void Move()
       {
          if (_characterController == null)
          {
@@ -166,20 +180,54 @@ namespace CharacterAttributes
          //
          // Owner.transform.rotation = Quaternion.Euler(smoothedPitch, _cameraTransform.eulerAngles.y, smoothedRoll);
       }
-      
-      private void GroundedCheck()
+
+      public void GroundedCheck()
       {
-         Vector3 spherePosition = new Vector3(Owner.transform.position.x, Owner.transform.position.y - _originOffset - _groundOffset,
+            /* by Hp 
+             
+               캐릭터 컨트롤러 자체에 캡슐 콜라이더가 있어서 _originOffset 등을 따로 계산하지 않아도 될 것 같은데 
+               아래 함수로 대체하는 것을 제안합니다
+
+               private void DrawDebugCapsule()
+               {
+                   Vector3 capsuleBottom = _characterController.transform.position - Vector3.up * (_characterController.height / 2);
+                   Vector3 capsuleTop = _characterController.transform.position + Vector3.up * (_characterController.height / 2);
+                   var color = Color.cyan;
+                   if (OnGround(transform.position,out var hit))
+                   {
+                       color = Color.red;
+                   }
+                   DebugExtension.DebugCapsule(capsuleBottom, capsuleTop, radius: _characterController.radius + 0.05f, color: color);
+               }
+               bool OnGround(Vector3 origin, out RaycastHit obj)
+               {
+                   Vector3 capsuleBottom = origin - Vector3.up * (_characterController.height / 2);
+                   Vector3 capsuleTop = origin + Vector3.up * (_characterController.height / 2);
+
+                   Vector3 capsuleBottomCenter = capsuleBottom + Vector3.up * _characterController.radius;
+                   Vector3 capsuleTopCenter = capsuleTop - Vector3.up * _characterController.radius;
+
+                   float capsuleCastLength = 0.1f;
+                   obj = default;
+                   if (Physics.CapsuleCast(capsuleBottomCenter, capsuleTopCenter, _characterController.radius, Vector3.down, out RaycastHit hit, capsuleCastLength))
+                   {
+                       obj = hit;
+
+                       return true;
+                   }
+                   return false;
+               }
+            */
+
+            Vector3 spherePosition = new Vector3(Owner.transform.position.x, Owner.transform.position.y - _originOffset - _groundOffset,
                                               Owner.transform.position.z);
-         
          _grounded = Physics.CheckSphere(spherePosition, _groundedRadius, _groundLayers,
                                         QueryTriggerInteraction.Ignore);
-
          // 디버깅용 구체 그리기
          Debug.DrawLine(Owner.transform.position, spherePosition, _grounded ? Color.blue : Color.red);
       }
 
-      private void Gravity()
+      public void Gravity()
       {
          if (_grounded)
          {

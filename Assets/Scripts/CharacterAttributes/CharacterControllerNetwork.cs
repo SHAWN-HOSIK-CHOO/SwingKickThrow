@@ -183,7 +183,6 @@ namespace CharacterAttributes
         private void Update() {
             if (!IsOwner) 
                 return;
-            
             _fsm.OnUpdate();
         }
 
