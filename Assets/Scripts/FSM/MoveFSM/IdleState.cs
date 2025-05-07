@@ -13,9 +13,8 @@ namespace Character.MoveFSM
 
         override protected void OnUpdate()
         {
-            _controller.ApplyGravity();
-            _controller.ApplyGrounded();
-            _controller.ApplyInput();
+
+
         }
         override protected void OnExit()
         {
