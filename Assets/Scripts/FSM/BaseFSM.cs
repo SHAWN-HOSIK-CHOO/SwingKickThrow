@@ -64,7 +64,6 @@ namespace FSM
         {
 
             IFSM<StateEnum, OwnerType> fsm = this;
-            OnUpdate();
             fsm.GetState(_currentState).OnUpdate();
         }
 

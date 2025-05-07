@@ -34,7 +34,7 @@ namespace CharacterAttributes
       {
          base.Setup(context, owner);
          _characterController = Owner.characterController;
-         _cameraTransform     = Owner.playerCamera.transform;
+         _cameraTransform     = Owner.mainCamera.transform;
          _moveSpeed           = Owner.speed;
          _speedChangeRate     = Owner.speedChangeRate;
          _maxRollAngle        = Owner.maxRollAngle;
