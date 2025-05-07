@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using Character;
 using CharacterAttributes.PlayerUI;
+using FSM;
 using GameEvents;
 using GameProps;
 using Unity.Cinemachine;
@@ -12,13 +14,15 @@ using UnityEngine.Serialization;
 namespace CharacterAttributes
 {
     [RequireComponent(typeof(CharacterController))]
-    [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(CharacterStatusNetwork))]
     [RequireComponent(typeof(AnimationCurve))]
-    public class CharacterControllerNetwork : NetworkBehaviour
+    public class CharacterControllerNetwork : NetworkBehaviour, FSM.IOwner<CharacterControllerNetwork>
     {
         public  CharacterController characterController;
-        private CharacterFSMContext _fsm;
+        public CharacterFSMContext _fsm;
+
+        public IFSM<CharacterState, CharacterControllerNetwork> characterFSM;
+        CharacterControllerNetwork IOwner<CharacterControllerNetwork>.Get => this;
 
         [Header("Hoverboard Behaviour")]
         #region HoverBoardBehaviour
@@ -80,10 +84,9 @@ namespace CharacterAttributes
         public AnimationCurve dashCurve;
         
         [Space(5)]
-        [Header("PlayerInput")]
-        [Header("알 수 없는 오류 때문에 수동으로 콜백 연결해줘야 함")]
+        [Header("PlayerInputAction")]
+        private InputActionMap inputActions;
         #region PlayerInputs
-        public  PlayerInput         playerInput;
         public Vector2 MoveInput { get; set; }
         public Vector2 LookInput { get; set; }
         public bool    IsAttack  { get; set; }
@@ -140,31 +143,47 @@ namespace CharacterAttributes
         [Space(5)]
         [Header("Animations")]
         #region Animations
-        public Animator animator;        
+        public Animator animator;
         #endregion
-        
+        public void BindInput()
+        {
+            inputActions["Move"].performed += OnMove;
+            inputActions["Look"].performed += OnLook;
+            inputActions["Attack"].performed += OnAttack;
+            inputActions["Skill"].performed += OnSkill;
+            inputActions.Enable();
+        }
         public override void OnNetworkSpawn()
         {
             characterController    = this.GetComponent<CharacterController>();
-            playerInput            = this.GetComponent<PlayerInput>();
+            inputActions = InputSingleton.Singleton.playerInput.actions.FindActionMap("Player");
+            characterFSM = new CharacterFSM<CharacterControllerNetwork>(this);
             characterStatusNetwork = this.GetComponent<CharacterStatusNetwork>();
             playerUIController     = this.GetComponent<PlayerUIController>();
             
             if (!IsOwner)
             {
-                playerInput.enabled = false;
+                inputActions.Disable();
+
                 this.transform.tag  = "Hostile";
                 return;
             }
-
+            else
+            {
+                inputActions.Enable();
+                BindInput();
+            }
             //if (IsServer && IsOwner)
             {
                 //TODO: 장비에서 스텟 받아오기
-                characterStatusNetwork.Initialize(100f,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
+                characterStatusNetwork.Initialize(100f, pushedSpeed, 10f, pushedTime, speed, tagBalls, mass);
                 crashFactor = speed;
             }
             
             playerUIController.Initialize(this);
+
+
+            // by HP — Suggest changing the code below to avoid conflict with existing "Hostile" tags.
             this.transform.tag = "Player";
             
             mainCamera = Camera.main;

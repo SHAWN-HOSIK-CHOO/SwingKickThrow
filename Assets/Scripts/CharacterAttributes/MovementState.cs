@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace CharacterAttributes
 {
-   public class MovementState : BaseState , FSM.IOwner<MovementState>
+   public class MovementState : BaseState 
    {
       private CharacterController _characterController;
       private Transform           _cameraTransform;
@@ -30,10 +30,7 @@ namespace CharacterAttributes
       private float               _rayLength;
       
       private float _fallTimeoutDelta;
-
-      MovementState IOwner<MovementState>.Get => this;
-      IFSM<MoveState, MovementState> _fsm;
-
+      IFSM<CharacterState, CharacterControllerNetwork> _characterFSM;
       public override void Setup(CharacterFSMContext context, CharacterControllerNetwork owner)
       {
          base.Setup(context, owner);
@@ -55,14 +52,13 @@ namespace CharacterAttributes
          _rayOffset           = Owner.rayOffset;
          _rayLength           = Owner.rayLength;
          _originOffset        = Owner.originOffset;
+         _characterFSM        = Owner.characterFSM;
          _fallTimeoutDelta = _fallTimeout;
-         _fsm = new MoveFSM<MovementState>(this);
        }
 
       public override void OnEnter()
       {
          Owner.crashFactor = _moveSpeed;
-         _fsm.OnEnter();
       }
       
       public override void OnUpdate()
@@ -70,22 +66,26 @@ namespace CharacterAttributes
          Vector2 move = Owner.MoveInput;
          if (move == Vector2.zero)
          {
-                _fsm.TriggerTransition(MoveState.IDLE);
+                _characterFSM.TriggerTransition(CharacterState.IDLE);
          }
          else
          {
-                _fsm.TriggerTransition(MoveState.Dash);
-
+                _characterFSM.TriggerTransition(CharacterState.Walk);
          }
-         _fsm.OnUpdate();
+         _characterFSM.OnUpdate();
       }
 
       public override void OnExit()
       {
-         _fsm.OnExit();
             //Finish(FSMType.MOVEMENT);
-      }
+       }
 
+
+      public void Appy()
+      {
+
+      }
+      
       public void Move()
       {
          if (_characterController == null)

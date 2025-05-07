@@ -1,4 +1,5 @@
 using Character;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -24,19 +25,31 @@ namespace FSM
         }
         IState<StateEnum, OwnerType> IFSM<StateEnum, OwnerType>.GetState(StateEnum type)
         {
-            return _states[type];
+            if(_states.TryGetValue(type,out var val))
+            {
+                return val;
+            }
+
+            return null;
         }
 
         void Transition(StateEnum nextState)
         {
             IFSM<StateEnum, OwnerType> ifsm = this;
-            ifsm.GetState(_currentState).OnExit();
+            IState<StateEnum, OwnerType> currentState = ifsm.GetState(_currentState);
+            currentState?.OnExit();
             _currentState = nextState;
-            ifsm.GetState(_currentState).OnEnter();
+            currentState = ifsm.GetState(_currentState);
+            currentState?.OnEnter();
         }
 
         void IFSM<StateEnum, OwnerType>.TriggerTransition(StateEnum nextState, bool force)
         {
+            if(_currentState.Equals(nextState))
+            {
+                return;
+            }
+
             if(_transitions.TryGetValue(_currentState, nextState, out var transition))
             {
                 if(force)
@@ -51,10 +64,11 @@ namespace FSM
                     }
                 }
             }
-
+            else if (force)
+            {
+                Transition(nextState);
+            }
         }
-
-
         protected override void OnEnter() 
         { 
         
@@ -62,9 +76,9 @@ namespace FSM
 
         protected override void OnUpdate()
         {
-
             IFSM<StateEnum, OwnerType> fsm = this;
-            fsm.GetState(_currentState).OnUpdate();
+            IState<StateEnum, OwnerType> currentState = fsm.GetState(_currentState);
+            currentState?.OnUpdate();
         }
 
         protected override void OnExit()

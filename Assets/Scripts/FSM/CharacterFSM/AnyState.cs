@@ -1,12 +1,12 @@
+using Character;
 using CharacterAttributes;
 using FSM;
-using UnityEngine;
+
 namespace Character.MoveFSM
 {
-    public class WalkState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MovementState
+    public class AnyState<OwnerType> : BaseState<CharacterState, OwnerType> where OwnerType : CharacterControllerNetwork
     {
-        MovementState _controller;
-      
+        CharacterControllerNetwork _controller;
         override protected void OnEnter()
         {
             _controller = _owner.Get;
@@ -14,10 +14,7 @@ namespace Character.MoveFSM
 
         override protected void OnUpdate()
         {
-            _controller.Gravity();
-            _controller.GroundedCheck();
-            _controller.Move();
-
+            _upperFSM.TriggerTransition(CharacterState.IDLE);
         }
         override protected void OnExit()
         {

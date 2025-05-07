@@ -1,94 +1,105 @@
+using Character;
+using FSM;
 using GameEvents;
 using Unity.Netcode;
 using UnityEngine;
 
 namespace CharacterAttributes
 {
-   public class SkillState : BaseState
-   {
-      private CharacterController _characterController;
-      private Vector3             _forwardVector;
-      private float               _dashDuration;
-      private float               _dashSpeed;
-      private float               _bounceBackForce;
-      private AnimationCurve      _animationCurve;
+    public class SkillState : BaseState
+    {
+        private CharacterController _characterController;
+        private Vector3 _forwardVector;
+        private float _dashDuration;
+        private float _dashSpeed;
+        private float _bounceBackForce;
+        private AnimationCurve _animationCurve;
 
-      private float _dashTimeRemaining;
-      
-      private float _currentSpeed;
-      private float _rotationSpeed = 6f;
-      //private float _targetPitch   = -40f;
-      
-      public override void Setup(CharacterFSMContext context, CharacterControllerNetwork owner)
-      {
-         base.Setup(context, owner);
-         _characterController = Owner.characterController;
-         _animationCurve      = Owner.dashCurve;
-      }
+        private float _dashTimeRemaining;
 
-      public override void OnEnter()
-      {
-         _forwardVector     = Owner.transform.forward;
-         _dashDuration      = Owner.dashDuration;
-         _dashSpeed         = Owner.dashSpeed;
-         _bounceBackForce   = Owner.bounceBackForce;
-         _dashTimeRemaining = _dashDuration;
-         
-         _forwardVector.Normalize();
+        private float _currentSpeed;
+        private float _rotationSpeed = 6f;
+        //private float _targetPitch   = -40f;
 
-         if (Owner.characterStatusNetwork == null)
-         {
-            Debug.Log("---------------STATUS_NULL--------------------");
-         }
 
-         _currentSpeed     = 0f;
-         Owner.crashFactor = _dashSpeed;
-         GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH);
-      }
-      
-      public override void OnUpdate()
-      {
-         if (_dashTimeRemaining >= 0f)
-         {
-            float progress    = 1f - (_dashTimeRemaining / _dashDuration);
-            float speedFactor = _animationCurve.Evaluate(progress);
-            
-            _currentSpeed = _dashSpeed * speedFactor;
+        IFSM<CharacterState, CharacterControllerNetwork> _characterFSM;
 
-            float yaw = Owner.LookInput.x * _rotationSpeed * Time.deltaTime;
-            Owner.transform.Rotate(Vector3.up, yaw);
-            
+
+        public override void Setup(CharacterFSMContext context, CharacterControllerNetwork owner)
+        {
+            base.Setup(context, owner);
+            _characterController = Owner.characterController;
+            _animationCurve = Owner.dashCurve;
+            _characterFSM = Owner.characterFSM;
+        }
+
+        public override void OnEnter()
+        {
             _forwardVector = Owner.transform.forward;
-            
-            Vector3        move  = _forwardVector * (_currentSpeed * Time.deltaTime);
-            CollisionFlags flags = _characterController.Move(move);
+            _dashDuration = Owner.dashDuration;
+            _dashSpeed = Owner.dashSpeed;
+            _bounceBackForce = Owner.bounceBackForce;
+            _dashTimeRemaining = _dashDuration;
 
-            if ((flags & CollisionFlags.Sides) != 0)
+            _forwardVector.Normalize();
+
+            if (Owner.characterStatusNetwork == null)
             {
-               Vector3 collisionNormal = -_forwardVector;
-               Vector3 bounceDirection = Vector3.Reflect(_forwardVector, collisionNormal).normalized;
-
-               _characterController.Move(bounceDirection * (_bounceBackForce * Time.deltaTime));
-               Finish(FSMType.SKILL);
-               return;
+                Debug.Log("---------------STATUS_NULL--------------------");
             }
-            
-            // float currentPitch  = Owner.transform.eulerAngles.x;
-            // float smoothedPitch = Mathf.LerpAngle(currentPitch, _targetPitch, Time.deltaTime * 10f);
-            //
-            // Owner.transform.rotation = Quaternion.Euler(smoothedPitch, 0f,0f);
 
-            _dashTimeRemaining -= Time.deltaTime;
-         }
-         else
-         {
-            Finish(FSMType.SKILL);
-         }
-      }
+            _currentSpeed = 0f;
+            Owner.crashFactor = _dashSpeed;
+            GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH);
+        }
+        public void DashUpdate()
+        {
+            if (_dashTimeRemaining >= 0f)
+            {
+                float progress = 1f - (_dashTimeRemaining / _dashDuration);
+                float speedFactor = _animationCurve.Evaluate(progress);
 
-      public override void OnExit()
-      {
-         GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_END);
-      }
-   }
+                _currentSpeed = _dashSpeed * speedFactor;
+
+                float yaw = Owner.LookInput.x * _rotationSpeed * Time.deltaTime;
+                Owner.transform.Rotate(Vector3.up, yaw);
+
+                _forwardVector = Owner.transform.forward;
+
+                Vector3 move = _forwardVector * (_currentSpeed * Time.deltaTime);
+                CollisionFlags flags = _characterController.Move(move);
+
+                if ((flags & CollisionFlags.Sides) != 0)
+                {
+                    Vector3 collisionNormal = -_forwardVector;
+                    Vector3 bounceDirection = Vector3.Reflect(_forwardVector, collisionNormal).normalized;
+
+                    _characterController.Move(bounceDirection * (_bounceBackForce * Time.deltaTime));
+                    Finish(FSMType.SKILL);
+                    return;
+                }
+
+                // float currentPitch  = Owner.transform.eulerAngles.x;
+                // float smoothedPitch = Mathf.LerpAngle(currentPitch, _targetPitch, Time.deltaTime * 10f);
+                //
+                // Owner.transform.rotation = Quaternion.Euler(smoothedPitch, 0f,0f);
+
+                _dashTimeRemaining -= Time.deltaTime;
+            }
+            else
+            {
+                Finish(FSMType.SKILL);
+            }
+        }
+        public override void OnUpdate()
+        {
+            _characterFSM.TriggerTransition(CharacterState.Dash);
+            _characterFSM.OnUpdate();
+        }
+
+        public override void OnExit()
+        {
+            GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_END);
+        }
+    }
 }

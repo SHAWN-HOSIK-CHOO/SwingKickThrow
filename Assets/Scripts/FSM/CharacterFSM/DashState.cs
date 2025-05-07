@@ -3,10 +3,10 @@ using FSM;
 using UnityEngine;
 namespace Character.MoveFSM
 {
-    public class IdleState<OwnerType> : BaseState<MoveState, OwnerType> where OwnerType : MovementState
+    public class DashState<OwnerType> : BaseState<CharacterState, OwnerType> where OwnerType : CharacterControllerNetwork
     {
-        MovementState _controller;
-      
+        CharacterControllerNetwork _controller;
+
         override protected void OnEnter()
         {
             _controller = _owner.Get;
@@ -14,10 +14,8 @@ namespace Character.MoveFSM
 
         override protected void OnUpdate()
         {
-            _controller.Gravity();
-            _controller.GroundedCheck();
-            _controller.Move();
-
+            SkillState state = (SkillState)_controller._fsm.statePool[FSMType.SKILL];
+            state.DashUpdate();
         }
         override protected void OnExit()
         {

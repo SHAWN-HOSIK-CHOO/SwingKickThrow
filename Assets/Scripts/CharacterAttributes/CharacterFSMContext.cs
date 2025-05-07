@@ -29,7 +29,7 @@ namespace CharacterAttributes
 
       public void SetState(FSMType type) 
       {
-         if(!_owner.IsOwner)
+         if (!_owner.IsOwner)
             return;
          
          if (currentStates.TryGetValue(type, out var current)) 
