@@ -1200,8 +1200,8 @@ MonoBehaviour:
   rayLength: 1.2
   mainCamera: {fileID: 0}
   cinemachineCameraTarget: {fileID: 7620097801685716830}
-  topClamp: 50
-  bottomClamp: -20
+  topClamp: 40
+  bottomClamp: 39
   cameraYawSensitivity: 0.2
   cameraPitchSensitivity: 0.2
   characterStatusNetwork: {fileID: 0}
@@ -1249,6 +1249,8 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  health: 100
+  timeUntilRespawn: 5
   playerInput: {fileID: 3216707243182190217}
   crashFactor: 0
   playerUIController: {fileID: 0}

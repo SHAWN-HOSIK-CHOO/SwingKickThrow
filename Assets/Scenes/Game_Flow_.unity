@@ -1410,11 +1410,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 625c14eee3ad46c99df7c7c891ef668a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Damping: {x: 0.1, y: 0.5, z: 0.55}
-  ShoulderOffset: {x: 0.75, y: -0.15, z: -1.96}
+  Damping: {x: 0.1, y: 0.75, z: 0.55}
+  ShoulderOffset: {x: 0.75, y: 3.4, z: -1.96}
   VerticalArmLength: 0.4
   CameraSide: 1
-  CameraDistance: 1.7
+  CameraDistance: 5.72
   AvoidObstacles:
     Enabled: 0
     CollisionFilter:
@@ -2025,12 +2025,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 738774957}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5f0ccf166bd086f489a08ba84c1d1fb6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerEffectCamera: {fileID: 0}
+  _playerEffectCamera: {fileID: 738774960}
   targetTimeScale: 0.05
   timeFadeOut: 0.1
   timeHold: 0.3
@@ -3045,7 +3045,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 128
+    m_Bits: 640
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0
@@ -3798,6 +3798,6 @@ SceneRoots:
   - {fileID: 1561454026}
   - {fileID: 6483636}
   - {fileID: 687668953}
-  - {fileID: 274112358}
   - {fileID: 981353785}
   - {fileID: 511959370}
+  - {fileID: 274112358}

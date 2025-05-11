@@ -65,7 +65,7 @@ namespace CameraUtils
 
             if (cinemachineImpulseSource != null)
             {
-                Debug.Log("Generating impulse");
+                //Debug.Log("Generating impulse");
                 cinemachineImpulseSource.GenerateImpulse();
             }
             

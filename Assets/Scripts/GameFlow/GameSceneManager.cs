@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using CharacterAttributes;
 using ConnectionUtils;
 using TMPro;
 using UnityEngine;
@@ -46,8 +47,28 @@ namespace GameFlow
 
         public void SpawnMe(ulong id)
         {
-            Debug.Log($"Spawn Request from client {id}");
+            //Debug.Log($"Spawn Request from client {id}");
             _playerSelectionAndSpawnHandler.SpawnMeWrapper(id);
+        }
+
+        public void RespawnMe(ulong id, CharacterControllerNetwork player)
+        {
+            Debug.Log($"Respawn Request from client {id}");
+            //_playerSelectionAndSpawnHandler.RespawnMeWrapper(id);
+            if (player.IsOwner)
+            {
+                //Debug.Log("IsOwner passed from respawn method");
+
+                if ((int)id >= spawnTransforms.Length)
+                {
+                    Debug.LogError("Overflow");
+                }
+                
+                Transform spawnTransform = spawnTransforms[(int)id];
+                player.transform.position =
+                    new Vector3(spawnTransform.position.x, spawnTransform.position.y, spawnTransform.position.z);
+                player.transform.rotation = spawnTransform.rotation;
+            }
         }
         
         private void Awake()
