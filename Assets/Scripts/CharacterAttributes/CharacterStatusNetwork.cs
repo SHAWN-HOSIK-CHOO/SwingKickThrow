@@ -72,8 +72,7 @@ namespace CharacterAttributes
                         break;
                     }
                 }
-
-                GameEvents.GameEvents.Publish(GameEventType.PLAYER_DEATH);
+                
                 InformDeathClientRPC(OwnerClientId);
             }
         }
@@ -85,6 +84,11 @@ namespace CharacterAttributes
             {
                 Debug.Log("Your enemy is dead");
                 GameEvents.GameEvents.Publish(GameEventType.ENEMY_DEATH);
+            }
+            else if (NetworkManager.Singleton.LocalClientId == deadClientId)
+            {
+                Debug.Log("You are dead");
+                GameEvents.GameEvents.Publish(GameEventType.PLAYER_DEATH);
             }
         }
 
@@ -121,6 +125,12 @@ namespace CharacterAttributes
         public float GetHealth()
         {
             return health.Value;
+        }
+
+        [ServerRpc]
+        public void ResetHealthServerRPC(float hp)
+        {
+            health.Value = hp;
         }
     }
 }

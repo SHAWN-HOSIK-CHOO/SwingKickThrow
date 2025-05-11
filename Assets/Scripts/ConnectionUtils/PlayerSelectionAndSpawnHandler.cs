@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using GameEvents;
 using GameFlow;
 using Unity.Netcode;
 using UnityEngine;
@@ -11,15 +13,17 @@ namespace ConnectionUtils
         public NetworkVariable<int> player1Selection = new NetworkVariable<int>();
         
         public bool[] hasPlayersConfirmed = new bool[2] { false, false };
-
+        
+        public Dictionary<ulong, GameObject> _playerTable = new Dictionary<ulong, GameObject>();
+        
         private void Start()
         {
             GameSceneManager.Instance.SetPlayerSelectionHandler(this);
-            //TODO: 선택 가능하게 만들기 지금은 일단 0번으로
-            //Debug.Log("Start called from spawn handler");
-            if (IsOwner)
+            //TODO: 선택 가능하게 만들기 지금은 일단 0번으로 
+            //TODO: 이렇게 하면 안됨. 씬에 배치된 오브젝트라 IsOwner는 항상 host에서만 true일 것임
+            
+            if (IsOwner) //오직 호스트에서만 True일 것임
             {
-                //Debug.Log("isowner called from spawn handler");
                 SetPlayerSelection(0);
             }
         }
@@ -40,9 +44,11 @@ namespace ConnectionUtils
                 Debug.Log("Index overflow");
                 return;
             }
+            //TODO: 인덱스 고치기 만약 id가 1,3 이면 오류 발생
+            
             Transform spawnTransform = GameSceneManager.Instance.spawnTransforms[(int)playerID];
             int       selectionInt   = ( (int)playerID == 0 ) ? player0Selection.Value : player1Selection.Value;
-
+            
             GameObject playerObject = Instantiate(GameSceneManager.Instance.pfPlayers[selectionInt], new Vector3(spawnTransform.position.x,spawnTransform.position.y, spawnTransform.position.z),spawnTransform.rotation);
             //playerObject.GetComponent<CharacterController>().enabled = false;
 
@@ -53,6 +59,8 @@ namespace ConnectionUtils
             //playerObject.GetComponent<CharacterController>().Move(Vector3.zero);
             
             playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(playerID);
+            _playerTable[playerID] = playerObject;
+            Debug.Log($"playerTable of {playerID} null check : {_playerTable[playerID] == null}");
         }
         
         public void SetPlayerSelection(int index)
@@ -68,7 +76,7 @@ namespace ConnectionUtils
         {
             ulong clientId = rpcParams.Receive.SenderClientId;
 
-            Debug.Log("Received request from client : " + clientId);
+            //Debug.Log("Received request from client : " + clientId);
 
             if (clientId == NetworkManager.Singleton.ConnectedClientsList[0].ClientId)
             {
@@ -114,6 +122,5 @@ namespace ConnectionUtils
                 return player0Selection.Value;
             }
         }
-
     }
 }

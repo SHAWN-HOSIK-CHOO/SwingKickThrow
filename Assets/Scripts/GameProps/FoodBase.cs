@@ -29,7 +29,7 @@ namespace GameProps
             if (IsServer)
             {
                 _currentBallCounts = Random.Range(minCounts, maxCounts);
-                health.Value       = 100f; 
+                health.Value       = 30f; 
             }
         }
 

@@ -21,7 +21,7 @@ namespace CharacterAttributes
          statePool[FSMType.ATTACK]   = new AttackState();
          statePool[FSMType.HIT]      = new HitState();
          statePool[FSMType.SKILL]    = new SkillState();
-         //statePool[FSMType.DEATH]    = new DeathState();
+         statePool[FSMType.DEATH]    = new DeathState();
 
          foreach (var state in statePool.Values)
             state.Setup(this, _owner);
@@ -35,10 +35,10 @@ namespace CharacterAttributes
          if (currentStates.TryGetValue(type, out var current)) 
          {
             current.OnExit();
-            //Debug.Log($"FSMType : {type.ToString()} has exited");
+            Debug.Log($"FSMType : {type.ToString()} has exited");
          }
 
-         //Debug.Log($"{type.ToString()} is added to current states");
+         Debug.Log($"<SetState> : {type.ToString()} is added to current states");
          var next = statePool[type];
          currentStates[type] = next;
          next.OnEnter();
@@ -50,10 +50,10 @@ namespace CharacterAttributes
          {
             currentStates[type].OnExit();
             currentStates.Remove(type);
-            //Debug.Log($"{type.ToString()} is removed from current states : {!IsStateActive(type)}");
+            Debug.Log($"<FinishState> : {type.ToString()} is removed from current states : {!IsStateActive(type)}");
          }
 
-         if (type is FSMType.HIT or FSMType.SKILL)
+         if (type is FSMType.HIT or FSMType.SKILL or FSMType.DEATH)
          {
             SetState(FSMType.MOVEMENT);
             //Debug.Log("Movement state is activated after hit state exit");
@@ -64,6 +64,7 @@ namespace CharacterAttributes
       {
          foreach (var state in currentStates.Values)
          {
+            Debug.Log("Finish All States Called");
             state.OnExit();
          }
 
@@ -80,10 +81,21 @@ namespace CharacterAttributes
       public void OnUpdate() 
       {
          // 실행 순서 명시
+         if (currentStates.ContainsKey(FSMType.DEATH))
+         {
+            //Debug.Log("Death state OnUpdate Called");
+            currentStates[FSMType.DEATH].OnUpdate();
+         }
          if (currentStates.ContainsKey(FSMType.HIT)) currentStates[FSMType.HIT].OnUpdate();
-         if (currentStates.ContainsKey(FSMType.SKILL)) currentStates[FSMType.SKILL].OnUpdate();
+         if (currentStates.ContainsKey(FSMType.SKILL))
+         {
+            currentStates[FSMType.SKILL].OnUpdate();
+         }
          if (currentStates.ContainsKey(FSMType.ATTACK)) currentStates[FSMType.ATTACK].OnUpdate();
-         if (currentStates.ContainsKey(FSMType.MOVEMENT)) currentStates[FSMType.MOVEMENT].OnUpdate();
+         if (currentStates.ContainsKey(FSMType.MOVEMENT))
+         {
+            currentStates[FSMType.MOVEMENT].OnUpdate();
+         }
       }
       
    }

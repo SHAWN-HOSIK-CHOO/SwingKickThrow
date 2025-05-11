@@ -17,6 +17,7 @@ namespace CharacterAttributes
     [RequireComponent(typeof(CharacterStatusNetwork))]
     [RequireComponent(typeof(AnimationCurve))]
     [RequireComponent(typeof(CinemachineImpulseSource))]
+    [RequireComponent(typeof(ServerCharacter.ServerCharacter))]
     public class CharacterControllerNetwork : NetworkBehaviour
     {
         public  CharacterController characterController;
@@ -80,6 +81,11 @@ namespace CharacterAttributes
         public float          dashSpeed       = 60f;
         public float          bounceBackForce = 2f;
         public AnimationCurve dashCurve;
+
+        [Header("Health")] public float health = 100f;
+        
+        [Space(5)] [Header("Respawn")] 
+        public float timeUntilRespawn = 3f;
         
         [Space(5)]
         [Header("PlayerInput")]
@@ -105,7 +111,7 @@ namespace CharacterAttributes
             if (!context.performed || !IsOwner) 
                 return;
 
-            if (_fsm.IsStateActive(FSMType.ATTACK)) 
+            if (_fsm.IsStateActive(FSMType.ATTACK) || _fsm.IsStateActive(FSMType.DEATH)) 
                 return;
 
             _fsm.SetState(FSMType.ATTACK);
@@ -116,7 +122,7 @@ namespace CharacterAttributes
             if (!context.performed || !IsOwner) 
                 return;
             
-            if(_fsm.IsStateActive(FSMType.SKILL))
+            if(_fsm.IsStateActive(FSMType.SKILL) || _fsm.IsStateActive(FSMType.DEATH))
                 return;
             
             _fsm.FinishAllStates();
@@ -131,6 +137,8 @@ namespace CharacterAttributes
         private static Dictionary<(ulong, ulong), Dictionary<ulong, float>> _crashBuffer = new();
         public         float                                                crashFactor;
         private        HashSet<ulong>                                       _alreadyCrashedWith = new HashSet<ulong>();
+
+        public ServerCharacter.ServerCharacter serverCharacter;
         #endregion
 
         #region PlayerUI
@@ -157,18 +165,21 @@ namespace CharacterAttributes
             playerInput                 = this.GetComponent<PlayerInput>();
             characterStatusNetwork      = this.GetComponent<CharacterStatusNetwork>();
             playerUIController          = this.GetComponent<PlayerUIController>();
+            serverCharacter            = this.GetComponent<ServerCharacter.ServerCharacter>();
+            serverCharacter.Initialize(this);
             
             if (!IsOwner)
             {
-                playerInput.enabled = false;
-                this.transform.tag  = "Hostile";
+                playerInput.enabled         = false;
+                characterController.enabled = false;
+                this.transform.tag          = "Hostile";
                 return;
             }
 
             //if (IsServer && IsOwner)
             {
                 //TODO: 장비에서 스텟 받아오기
-                characterStatusNetwork.Initialize(100f,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
+                characterStatusNetwork.Initialize(health,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
                 crashFactor = speed;
             }
 
@@ -257,7 +268,7 @@ namespace CharacterAttributes
 
                 _alreadyCrashedWith.Add(otherId);
                 
-                Debug.Log($"My Speed is {crashFactor}");
+                //Debug.Log($"My Speed is {crashFactor}");
                 ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, crashFactor);
             }
             else if (other.CompareTag($"NetworkProp"))
@@ -294,7 +305,7 @@ namespace CharacterAttributes
                 var senderController = senderObj.GetComponent<CharacterControllerNetwork>();
                 var targetController = targetObj.GetComponent<CharacterControllerNetwork>();
 
-                Debug.Log($"Collision! {key.Item1} speed: {senderCrash}, {key.Item2} speed: {targetCrash}");
+                //Debug.Log($"Collision! {key.Item1} speed: {senderCrash}, {key.Item2} speed: {targetCrash}");
 
                 if (senderController != null)
                     senderController.ReceiveHitClientRpc(targetCrash);
@@ -311,13 +322,18 @@ namespace CharacterAttributes
         {
             if (!IsOwner)
                 return;
-
+            
             _alreadyCrashedWith.Clear();
             GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH);
-            Debug.Log($"Received Hit damage : {damage}");
             characterStatusNetwork.TakeDamage(damage);
-            _fsm.FinishAllStates();
-            _fsm.SetState(FSMType.HIT);
+            //Debug.Log($"<ReceiveHitClientRPC> : Death state is active? : {_fsm.IsStateActive(FSMType.DEATH)}");
+            
+            if (!_fsm.IsStateActive(FSMType.DEATH))
+            {
+                //Debug.Log($"<ReceiveHitClientRPC> : Death state is active from inside (if)? : {_fsm.IsStateActive(FSMType.DEATH)}");
+                _fsm.FinishAllStates();
+                _fsm.SetState(FSMType.HIT);
+            }
         }
         
         #region Static 
@@ -330,5 +346,29 @@ namespace CharacterAttributes
         }
 
         #endregion
+        
+        private void OnEnable()
+        {
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DEATH,RespawnAfterZeroHealth);
+        }
+
+        private void OnDisable()
+        {
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DEATH,RespawnAfterZeroHealth);
+        }
+        
+        private void RespawnAfterZeroHealth()
+        {
+            if(!IsOwner)
+                return;
+            
+            _fsm.FinishAllStates();
+            _fsm.SetState(FSMType.DEATH);
+        }
+
+        public void ResetHealth()
+        {
+            characterStatusNetwork.ResetHealthServerRPC(health);
+        }
     }
 }
