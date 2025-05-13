@@ -1,10 +1,12 @@
 using GameEvents;
+using GameProps.SO;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CharacterAttributes
 {
-    public class CharacterStatusNetwork : NetworkBehaviour, IDamageable
+    public class CharacterStatusNetwork : NetworkBehaviour, IDamageable, IWelcomer
     {
         public NetworkVariable<float> health = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<float> defense = new NetworkVariable<float>(5f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
@@ -21,8 +23,19 @@ namespace CharacterAttributes
         public NetworkVariable<int> scoreBalls = new NetworkVariable<int>();
         
         private ulong lastAttackerId = ulong.MaxValue;
+        [Header("스피드 * 질량 : 데미지 ")]
         public  float crashFactor;
 
+        [FormerlySerializedAs("_speed")]
+        public float speed = 10f;
+
+        public float GetCrashFactor()
+        {
+            crashFactor = speed * mass.Value * 0.05f;
+
+            return crashFactor;
+        }
+        
         public void Initialize(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
         {
             if (!IsOwner)
@@ -107,11 +120,9 @@ namespace CharacterAttributes
             lastAttackerId = rpcParams.Receive.SenderClientId; // 기록해두긴 하지만 안 써도 됨
         }
 
+        //서버에서만 실행되어야 하는 메소드
         public void AddOrMinusTagBalls(int count)
         {
-            if (!IsOwner)
-                return;
-
             AddOrMinusTagBallsServerRPC(count);
         }
 
@@ -131,5 +142,27 @@ namespace CharacterAttributes
         {
             health.Value = hp;
         }
+
+        public void Welcome(IVisitor visitor)
+        {
+            visitor.Visit(this);
+        }
+
+        [ClientRpc]
+        public void IncreaseScaleClientRPC(int factor)
+        {
+            Debug.Log($"client {OwnerClientId} got this message");
+            
+            if (!IsOwner) 
+                return;
+            
+            if(transform.localScale.magnitude >= new Vector3(4f,4f,4f).magnitude)
+                return;
+            
+            transform.localScale *= factor;
+        }
+
+
+
     }
 }

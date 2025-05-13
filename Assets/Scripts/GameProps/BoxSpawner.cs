@@ -94,9 +94,8 @@ namespace GameProps
                 boxObject.NetworkObject.Spawn(true);
                 Debug.Log($"[Pool] Spawned BoxObject (NetId: {boxObject.NetworkObject.NetworkObjectId})");
             }
-
-            boxObject.ResetHealth();
-            //boxObject.EnableClientRpc();
+            
+            
         }
 
         private void OnReturnedToPool(BoxObject boxObject)
@@ -113,17 +112,8 @@ namespace GameProps
 
         private void OnDestroyPoolObject(BoxObject boxObject)
         {
-            if (boxObject == null)
-            {
-                Debug.LogWarning("[Pool] OnDestroyPoolObject: BoxObject is null!");
-                return;
-            }
-
-            if (boxObject.NetworkObject != null && boxObject.NetworkObject.IsSpawned)
-            {
-                boxObject.NetworkObject.Despawn();
-                Debug.Log($"[Pool] DestroyPool: Despawned BoxObject (NetId: {boxObject.NetworkObject.NetworkObjectId})");
-            }
+            if (boxObject == null) return;
+            Destroy(boxObject.gameObject);
         }
 
         public void SpawnBox()
@@ -134,40 +124,32 @@ namespace GameProps
                 return;
             }
 
-            if (_placedTransforms.Count >= 5)
+            int maxTryCount = 10;
+            while (_placedTransforms.Count < 5 && maxTryCount-- > 0)
             {
-                Debug.Log("Max placeable box count is five");
-                return;
-            }
+                int rand = Random.Range(0, spawnTransforms.Count);
 
-            int rand = Random.Range(0, spawnTransforms.Count);
+                if (_placedTransforms.Contains(rand))
+                    continue;
 
-            if (_placedTransforms.Contains(rand))
-            {
-                SpawnBox();
-            }
-            else
-            {
                 var box = Pool.Get();
-
                 if (box == null)
                 {
-                    Debug.LogError("[Spawner] SpawnBox: Got null from Pool.Get()!");
-                    return;
+                    Debug.LogError("[Spawner] Got null from Pool.Get()!");
+                    continue;
                 }
                 
-                Debug.Log($"[Spawner] Spawning Box at {spawnTransforms[rand].position}");
-
-                box.transform.position = spawnTransforms[rand].position;
-                box.transform.rotation = spawnTransforms[rand].rotation;
+                box.SetPositionClientRpc(spawnTransforms[rand].position,spawnTransforms[rand].rotation);
                 box.positionNumber     = rand;
-                box.EnableClientRpc();
-                
+
                 _placedTransforms.Add(rand);
-                
-                SpawnBox();
+
+                box.ResetHealth();     
+                box.EnableClientRpc(); 
             }
-            
         }
     }
 }
+
+
+
