@@ -2,7 +2,10 @@ using System;
 using System.Collections.Generic;
 using CharacterAttributes;
 using ConnectionUtils;
+using GameProps;
 using TMPro;
+using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace GameFlow
@@ -13,7 +16,7 @@ namespace GameFlow
         private static GameSceneManager _instance = null;
         public static  GameSceneManager Instance => _instance == null ? null : _instance;
         
-        private GameSceneFlowContext _gameSceneFlowContext;
+        public GameSceneFlowContext gameSceneFlowContext;
 
         [Header("Box Transforms")] 
         public List<Transform> boxTransforms;
@@ -29,7 +32,7 @@ namespace GameFlow
 
         //PlayerSelectionHandler 본인이 스스로 세팅
         private PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
-
+        
         #region UI
 
         [Header("Tag ball")] 
@@ -39,6 +42,8 @@ namespace GameFlow
         public TMP_Text playerScoreText;
         public TMP_Text enemyScoreText;
         #endregion
+
+        public GameObject pfBoxSpawner;
         
         public void SetPlayerSelectionHandler(PlayerSelectionAndSpawnHandler andSpawnHandler)
         {
@@ -83,15 +88,21 @@ namespace GameFlow
                 Destroy(this.gameObject);
             }
             
-            _gameSceneFlowContext = new GameSceneFlowContext();
-            _gameSceneFlowContext.Initialize(this);
+            gameSceneFlowContext = new GameSceneFlowContext();
+            gameSceneFlowContext.Initialize();
         }
 
+        //클라이언트가 연결되고 수행되어야 할 설정들
+        public void LateInitialize()
+        {
+            gameSceneFlowContext.LateInitialize();
+        }
+        
         private void OnEnable()
         {
             
         }
-
+        
         private void OnDisable()
         {
             
@@ -100,6 +111,15 @@ namespace GameFlow
         private void OnBoxGenCalled()
         {
             
+        }
+
+        //디버그 용 update, 릴리즈에서는 지울 예정
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                gameSceneFlowContext.EnterState(GameStateType.GAME_BOX_GEN);
+            }
         }
     }
 }

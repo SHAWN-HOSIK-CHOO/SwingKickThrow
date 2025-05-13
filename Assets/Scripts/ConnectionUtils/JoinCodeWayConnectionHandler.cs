@@ -92,11 +92,13 @@ namespace ConnectionUtils
                 if (!_hasSpawnCalled)
                 {
                     _hasSpawnCalled = true;
-                    foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
-                    {
-                        ulong id = kvp.ClientId;
-                        GameSceneManager.Instance.SpawnMe(id);
-                    }
+                    // foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
+                    // {
+                    //     ulong id = kvp.ClientId;
+                    //     GameSceneManager.Instance.SpawnMe(id);
+                    // }
+                    GameSceneManager.Instance.LateInitialize();
+                    GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.GAME_START);
                 }
             }
         }

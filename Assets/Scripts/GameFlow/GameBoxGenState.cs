@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using GameProps;
+using Unity.Netcode;
 using UnityEngine;
 
 namespace GameFlow
@@ -6,17 +8,54 @@ namespace GameFlow
    public class GameBoxGenState : BaseGameState
    {
       private List<Transform>  _boxTransforms;
-      private List<GameObject> _boxGameObjects;
+      //private List<GameObject> _boxGameObjects;
+      public  GameObject pfBoxSpawner;
+      private BoxSpawner _boxSpawner;
+
+      private GameObject _pfBox;
       
-      public override void SetUp(GameSceneManager gameSceneManager, GameSceneFlowContext gameSceneFlowContext)
+      public override void SetUp(GameSceneFlowContext gameSceneFlowContext)
       {
-         base.SetUp(gameSceneManager, gameSceneFlowContext);
-         _boxTransforms = Owner.boxTransforms;
+         base.SetUp( gameSceneFlowContext);
+         _boxTransforms = GameSceneManager.Instance.boxTransforms;
+         _pfBox         = GameSceneManager.Instance.pfBoxObjects[0];
+         pfBoxSpawner   = GameSceneManager.Instance.pfBoxSpawner;
+      }
+
+      public override void LateSetUp()
+      {
+         if (NetworkManager.Singleton == null)
+         {
+            Debug.Log("NetworkManager is null");
+            return;
+         }
+         
+         if (NetworkManager.Singleton.IsServer)
+         {
+            //TODO: 일단 박스 종류 한개만!
+            // 서버에서만 BoxSpawner를 Instantiate
+            var go = GameObject.Instantiate(pfBoxSpawner);
+            _boxSpawner = go.GetComponent<BoxSpawner>();
+            _boxSpawner.Initialize(_boxTransforms, _pfBox);
+            
+            go.GetComponent<NetworkObject>().Spawn();
+         }
       }
 
       public override void Handle()
       {
-         
+         if (NetworkManager.Singleton.IsServer)
+         {
+            if (_boxSpawner.IsSpawned) 
+            {
+               _boxSpawner.SpawnBox();
+               Finish(GameStateType.GAME_BOX_GEN);
+            }
+            else
+            {
+               Debug.Log("BoxSpawner is not spawned yet");
+            }
+         }
       }
 
       public override void OnExit()

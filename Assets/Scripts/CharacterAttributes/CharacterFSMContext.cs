@@ -35,10 +35,10 @@ namespace CharacterAttributes
          if (currentStates.TryGetValue(type, out var current)) 
          {
             current.OnExit();
-            Debug.Log($"FSMType : {type.ToString()} has exited");
+            //Debug.Log($"FSMType : {type.ToString()} has exited");
          }
 
-         Debug.Log($"<SetState> : {type.ToString()} is added to current states");
+         //Debug.Log($"<SetState> : {type.ToString()} is added to current states");
          var next = statePool[type];
          currentStates[type] = next;
          next.OnEnter();
@@ -50,7 +50,7 @@ namespace CharacterAttributes
          {
             currentStates[type].OnExit();
             currentStates.Remove(type);
-            Debug.Log($"<FinishState> : {type.ToString()} is removed from current states : {!IsStateActive(type)}");
+            //Debug.Log($"<FinishState> : {type.ToString()} is removed from current states : {!IsStateActive(type)}");
          }
 
          if (type is FSMType.HIT or FSMType.SKILL or FSMType.DEATH)
@@ -64,7 +64,7 @@ namespace CharacterAttributes
       {
          foreach (var state in currentStates.Values)
          {
-            Debug.Log("Finish All States Called");
+            //Debug.Log("Finish All States Called");
             state.OnExit();
          }
 
