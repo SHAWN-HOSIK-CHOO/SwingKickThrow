@@ -69,7 +69,7 @@ namespace CharacterAttributes
         [Tooltip("How high is the origin from the ground")]
         public float originOffset = 0.6f;
         [Header("Pushed")] 
-        public float pushedSpeed = 80f;
+        public float pushedSpeed = 15f;
         public float pushedTime = 0.4f;
 
         [Header("Default tag ball count")] public int tagBalls = 5;
@@ -135,7 +135,6 @@ namespace CharacterAttributes
 
         // 클래스 안에 추가
         private static Dictionary<(ulong, ulong), Dictionary<ulong, float>> _crashBuffer = new();
-        public         float                                                crashFactor;
         private        HashSet<ulong>                                       _alreadyCrashedWith = new HashSet<ulong>();
 
         public ServerCharacter.ServerCharacter serverCharacter;
@@ -175,12 +174,11 @@ namespace CharacterAttributes
                 this.transform.tag          = "Hostile";
                 return;
             }
-
-            //if (IsServer && IsOwner)
+            
             {
                 //TODO: 장비에서 스텟 받아오기
-                characterStatusNetwork.Initialize(health,pushedSpeed,10f, pushedTime, speed, tagBalls, mass);
-                crashFactor = speed;
+                characterStatusNetwork.Initialize(health,10f, pushedTime, pushedSpeed, tagBalls, mass);
+                characterStatusNetwork.crashFactor = speed;
             }
 
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
@@ -269,15 +267,16 @@ namespace CharacterAttributes
                 _alreadyCrashedWith.Add(otherId);
                 
                 //Debug.Log($"My Speed is {crashFactor}");
-                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, crashFactor);
+                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, characterStatusNetwork.crashFactor);
             }
             else if (other.CompareTag($"NetworkProp"))
             {
-                var food = other.GetComponent<FoodBase>();
+                var food = other.GetComponent<BoxObject>();
                 if (food != null)
                 {
                     // 요청은 클라이언트가 하지만, 체력 감소는 서버에서만 실행됨
-                    food.TakeDamage(100f);
+                    food.TakeDamageServerRpc(100f,OwnerClientId);
+                    Debug.Log($"Crashed with food player : {OwnerClientId}");
                 }
             }
         }

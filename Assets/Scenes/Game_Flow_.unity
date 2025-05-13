@@ -172,7 +172,8 @@ MonoBehaviour:
   - {fileID: 126448139}
   - {fileID: 598040508}
   - {fileID: 1869575007}
-  pfBoxObjects: []
+  pfBoxObjects:
+  - {fileID: 5745846164812075691, guid: 48b68cb340d7b4e4fab422649e9cc1ea, type: 3}
   spawnTransforms:
   - {fileID: 77081649}
   - {fileID: 279991112}
@@ -181,6 +182,7 @@ MonoBehaviour:
   tagBallCountText: {fileID: 1509761624}
   playerScoreText: {fileID: 176051056}
   enemyScoreText: {fileID: 2083943815}
+  pfBoxSpawner: {fileID: 6182634451028393769, guid: 83401ecc7bc43284b9e04eb6c02c99b6, type: 3}
 --- !u!114 &6483638
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3045,7 +3047,7 @@ Camera:
   m_Depth: 0
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 640
+    m_Bits: 704
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

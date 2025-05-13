@@ -42,7 +42,7 @@ namespace CharacterAttributes
          }
 
          _currentSpeed     = 0f;
-         Owner.crashFactor = _dashSpeed;
+         Owner.characterStatusNetwork.crashFactor = _dashSpeed;
          GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH);
       }
       

@@ -57,7 +57,7 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
-         Owner.crashFactor = _moveSpeed;
+         Owner.characterStatusNetwork.crashFactor = _moveSpeed;
       }
       
       public override void OnUpdate()

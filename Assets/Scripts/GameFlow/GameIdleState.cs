@@ -4,6 +4,11 @@ namespace GameFlow
 {
    public class GameIdleState : BaseGameState
    {
+      public override void LateSetUp()
+      {
+         
+      }
+
       public override void Handle()
       {
       

@@ -2,7 +2,7 @@ namespace GameFlow
 {
    public interface IGameState
    {
-      void SetUp(GameSceneManager gameSceneManager, GameSceneFlowContext gameSceneFlowContext);
+      void SetUp(GameSceneFlowContext gameSceneFlowContext);
       void Handle();
       void OnExit();
       void Finish(GameStateType type);
@@ -10,15 +10,15 @@ namespace GameFlow
    
    public abstract class BaseGameState : IGameState
    {
-      protected GameSceneManager Owner;
       protected GameSceneFlowContext    Context;
       
-      public virtual void SetUp(GameSceneManager gameSceneManager, GameSceneFlowContext gameSceneFlowContext)
+      public virtual void SetUp(GameSceneFlowContext gameSceneFlowContext)
       {
-         Owner   = gameSceneManager;
          Context = gameSceneFlowContext;
       }
 
+      public abstract void LateSetUp();
+      
       public abstract void Handle();
 
       public abstract void OnExit();

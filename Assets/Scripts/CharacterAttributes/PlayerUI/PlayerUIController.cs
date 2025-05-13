@@ -134,6 +134,8 @@ namespace CharacterAttributes.PlayerUI
         private CharacterControllerNetwork _Owner;
         private bool _isOwner = false;
 
+        private CharacterStatusNetwork _enemyStatus;
+        
         #region TagBallStatus
 
         public TMP_Text tagBallCountText;
@@ -156,6 +158,8 @@ namespace CharacterAttributes.PlayerUI
 
         public void SetEnemyScore(int prevVal, int newVal)
         {
+            //Debug.Log($"[EnemyScore] prev: {prevVal}, new: {newVal}");
+            
             if (enemyScoreText != null)
                 enemyScoreText.text = newVal.ToString();
             else
@@ -202,7 +206,9 @@ namespace CharacterAttributes.PlayerUI
             if (_isOwner)
             {
                 SetTagBallCount(0, _Owner.characterStatusNetwork.tagBalls.Value);
-                _Owner.characterStatusNetwork.tagBalls.OnValueChanged += SetTagBallCount;
+                _Owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
+                _Owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
+                _Owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
                 _Owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
 
                 // 적 점수 업데이트용 구독 시작
@@ -223,11 +229,12 @@ namespace CharacterAttributes.PlayerUI
             {
                 if (kvp.Key != myClientId)
                 {
-                    var enemyStatus = kvp.Value.PlayerObject.GetComponent<CharacterStatusNetwork>();
-                    if (enemyStatus != null)
+                    _enemyStatus = kvp.Value.PlayerObject.GetComponent<CharacterStatusNetwork>();
+                    if (_enemyStatus != null)
                     {
-                        SetEnemyScore(0, enemyStatus.scoreBalls.Value);
-                        enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
+                        SetEnemyScore(0, _enemyStatus.scoreBalls.Value);
+                        _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
+                        _enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
                     }
                     else
                     {
@@ -245,6 +252,9 @@ namespace CharacterAttributes.PlayerUI
 
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+            _Owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
+            _Owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
+            _enemyStatus.scoreBalls.OnValueChanged                  -= SetEnemyScore;
         }
 
         private void ActivateSpeedLine()

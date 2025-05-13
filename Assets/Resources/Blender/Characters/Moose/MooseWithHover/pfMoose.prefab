@@ -867,6 +867,7 @@ GameObject:
   - component: {fileID: 8572458798320354437}
   - component: {fileID: 4922471091929167252}
   - component: {fileID: -1011004066572381302}
+  - component: {fileID: 1920218668437833701}
   m_Layer: 7
   m_Name: pfMoose
   m_TagString: Player
@@ -949,9 +950,9 @@ MonoBehaviour:
   SyncRotAngleX: 1
   SyncRotAngleY: 1
   SyncRotAngleZ: 1
-  SyncScaleX: 0
-  SyncScaleY: 0
-  SyncScaleZ: 0
+  SyncScaleX: 1
+  SyncScaleY: 1
+  SyncScaleZ: 1
   PositionThreshold: 0.001
   RotAngleThreshold: 0.01
   ScaleThreshold: 0.01
@@ -1164,8 +1165,6 @@ MonoBehaviour:
   ShowTopMostFoldoutHeaderGroup: 1
   health:
     m_InternalValue: 100
-  speed:
-    m_InternalValue: 10
   defense:
     m_InternalValue: 5
   mass:
@@ -1173,11 +1172,12 @@ MonoBehaviour:
   pushedTime:
     m_InternalValue: 0.3
   pushedSpeed:
-    m_InternalValue: 20
+    m_InternalValue: 0
   tagBalls:
     m_InternalValue: 0
   scoreBalls:
     m_InternalValue: 0
+  crashFactor: 0
 --- !u!114 &762052554837967487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1218,7 +1218,7 @@ MonoBehaviour:
     m_Bits: 1616
   terminalVelocity: 53
   originOffset: 0.6
-  pushedSpeed: 80
+  pushedSpeed: 20
   pushedTime: 0.4
   tagBalls: 5
   mass: 60
@@ -1252,7 +1252,7 @@ MonoBehaviour:
   health: 100
   timeUntilRespawn: 5
   playerInput: {fileID: 3216707243182190217}
-  crashFactor: 0
+  serverCharacter: {fileID: 0}
   playerUIController: {fileID: 0}
   impulseSource: {fileID: 0}
   animator: {fileID: 7318235746921636461}
@@ -1367,6 +1367,20 @@ MonoBehaviour:
     DissipationDistance: 100
     PropagationSpeed: 343
   DefaultVelocity: {x: 0, y: -1, z: 0}
+--- !u!114 &1920218668437833701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3586687850627241105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9fb8385a49e0f2f409a242aadf47d2dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ShowTopMostFoldoutHeaderGroup: 1
+  Owner: {fileID: 0}
 --- !u!1 &3769866024630682532
 GameObject:
   m_ObjectHideFlags: 0
