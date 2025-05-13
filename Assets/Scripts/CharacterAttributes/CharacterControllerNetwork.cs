@@ -50,7 +50,7 @@ namespace CharacterAttributes
         [Space(5)]
         [Header("Player Settings")]
         public CharacterStatusNetwork characterStatusNetwork;
-        public float speed           = 10f;
+        //public float speed           = 10f;
         public float speedChangeRate = 20f;
         public float groundOffset    = -0.14f;
         public float gravity         = -15f;
@@ -178,7 +178,7 @@ namespace CharacterAttributes
             {
                 //TODO: 장비에서 스텟 받아오기
                 characterStatusNetwork.Initialize(health,10f, pushedTime, pushedSpeed, tagBalls, mass);
-                characterStatusNetwork.crashFactor = speed;
+                characterStatusNetwork.crashFactor = 10f;
             }
 
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
@@ -266,18 +266,8 @@ namespace CharacterAttributes
 
                 _alreadyCrashedWith.Add(otherId);
                 
-                //Debug.Log($"My Speed is {crashFactor}");
-                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, characterStatusNetwork.crashFactor);
-            }
-            else if (other.CompareTag($"NetworkProp"))
-            {
-                var food = other.GetComponent<BoxObject>();
-                if (food != null)
-                {
-                    // 요청은 클라이언트가 하지만, 체력 감소는 서버에서만 실행됨
-                    food.TakeDamageServerRpc(100f,OwnerClientId);
-                    Debug.Log($"Crashed with food player : {OwnerClientId}");
-                }
+                Debug.Log($"My Speed is {characterStatusNetwork.GetCrashFactor()}");
+                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, characterStatusNetwork.GetCrashFactor());
             }
         }
 

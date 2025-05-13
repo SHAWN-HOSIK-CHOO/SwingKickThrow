@@ -1,69 +1,143 @@
-using System;
+using System.Collections.Generic;
 using CharacterAttributes;
+using GameProps.SO;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Pool;
-using UnityEngine.Serialization;
 
 namespace GameProps
 {
-   public class BoxObject : NetworkBehaviour
-   {
-      public IObjectPool<BoxObject> Pool { get; set; }
-      
-      private const float      MaxHealth = 30f;
-      public      float      currentHealth;
-      private       ulong      _lastHitBy;
+    public class BoxObject : NetworkBehaviour
+    {
+        public IObjectPool<BoxObject> Pool { get; set; }
 
-      [Header("어떤 Transform 인덱스에 위치해 있는지")]
-      public int positionNumber;
+        private const float MaxHealth = 30f;
 
-      private void OnDisable()
-      {
-         ResetHealth();
-      }
+        public NetworkVariable<float> currentHealth = new(MaxHealth, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-      public void ResetHealth()
-      {
-         currentHealth = MaxHealth;
-         _lastHitBy     = 0;
-      }
+        [Header("어떤 Transform 인덱스에 위치해 있는지")]
+        public int positionNumber;
 
-      [ServerRpc(RequireOwnership = false)]
-      public void TakeDamageServerRpc(float damage, ulong attackerClientId)
-      {
-         TakeDamage(damage, attackerClientId);
-      }
-      
-      public void TakeDamage(float damage, ulong attackerClientId)
-      {
-         if (!IsServer) return;
+        private bool _canIGift = false;
+        
+        private bool _isReturned = false;
+        private bool _isReady = false;
+        private ulong _lastHitBy;
 
-         currentHealth -= damage;
-         _lastHitBy     =  attackerClientId;
+        private HashSet<ulong> _alreadyHitPlayers = new();
 
-         if (currentHealth <= 0)
-         {
-            Debug.Log($"Destroyed by player {attackerClientId}");
+        [Header("추가 효과")]
+        public Visitor visitor;
+        
+        public override void OnNetworkSpawn()
+        {
+            base.OnNetworkSpawn();
+
+            _canIGift   = false;
+            _isReady    = true;
+            _isReturned = false;
+            _alreadyHitPlayers.Clear();
+            
+            if (IsServer)
+            {
+                ResetHealth();
+            }
+        }
+
+        public void ResetHealth()
+        {
+            if (!IsServer) return;
+
+            _canIGift           = false;
+            _isReturned         = false;
+            _isReady            = true;
+            currentHealth.Value = MaxHealth;
+            _lastHitBy          = 0;
+            _alreadyHitPlayers.Clear();
+
+            Debug.Log($"[BoxObject] ResetHealth: HP = {currentHealth.Value}, NetId = {NetworkObjectId}");
+        }
+
+        public void TakeDamage(float damage, ulong attackerClientId)
+        {
+            if (!IsServer || !_isReady) return;
+
+            if (currentHealth.Value <= 0)
+            {
+                Debug.LogWarning($"[BoxObject] Tried to damage already-dead object. NetId: {NetworkObjectId}");
+                return;
+            }
+
+            currentHealth.Value -= damage;
+            _lastHitBy = attackerClientId;
+
+            if (currentHealth.Value <= 0)
+            {
+                Debug.Log($"[BoxObject] Destroyed by player {attackerClientId}");
+                _canIGift = true;
+            }
+        }
+
+        private void ReturnToPool()
+        {
+            if (_isReturned)
+            {
+                Debug.LogWarning($"[BoxObject] Duplicate ReturnToPool call! NetId={NetworkObject?.NetworkObjectId}");
+                return;
+            }
+
+            _canIGift   = false;
+            _isReturned = true;
+            _isReady    = false;
+
+            DisableClientRpc(); 
+            Pool?.Release(this);
+
+            Debug.Log($"[BoxObject] Returned to pool. NetId={NetworkObject?.NetworkObjectId}");
+        }
+
+        private void OnTriggerEnter(Collider other)
+        {
+            if (!IsServer || !_isReady) return;
+
+            var player = other.GetComponent<CharacterControllerNetwork>();
+            if (player == null) return;
+
+            ulong attackerId = player.OwnerClientId;
+
+            if (_alreadyHitPlayers.Contains(attackerId)) return;
+            _alreadyHitPlayers.Add(attackerId);
+
+            Debug.Log($"[BoxObject] Hit by player {attackerId}");
+            TakeDamage(100f, attackerId);
+
+            if (_canIGift)
+            {
+                Debug.Log($"I can gift! to client {player.OwnerClientId}");
+                other.GetComponent<CharacterStatusNetwork>().Welcome(visitor);
+            }
+            
             ReturnToPool();
-         }
-      }
+        }
 
-      private void ReturnToPool()
-      {
-         Pool?.Release(this);
-      }
+        [ClientRpc]
+        public void DisableClientRpc()
+        {
+            gameObject.SetActive(false);
+        }
 
-      [ClientRpc]
-      public void DisableClientRpc()
-      {
-         gameObject.SetActive(false);
-      }
-      
-      [ClientRpc]
-      public void EnableClientRpc()
-      {
-         gameObject.SetActive(true);
-      }
-   }
+        [ClientRpc]
+        public void EnableClientRpc()
+        {
+            gameObject.SetActive(true);
+        }
+        
+        [ClientRpc]
+        public void SetPositionClientRpc(Vector3 pos, Quaternion rot)
+        {
+            transform.SetPositionAndRotation(pos, rot);
+        }
+
+    }
 }
+

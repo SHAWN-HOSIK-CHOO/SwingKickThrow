@@ -35,7 +35,7 @@ namespace CharacterAttributes
          base.Setup(context, owner);
          _characterController = Owner.characterController;
          _cameraTransform     = Owner.mainCamera.transform;
-         _moveSpeed           = Owner.speed;
+         _moveSpeed           = Owner.characterStatusNetwork.speed;
          _speedChangeRate     = Owner.speedChangeRate;
          _maxRollAngle        = Owner.maxRollAngle;
          _rollSensitivity     = Owner.rollSensitivity;
@@ -57,7 +57,7 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
-         Owner.characterStatusNetwork.crashFactor = _moveSpeed;
+         Owner.characterStatusNetwork.speed = _moveSpeed;
       }
       
       public override void OnUpdate()
