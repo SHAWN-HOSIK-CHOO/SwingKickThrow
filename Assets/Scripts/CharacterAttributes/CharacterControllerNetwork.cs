@@ -75,10 +75,14 @@ namespace CharacterAttributes
         [Header("Default tag ball count")] public int tagBalls = 5;
 
         [Header("Mass")] public float mass = 60f;
+
+        [Header("Default Speed")]
+        public float speed = 10f;
         
         [Header("Player Dash(Skill)")] 
         public float dashDuration = 3f;
-        public float          dashSpeed       = 60f;
+        [FormerlySerializedAs("dashSpeed")]
+        public float          dashFactor       = 5f;
         public float          bounceBackForce = 2f;
         public AnimationCurve dashCurve;
 
@@ -167,6 +171,9 @@ namespace CharacterAttributes
             serverCharacter            = this.GetComponent<ServerCharacter.ServerCharacter>();
             serverCharacter.Initialize(this);
             
+            characterStatusNetwork.Initialize(speed,health,10f, pushedTime, pushedSpeed, tagBalls, mass);
+            characterStatusNetwork.crashFactor = 10f;
+            
             if (!IsOwner)
             {
                 playerInput.enabled         = false;
@@ -177,8 +184,8 @@ namespace CharacterAttributes
             
             {
                 //TODO: 장비에서 스텟 받아오기
-                characterStatusNetwork.Initialize(health,10f, pushedTime, pushedSpeed, tagBalls, mass);
-                characterStatusNetwork.crashFactor = 10f;
+                // characterStatusNetwork.Initialize(speed,health,10f, pushedTime, pushedSpeed, tagBalls, mass);
+                // characterStatusNetwork.crashFactor = 10f;
             }
 
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
@@ -266,7 +273,7 @@ namespace CharacterAttributes
 
                 _alreadyCrashedWith.Add(otherId);
                 
-                Debug.Log($"My Speed is {characterStatusNetwork.GetCrashFactor()}");
+                Debug.Log($"My Crash amount is {characterStatusNetwork.GetCrashFactor()}");
                 ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, characterStatusNetwork.GetCrashFactor());
             }
         }
@@ -357,7 +364,7 @@ namespace CharacterAttributes
 
         public void ResetHealth()
         {
-            characterStatusNetwork.ResetHealthServerRPC(health);
+            characterStatusNetwork.ResetHealthServerRPC(characterStatusNetwork.maxHealth);
         }
     }
 }
