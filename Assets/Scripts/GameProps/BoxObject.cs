@@ -27,7 +27,12 @@ namespace GameProps
         private HashSet<ulong> _alreadyHitPlayers = new();
 
         [Header("추가 효과")]
-        public Visitor visitor;
+        public Visitor[] visitors = new Visitor[3];
+
+        private int _visitorIndex;
+        
+        [Header("오브젝트")]
+        public GameObject[] objects = new GameObject[3];
         
         public override void OnNetworkSpawn()
         {
@@ -40,14 +45,20 @@ namespace GameProps
             
             if (IsServer)
             {
-                ResetHealth();
+                ResetEverything();
             }
         }
 
-        public void ResetHealth()
+        public void ResetEverything()
         {
             if (!IsServer) return;
 
+            int rand = Random.Range(0, visitors.Length);
+            _visitorIndex = rand;
+            Debug.Log($"Visitor index : {_visitorIndex}");
+
+            SetVisitorClientRpc(_visitorIndex);
+            
             _canIGift           = false;
             _isReturned         = false;
             _isReady            = true;
@@ -55,9 +66,26 @@ namespace GameProps
             _lastHitBy          = 0;
             _alreadyHitPlayers.Clear();
 
-            Debug.Log($"[BoxObject] ResetHealth: HP = {currentHealth.Value}, NetId = {NetworkObjectId}");
+            //Debug.Log($"[BoxObject] ResetHealth: HP = {currentHealth.Value}, NetId = {NetworkObjectId}");
         }
 
+        [ClientRpc]
+        private void SetVisitorClientRpc(int index)
+        {
+            _visitorIndex = index;
+
+            if (visitors.Length != objects.Length)
+            {
+                Debug.LogError("Visitors and objects array length mismatch! (client)");
+            }
+
+            for (int i = 0; i < visitors.Length; i++)
+            {
+                objects[i].SetActive(i == _visitorIndex);
+            }
+        }
+
+        
         public void TakeDamage(float damage, ulong attackerClientId)
         {
             if (!IsServer || !_isReady) return;
@@ -114,7 +142,7 @@ namespace GameProps
             if (_canIGift)
             {
                 Debug.Log($"I can gift! to client {player.OwnerClientId}");
-                other.GetComponent<CharacterStatusNetwork>().Welcome(visitor);
+                other.GetComponent<CharacterStatusNetwork>().Welcome(visitors[_visitorIndex]);
             }
             
             ReturnToPool();

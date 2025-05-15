@@ -57,7 +57,7 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
-         Owner.characterStatusNetwork.speed = _moveSpeed;
+         _moveSpeed = Owner.characterStatusNetwork.speed;
       }
       
       public override void OnUpdate()
@@ -79,7 +79,7 @@ namespace CharacterAttributes
             Debug.Log("CC is null");
          }
          
-         float   targetSpeed = _moveSpeed;
+         float   targetSpeed = Owner.characterStatusNetwork.speed;
          Vector2 move        = Owner.MoveInput;
          if (move == Vector2.zero)
          {

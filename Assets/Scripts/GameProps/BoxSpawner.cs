@@ -69,7 +69,7 @@ namespace GameProps
             }
 
             boxObject.Pool = Pool;
-            boxObject.ResetHealth();
+            boxObject.ResetEverything();
 
             return boxObject;
         }
@@ -144,7 +144,7 @@ namespace GameProps
 
                 _placedTransforms.Add(rand);
 
-                box.ResetHealth();     
+                box.ResetEverything();     
                 box.EnableClientRpc(); 
             }
         }

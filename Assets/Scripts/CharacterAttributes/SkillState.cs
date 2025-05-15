@@ -28,9 +28,11 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
+         Owner.characterStatusNetwork.speed *= Owner.dashFactor;
+         
          _forwardVector     = Owner.transform.forward;
          _dashDuration      = Owner.dashDuration;
-         _dashSpeed         = Owner.dashSpeed;
+         _dashSpeed         = Owner.characterStatusNetwork.speed;
          _bounceBackForce   = Owner.bounceBackForce;
          _dashTimeRemaining = _dashDuration;
          
@@ -41,8 +43,7 @@ namespace CharacterAttributes
             Debug.Log("---------------STATUS_NULL--------------------");
          }
 
-         _currentSpeed     = 0f;
-         Owner.characterStatusNetwork.speed = _dashSpeed;
+         _currentSpeed = 0f;
          GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH);
       }
       
@@ -88,6 +89,7 @@ namespace CharacterAttributes
 
       public override void OnExit()
       {
+         Owner.characterStatusNetwork.speed /= Owner.dashFactor;
          GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_END);
       }
    }

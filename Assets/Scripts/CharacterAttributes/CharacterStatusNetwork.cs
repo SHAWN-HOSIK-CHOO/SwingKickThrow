@@ -8,7 +8,8 @@ namespace CharacterAttributes
 {
     public class CharacterStatusNetwork : NetworkBehaviour, IDamageable, IWelcomer
     {
-        public NetworkVariable<float> health = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+        public float maxHealth;
+        public NetworkVariable<float> currentHealth = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<float> defense = new NetworkVariable<float>(5f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
         public NetworkVariable<float> mass = new NetworkVariable<float>();
 
@@ -36,8 +37,11 @@ namespace CharacterAttributes
             return crashFactor;
         }
         
-        public void Initialize(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
+        public void Initialize(float initSpeed,float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
         {
+            maxHealth = Mathf.Max(initHealth, 1f);
+            speed     = Mathf.Max(initSpeed, 1f);
+            
             if (!IsOwner)
                 return;
 
@@ -47,17 +51,18 @@ namespace CharacterAttributes
         [ServerRpc(RequireOwnership = false)]
         private void InitializeServerRPC(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
         {
-            health.Value      = Mathf.Max(initHealth, 1f);
-            defense.Value     = Mathf.Max(initDefense, 0f);
-            pushedTime.Value  = pTime;
-            pushedSpeed.Value = pSpeed;
-            tagBalls.Value    = tags;
-            mass.Value        = _mass;
-            scoreBalls.Value  = 0;
+            maxHealth           = Mathf.Max(initHealth,  1f);
+            currentHealth.Value = Mathf.Max(initHealth,  1f);
+            defense.Value       = Mathf.Max(initDefense, 0f);
+            pushedTime.Value    = pTime;
+            pushedSpeed.Value   = pSpeed;
+            tagBalls.Value      = tags;
+            mass.Value          = _mass;
+            scoreBalls.Value    = 0;
             
             if (IsServer)
             {
-                health.OnValueChanged += OnHealthChanged;
+                currentHealth.OnValueChanged += OnHealthChanged;
             }
         }
 
@@ -116,7 +121,7 @@ namespace CharacterAttributes
         private void TakeDamageServerRPC(float damage, ServerRpcParams rpcParams = default)
         {
             float damageTaken = Mathf.Max(damage - defense.Value, 1f);
-            health.Value = Mathf.Max(health.Value - damageTaken, 0f);
+            currentHealth.Value = Mathf.Max(currentHealth.Value - damageTaken, 0f);
             lastAttackerId = rpcParams.Receive.SenderClientId; // 기록해두긴 하지만 안 써도 됨
         }
 
@@ -132,15 +137,51 @@ namespace CharacterAttributes
             tagBalls.Value += count;
         }
 
+        public void AddOrMinusDefense(float amount)
+        {
+            AddOrMinusDefenseServerRPC(amount);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void AddOrMinusDefenseServerRPC(float amount)
+        {
+            if (defense.Value + amount <= 0f)
+            {
+                defense.Value = 0f;
+            }
+            else
+            {
+                defense.Value += amount;
+            }
+        }
+        
+        public void AddOrMinusMass(float amount)
+        {
+            AddOrMinusMassServerRPC(amount);
+        }
+
+        [ServerRpc(RequireOwnership = false)]
+        private void AddOrMinusMassServerRPC(float amount)
+        {
+            if (mass.Value + amount <= 30f)
+            {
+                mass.Value = 30f;
+            }
+            else
+            {
+                mass.Value += amount;
+            }
+        }
+        
         public float GetHealth()
         {
-            return health.Value;
+            return currentHealth.Value;
         }
 
         [ServerRpc]
         public void ResetHealthServerRPC(float hp)
         {
-            health.Value = hp;
+            currentHealth.Value = hp;
         }
 
         public void Welcome(IVisitor visitor)
@@ -149,9 +190,9 @@ namespace CharacterAttributes
         }
 
         [ClientRpc]
-        public void IncreaseScaleClientRPC(int factor)
+        public void IncreaseScaleClientRPC(float factor)
         {
-            Debug.Log($"client {OwnerClientId} got this message");
+            //Debug.Log($"client {OwnerClientId} got this message");
             
             if (!IsOwner) 
                 return;
@@ -162,7 +203,30 @@ namespace CharacterAttributes
             transform.localScale *= factor;
         }
 
+        [ClientRpc]
+        public void AddOrMinusSpeedClientRPC(float delta)
+        {
+            if (speed + delta <= 3f)
+            {
+                speed = 3f;
+            }
+            else
+            {
+                speed += delta;
+            }
+        }
 
-
+        [ClientRpc]
+        public void AddOrMinusMaxHealthClientRPC(float delta)
+        {
+            if (maxHealth + delta <= 50f)
+            {
+                maxHealth = 50f;
+            }
+            else
+            {
+                maxHealth += delta;
+            }
+        }
     }
 }

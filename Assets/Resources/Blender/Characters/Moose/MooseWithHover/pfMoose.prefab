@@ -1163,7 +1163,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  health:
+  maxHealth: 0
+  currentHealth:
     m_InternalValue: 100
   defense:
     m_InternalValue: 5
@@ -1178,6 +1179,7 @@ MonoBehaviour:
   scoreBalls:
     m_InternalValue: 0
   crashFactor: 0
+  speed: 10
 --- !u!114 &762052554837967487
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1205,7 +1207,6 @@ MonoBehaviour:
   cameraYawSensitivity: 0.2
   cameraPitchSensitivity: 0.2
   characterStatusNetwork: {fileID: 0}
-  speed: 10
   speedChangeRate: 20
   groundOffset: -0.14
   gravity: -15
@@ -1222,8 +1223,9 @@ MonoBehaviour:
   pushedTime: 0.4
   tagBalls: 5
   mass: 60
+  speed: 10
   dashDuration: 2
-  dashSpeed: 60
+  dashFactor: 6
   bounceBackForce: 1
   dashCurve:
     serializedVersion: 2
@@ -1249,7 +1251,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  health: 100
+  health: 500
   timeUntilRespawn: 5
   playerInput: {fileID: 3216707243182190217}
   serverCharacter: {fileID: 0}
