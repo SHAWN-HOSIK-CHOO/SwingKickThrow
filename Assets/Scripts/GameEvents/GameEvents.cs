@@ -13,7 +13,6 @@ namespace GameEvents
       PLAYER_DASH,
       PLAYER_DASH_END,
       PLAYER_RESPAWN,
-      BOX_GEN,
       Count
    }
    

@@ -9,6 +9,7 @@ using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 using Unity.Netcode;
 using CharacterAttributes;
+using UnityEngine.UI;
 
 namespace CharacterAttributes.PlayerUI
 {
@@ -17,7 +18,7 @@ namespace CharacterAttributes.PlayerUI
         public UniversalRendererData rendererData;
         private ScriptableRendererFeature _targetFeature;
 
-        private CharacterControllerNetwork _Owner;
+        private CharacterControllerNetwork _owner;
         private bool _isOwner = false;
 
         private CharacterStatusNetwork _enemyStatus;
@@ -54,6 +55,16 @@ namespace CharacterAttributes.PlayerUI
 
         #endregion
 
+        #region ChargeStatus
+
+        [FormerlySerializedAs("_chargeImage")]
+        public GameObject pfChargeUI;
+        public  Image           chargeImage;
+        private DashChargeTimer _dashChargeTimer;
+        private GameObject      _chargeUI;
+
+        #endregion
+        
         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
             _isOwner = characterControllerNetwork.IsOwner;
@@ -74,7 +85,7 @@ namespace CharacterAttributes.PlayerUI
 
             if (_isOwner)
             {
-                _Owner = characterControllerNetwork;
+                _owner = characterControllerNetwork;
                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
 
@@ -84,19 +95,27 @@ namespace CharacterAttributes.PlayerUI
 
                 if (enemyScoreText == null)
                     Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
+
+                _dashChargeTimer = _owner.dashTimer;
             }
+            
         }
 
         private void Start()
         {
             if (_isOwner)
             {
-                SetTagBallCount(0, _Owner.characterStatusNetwork.tagBalls.Value);
-                _Owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
-                _Owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
-                _Owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
-                _Owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
+                SetTagBallCount(0, _owner.characterStatusNetwork.tagBalls.Value);
+                _owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
+                _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
+                _owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
+                _owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
 
+                var gameCanvas            = GameObject.Find("GameCanvas");
+                var dashChargeUITransform = gameCanvas.transform.Find("DashCharge");
+                _chargeUI   = Instantiate(pfChargeUI, dashChargeUITransform);
+                chargeImage = _chargeUI.transform.Find("DashChargeFill").GetComponent<Image>();
+                
                 // 적 점수 업데이트용 구독 시작
                 StartCoroutine(SubscribeToEnemyScore());
             }
@@ -131,6 +150,13 @@ namespace CharacterAttributes.PlayerUI
             }
         }
 
+        private void Update()
+        {
+            if(chargeImage == null)
+                return;
+            chargeImage.fillAmount = _dashChargeTimer.GetChargedRatio();
+        }
+
         private void OnDisable()
         {
             if (!_isOwner)
@@ -138,8 +164,8 @@ namespace CharacterAttributes.PlayerUI
 
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
-            _Owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
-            _Owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
+            _owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
+            _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
             _enemyStatus.scoreBalls.OnValueChanged                  -= SetEnemyScore;
         }
 
