@@ -12,6 +12,7 @@ using UnityEngine.Serialization;
 
 namespace CharacterAttributes
 {
+    [RequireComponent(typeof(DashChargeTimer))]
     [RequireComponent(typeof(CharacterController))]
     [RequireComponent(typeof(PlayerInput))]
     [RequireComponent(typeof(CharacterStatusNetwork))]
@@ -129,6 +130,9 @@ namespace CharacterAttributes
             if(_fsm.IsStateActive(FSMType.SKILL) || _fsm.IsStateActive(FSMType.DEATH))
                 return;
             
+            if(!dashTimer.IsDashReady())
+                return;
+            
             _fsm.FinishAllStates();
             _fsm.SetState(FSMType.SKILL);
         }
@@ -136,7 +140,7 @@ namespace CharacterAttributes
         #endregion
 
         #region Server_Only
-
+        
         // 클래스 안에 추가
         private static Dictionary<(ulong, ulong), Dictionary<ulong, float>> _crashBuffer = new();
         private        HashSet<ulong>                                       _alreadyCrashedWith = new HashSet<ulong>();
@@ -160,6 +164,14 @@ namespace CharacterAttributes
         #region Animations
         public Animator animator;        
         #endregion
+
+        #region Timer
+
+        [FormerlySerializedAs("_dashTimer")]
+        public DashChargeTimer dashTimer;
+        public  float           maxChargeAmount;
+        
+        #endregion
         
         public override void OnNetworkSpawn()
         {
@@ -173,6 +185,9 @@ namespace CharacterAttributes
             
             characterStatusNetwork.Initialize(speed,health,10f, pushedTime, pushedSpeed, tagBalls, mass);
             characterStatusNetwork.crashFactor = 10f;
+
+            dashTimer = this.GetComponent<DashChargeTimer>();
+            dashTimer.Initialize(this, maxChargeAmount);
             
             if (!IsOwner)
             {
@@ -182,12 +197,6 @@ namespace CharacterAttributes
                 return;
             }
             
-            {
-                //TODO: 장비에서 스텟 받아오기
-                // characterStatusNetwork.Initialize(speed,health,10f, pushedTime, pushedSpeed, tagBalls, mass);
-                // characterStatusNetwork.crashFactor = 10f;
-            }
-
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
             
             playerUIController.Initialize(this);
@@ -346,11 +355,13 @@ namespace CharacterAttributes
         private void OnEnable()
         {
             GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DEATH,RespawnAfterZeroHealth);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_RESPAWN,RespawnAfterZeroHealth);
         }
 
         private void OnDisable()
         {
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DEATH,RespawnAfterZeroHealth);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_RESPAWN,RespawnAfterZeroHealth);
         }
         
         private void RespawnAfterZeroHealth()

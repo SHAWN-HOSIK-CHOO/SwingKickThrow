@@ -58,6 +58,7 @@ namespace CharacterAttributes
       public override void OnEnter()
       {
          _moveSpeed = Owner.characterStatusNetwork.speed;
+         Owner.dashTimer.StartCharging();
       }
       
       public override void OnUpdate()
@@ -69,7 +70,7 @@ namespace CharacterAttributes
 
       public override void OnExit()
       {
-         //Finish(FSMType.MOVEMENT);
+         Owner.dashTimer.StopCharging();
       }
 
       private void Move()
@@ -84,6 +85,16 @@ namespace CharacterAttributes
          if (move == Vector2.zero)
          {
             targetSpeed = 0f;
+         }
+
+         if (!Owner.dashTimer.IsPaused && _characterController.velocity.magnitude == 0f)
+         {
+            Owner.dashTimer.StopCharging();
+         }
+
+         if (Owner.dashTimer.IsPaused && _characterController.velocity.magnitude != 0f)
+         {
+            Owner.dashTimer.StartCharging();
          }
          
          float currentHorizontalSpeed =
@@ -130,41 +141,6 @@ namespace CharacterAttributes
          float smoothedPitch = Mathf.LerpAngle(currentPitch, targetPitch, Time.deltaTime * _pitchSensitivity);
          
          Owner.transform.rotation = Quaternion.Euler(smoothedPitch, _cameraTransform.eulerAngles.y, smoothedRoll);
-         
-         // // 경사도 기반 회전 추가
-         // Vector3 origin = Owner.transform.position - new Vector3(0f, 0.6f, 0f);
-         //
-         // bool frontHit = Physics.Raycast(origin + Owner.transform.forward * _rayOffset, Vector3.down, out RaycastHit frontInfo, _rayLength);
-         // bool backHit  = Physics.Raycast(origin - Owner.transform.forward * _rayOffset, Vector3.down, out RaycastHit backInfo, _rayLength);
-         // bool rightHit = Physics.Raycast(origin + Owner.transform.right * _rayOffset, Vector3.down, out RaycastHit rightInfo, _rayLength);
-         // bool leftHit  = Physics.Raycast(origin - Owner.transform.right * _rayOffset, Vector3.down, out RaycastHit leftInfo, _rayLength);
-         //
-         // float slopePitch = 0f;
-         // float slopeRoll  = 0f;
-         //
-         // if (frontHit && backHit)
-         // {
-         //    Debug.Log("Front back hit" );
-         //    Vector3 slopeDir = frontInfo.point - backInfo.point;
-         //    slopePitch = Vector3.SignedAngle(Vector3.forward, slopeDir.normalized, Owner.transform.right);
-         // }
-         //
-         // if (rightHit && leftHit)
-         // {
-         //    Debug.Log("Right left hit");
-         //    Vector3 slopeDir = rightInfo.point - leftInfo.point;
-         //    slopeRoll = Vector3.SignedAngle(Vector3.right, slopeDir.normalized, Owner.transform.forward);
-         // }
-         //
-         // float targetRoll   = -move.x * _maxRollAngle + slopeRoll;
-         // float currentRoll  = Owner.transform.eulerAngles.z;
-         // float smoothedRoll = Mathf.LerpAngle(currentRoll, targetRoll, Time.deltaTime * _rollSensitivity);
-         //
-         // float targetPitch   = move.y * _maxPitchAngle + slopePitch;
-         // float currentPitch  = Owner.transform.eulerAngles.x;
-         // float smoothedPitch = Mathf.LerpAngle(currentPitch, targetPitch, Time.deltaTime * _pitchSensitivity);
-         //
-         // Owner.transform.rotation = Quaternion.Euler(smoothedPitch, _cameraTransform.eulerAngles.y, smoothedRoll);
       }
       
       private void GroundedCheck()

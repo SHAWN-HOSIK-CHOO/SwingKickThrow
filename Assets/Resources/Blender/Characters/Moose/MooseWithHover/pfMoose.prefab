@@ -868,6 +868,7 @@ GameObject:
   - component: {fileID: 4922471091929167252}
   - component: {fileID: -1011004066572381302}
   - component: {fileID: 1920218668437833701}
+  - component: {fileID: 3617721372957616547}
   m_Layer: 7
   m_Name: pfMoose
   m_TagString: Player
@@ -1258,6 +1259,8 @@ MonoBehaviour:
   playerUIController: {fileID: 0}
   impulseSource: {fileID: 0}
   animator: {fileID: 7318235746921636461}
+  dashTimer: {fileID: 0}
+  maxChargeAmount: 10
 --- !u!65 &7699289980036974714
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1295,6 +1298,8 @@ MonoBehaviour:
   tagBallCountText: {fileID: 0}
   playerScoreText: {fileID: 0}
   enemyScoreText: {fileID: 0}
+  pfChargeUI: {fileID: 7944222974285134553, guid: 647a3fbaae4439f4bb7a2915654c5fbe, type: 3}
+  chargeImage: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1383,6 +1388,18 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   Owner: {fileID: 0}
+--- !u!114 &3617721372957616547
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3586687850627241105}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 95bacbfdaf14546478aead977c9ce0fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3769866024630682532
 GameObject:
   m_ObjectHideFlags: 0

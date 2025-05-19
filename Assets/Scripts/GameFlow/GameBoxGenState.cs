@@ -32,8 +32,6 @@ namespace GameFlow
          
          if (NetworkManager.Singleton.IsServer)
          {
-            //TODO: 일단 박스 종류 한개만!
-            // 서버에서만 BoxSpawner를 Instantiate
             var go = GameObject.Instantiate(pfBoxSpawner);
             _boxSpawner = go.GetComponent<BoxSpawner>();
             _boxSpawner.Initialize(_boxTransforms, _pfBox);
