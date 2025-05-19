@@ -32,7 +32,7 @@ namespace GameFlow
 
         //PlayerSelectionHandler 본인이 스스로 세팅
         private PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
-        
+
         #region UI
 
         [Header("Tag ball")] 
@@ -41,6 +41,12 @@ namespace GameFlow
         [Header("Score")] 
         public TMP_Text playerScoreText;
         public TMP_Text enemyScoreText;
+        
+        [Header("Timer")]
+        public TMP_Text timeText;
+        
+        [Header("Winner")]
+        public GameObject winnerUI;
         #endregion
 
         public GameObject pfBoxSpawner;
@@ -113,6 +119,22 @@ namespace GameFlow
             
         }
 
+
+        public void UpdateTime(float elapsed)
+        {
+           var timer = GetComponent<GameTimer>();
+           float leftSeconds = Mathf.Clamp(timer.requestedTime - timer.ElapsedTime , 0, timer.requestedTime);
+           // Update UI 
+           int minutes = (int)(leftSeconds / 60);
+           int seconds = (int)(leftSeconds % 60);
+           string timeFormatted = $"{minutes}:{seconds:D2}";
+           timeText.text = timeFormatted;
+           // Check
+           if(leftSeconds == 0)
+           {
+                GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameTimerEnd);
+           }
+        }
         //디버그 용 update, 릴리즈에서는 지울 예정
         private void Update()
         {

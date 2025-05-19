@@ -13,7 +13,8 @@ namespace GameEvents
       PLAYER_DASH,
       PLAYER_DASH_END,
       PLAYER_RESPAWN,
-      Count
+      Count,
+      GameTimerEnd,
    }
    
    public class GameEvents

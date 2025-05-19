@@ -41,6 +41,7 @@ namespace ConnectionUtils
             else
             {
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientsConnected;
+                NetworkManager.Singleton.OnClientDisconnectCallback += OnClientsDisConnected;
                 NetworkManager.Singleton.OnClientStarted += OnClientStarted;
             }
             
@@ -59,11 +60,18 @@ namespace ConnectionUtils
 
         }
 
+        private void OnClientsDisConnected(ulong obj)
+        {
+            NetworkManager.Singleton.Shutdown();
+            if (!GameSceneManager.Instance.gameSceneFlowContext.currentState.TryGetValue(GameStateType.GAME_END, out var _))
+            {
+                backgroundPanel.gameObject.SetActive(true);
+            }
+        }
         private void OnClientStarted()
         {
             NetworkManager.Singleton.SceneManager.OnLoadComplete += SceneManager_OnLoadComplete;
         }
-
         public async void Callback_btn_CreateRelay()
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(6);
@@ -73,17 +81,14 @@ namespace ConnectionUtils
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
         }
-        
         public async void Callback_btn_JoinRelay()
         {
             string userInput = joinCodeInputField.text;
             var joinAllocation  = await RelayService.Instance.JoinAllocationAsync(userInput);
             var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-
             NetworkManager.Singleton.StartClient();
         }
-
         public void OnClientsConnected(ulong clientID)
         {
             if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClientsList.Count == 2)
@@ -104,7 +109,6 @@ namespace ConnectionUtils
                 */
             }
         }
-
         private void SceneManager_OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
         {
             if (sceneName == "Game_Main_Flow_Additive")
@@ -123,5 +127,16 @@ namespace ConnectionUtils
             }
         }
 
+        private void OnDestroy()
+        {
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientConnectedCallback -= OnClientsConnected;
+                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientsDisConnected;
+                NetworkManager.Singleton.OnClientStarted -= OnClientStarted;
+            }
+            requestRelayButton.onClick.RemoveListener(Callback_btn_CreateRelay);
+            joinRelayButton.onClick.RemoveListener(Callback_btn_JoinRelay);
+        }
     }
 }
