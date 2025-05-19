@@ -35,8 +35,6 @@ namespace GameFlow
                 _elapsedTime += Time.deltaTime;
                 yield return null;
             }
-            
-            
         }
     }
 }

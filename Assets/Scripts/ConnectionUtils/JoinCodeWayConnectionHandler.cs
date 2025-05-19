@@ -1,4 +1,6 @@
 using GameFlow;
+using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -39,6 +41,7 @@ namespace ConnectionUtils
             else
             {
                 NetworkManager.Singleton.OnClientConnectedCallback += OnClientsConnected;
+                NetworkManager.Singleton.OnClientStarted += OnClientStarted;
             }
             
             requestRelayButton.onClick.AddListener(Callback_btn_CreateRelay);
@@ -55,7 +58,12 @@ namespace ConnectionUtils
             }
 
         }
-        
+
+        private void OnClientStarted()
+        {
+            NetworkManager.Singleton.SceneManager.OnLoadComplete += SceneManager_OnLoadComplete;
+        }
+
         public async void Callback_btn_CreateRelay()
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(6);
@@ -69,7 +77,6 @@ namespace ConnectionUtils
         public async void Callback_btn_JoinRelay()
         {
             string userInput = joinCodeInputField.text;
-
             var joinAllocation  = await RelayService.Instance.JoinAllocationAsync(userInput);
             var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
@@ -86,9 +93,22 @@ namespace ConnectionUtils
                 if (!_hasLoadedMainScene && NetworkManager.Singleton.IsHost)
                 {
                     _hasLoadedMainScene = true;
-                    NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
+
+                   NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
                 }
 
+                /* bug fix by hp
+                    ngo는 LoadScene이 비동기적으로 진행되기 때문에 
+                    아직 씬이 로드되지 않은 상태에서 플레이어가 스폰되는 경우 땅으로 떨어지는 경우가 발생            
+                    따라서 씬로드 콜백 이후 게임 로직을 실행해야함
+                */
+            }
+        }
+
+        private void SceneManager_OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
+        {
+            if (sceneName == "Game_Main_Flow_Additive")
+            {
                 if (!_hasSpawnCalled)
                 {
                     _hasSpawnCalled = true;
@@ -102,5 +122,6 @@ namespace ConnectionUtils
                 }
             }
         }
+
     }
 }
