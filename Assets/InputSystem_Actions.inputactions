@@ -15,6 +15,15 @@
                     "initialStateCheck": true
                 },
                 {
+                    "name": "Lock",
+                    "type": "Button",
+                    "id": "38820885-d5ae-4ea4-93e9-d91fcdd32c11",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Look",
                     "type": "Value",
                     "id": "6b444451-8a00-4d00-a97e-f47457f736a8",
@@ -90,15 +99,6 @@
                     "name": "Skill",
                     "type": "Button",
                     "id": "2c38bb94-708c-49bf-b2eb-7f731bd92e77",
-                    "expectedControlType": "",
-                    "processors": "",
-                    "interactions": "",
-                    "initialStateCheck": false
-                },
-                {
-                    "name": "Lock",
-                    "type": "Button",
-                    "id": "38820885-d5ae-4ea4-93e9-d91fcdd32c11",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -505,10 +505,10 @@
                 {
                     "name": "",
                     "id": "e778bc66-5c17-4f19-b8de-5286eb6e6f97",
-                    "path": "<Keyboard>/leftShift",
+                    "path": "<Keyboard>/shift",
                     "interactions": "",
                     "processors": "",
-                    "groups": "",
+                    "groups": ";Keyboard&Mouse",
                     "action": "Lock",
                     "isComposite": false,
                     "isPartOfComposite": false

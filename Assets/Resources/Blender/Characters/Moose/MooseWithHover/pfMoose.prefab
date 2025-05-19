@@ -1121,6 +1121,23 @@ MonoBehaviour:
         m_CallState: 2
     m_ActionId: 2c38bb94-708c-49bf-b2eb-7f731bd92e77
     m_ActionName: 'Player/Skill[/Mouse/rightButton]'
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 762052554837967487}
+        m_TargetAssemblyTypeName: CharacterAttributes.CharacterControllerNetwork,
+          Assembly-CSharp
+        m_MethodName: OnLock
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 38820885-d5ae-4ea4-93e9-d91fcdd32c11
+    m_ActionName: 'Player/Lock[/Keyboard/shift]'
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: Keyboard&Mouse
   m_DefaultActionMap: Player
