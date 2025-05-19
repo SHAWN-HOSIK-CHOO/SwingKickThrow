@@ -10,7 +10,6 @@ using UnityEngine;
 
 namespace GameFlow
 {
-    [RequireComponent(typeof(GameTimer))]
     public class GameSceneManager : MonoBehaviour
     {
         private static GameSceneManager _instance = null;
@@ -30,8 +29,14 @@ namespace GameFlow
         [Header("Player prefabs")] 
         public GameObject[] pfPlayers;
 
-        //PlayerSelectionHandler 본인이 스스로 세팅
-        private PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
+        [Header("Play time")]
+        public float gameTime;
+        public PlayerReady playerReadyPf;
+        public PlayerReady playerReady;
+        public GameTimer gameTimerPf;
+        public GameTimer gameTimer;
+        public PlayerSelectionAndSpawnHandler playerSelectPf;
+        public PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
 
         #region UI
 
@@ -41,12 +46,8 @@ namespace GameFlow
         [Header("Score")] 
         public TMP_Text playerScoreText;
         public TMP_Text enemyScoreText;
-        
-        [Header("Timer")]
-        public TMP_Text timeText;
-        
-        [Header("Winner")]
-        public GameObject winnerUI;
+
+        public GameUI UI;
         #endregion
 
         public GameObject pfBoxSpawner;
@@ -93,7 +94,8 @@ namespace GameFlow
             {
                 Destroy(this.gameObject);
             }
-            
+
+            UI = GetComponent<GameUI>();
             gameSceneFlowContext = new GameSceneFlowContext();
             gameSceneFlowContext.Initialize();
         }
@@ -119,20 +121,34 @@ namespace GameFlow
             
         }
 
-
-        public void UpdateTime(float elapsed)
+        public void SpawnPlayerSelect()
         {
-           var timer = GetComponent<GameTimer>();
-           float leftSeconds = Mathf.Clamp(timer.requestedTime - timer.ElapsedTime , 0, timer.requestedTime);
+            var playerSelect = Instantiate(playerSelectPf);
+            playerSelect.GetComponent<NetworkObject>().Spawn();
+        }
+        public void SpawnTimer()
+        {
+            gameTimer = Instantiate(gameTimerPf);
+            gameTimer.requestedTime.Value = gameTime;
+            gameTimer.GetComponent<NetworkObject>().Spawn();
+        }
+        public void SpawnPlayerReady()
+        {
+            var playerReady = Instantiate(playerReadyPf);
+            playerReady.GetComponent<NetworkObject>().Spawn();
+        }
+        public void UpdateTime(float old, float elapsed)
+        {
+           float leftSeconds = Mathf.Clamp(gameTimer.requestedTime.Value - gameTimer._elapsedTime.Value, 0, gameTimer.requestedTime.Value);
            // Update UI 
            int minutes = (int)(leftSeconds / 60);
            int seconds = (int)(leftSeconds % 60);
            string timeFormatted = $"{minutes}:{seconds:D2}";
-           timeText.text = timeFormatted;
+           UI.timeText.text = timeFormatted;
            // Check
            if(leftSeconds == 0)
            {
-                GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameTimerEnd);
+                GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameEnd);
            }
         }
         //디버그 용 update, 릴리즈에서는 지울 예정

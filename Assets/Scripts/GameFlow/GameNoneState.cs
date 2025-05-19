@@ -12,7 +12,7 @@ public class GameNoneState : BaseGameState
 
     public override void Handle()
     {
-
+        GameSceneManager.Instance.UI.MainCanvas.gameObject.SetActive(true);
     }
 
     public override void OnExit()

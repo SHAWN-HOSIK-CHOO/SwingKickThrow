@@ -16,16 +16,11 @@ namespace ConnectionUtils
         
         public Dictionary<ulong, GameObject> _playerTable = new Dictionary<ulong, GameObject>();
         
-        private void Start()
+        public override void OnNetworkSpawn()
         {
             GameSceneManager.Instance.SetPlayerSelectionHandler(this);
-            //TODO: 선택 가능하게 만들기 지금은 일단 0번으로 
-            //TODO: 이렇게 하면 안됨. 씬에 배치된 오브젝트라 IsOwner는 항상 host에서만 true일 것임
-            
-            if (IsOwner) //오직 호스트에서만 True일 것임
-            {
-                SetPlayerSelection(0);
-            }
+            var player = GameSceneManager.Instance.playerReady;
+            player.SpawnedPlayerSelect = true;
         }
 
         public void SpawnMeWrapper(ulong id)
@@ -62,7 +57,6 @@ namespace ConnectionUtils
             _playerTable[playerID] = playerObject;
             Debug.Log($"playerTable of {playerID} null check : {_playerTable[playerID] == null}");
         }
-        
         public void SetPlayerSelection(int index)
         {
             if (IsClient)
@@ -94,7 +88,6 @@ namespace ConnectionUtils
             }
             
         }
-        
         public int GetLocalPlayerSelection()
         {
             ulong localClientId = NetworkManager.Singleton.LocalClientId;
@@ -108,7 +101,6 @@ namespace ConnectionUtils
                 return player1Selection.Value;
             }
         }
-
         public int GetEnemySelection()
         {
             ulong localClientId = NetworkManager.Singleton.LocalClientId;

@@ -5,19 +5,16 @@ using UnityEngine;
 namespace GameFlow
 {
    public class GameStartState : BaseGameState
-    {
-      GameTimer timer;
+   {
       public override void LateSetUp()
       {
-            timer = GameSceneManager.Instance.gameObject.GetComponent<GameTimer>();
-            timer.OnElapsedTimeChanged -= GameSceneManager.Instance.UpdateTime;
-            timer.OnElapsedTimeChanged += GameSceneManager.Instance.UpdateTime;
-            GameSceneManager.Instance.winnerUI.SetActive(false);
+
       }
 
       public override void Handle()
       {
-         if(NetworkManager.Singleton.IsHost)
+         GameSceneManager.Instance.UI.winnerUI.SetActive(false);
+         if (NetworkManager.Singleton.IsHost)
          {
             foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
             {
@@ -27,8 +24,9 @@ namespace GameFlow
             Context.EnterState(GameStateType.GAME_BOX_GEN);
          }
 
-         GameEvents.GameEvents.Subscribe(GameEvents.GameEventType.GameTimerEnd, GameTimerEnd);
-         timer.StartCountDown();
+         GameEvents.GameEvents.Subscribe(GameEvents.GameEventType.GameEnd, GameTimerEnd);
+         GameSceneManager.Instance.gameTimer.StartCountDown();
+         GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameStart);
          Finish(GameStateType.GAME_START);
       }
 
@@ -39,7 +37,7 @@ namespace GameFlow
 
       private void GameTimerEnd()
       {
-            GameEvents.GameEvents.Unsubscribe(GameEvents.GameEventType.GameTimerEnd, GameTimerEnd);
+            GameEvents.GameEvents.Unsubscribe(GameEvents.GameEventType.GameEnd, GameTimerEnd);
             Context.EnterState(GameStateType.GAME_END);
             Finish(GameStateType.GAME_START);
       }

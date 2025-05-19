@@ -7,7 +7,6 @@ namespace CharacterAttributes.ServerCharacter
     public class ServerCharacter : NetworkBehaviour
     {
         public CharacterControllerNetwork Owner;
-        
         public void Initialize(CharacterControllerNetwork owner)
         {
             this.Owner = owner;

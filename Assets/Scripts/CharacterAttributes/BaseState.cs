@@ -4,6 +4,7 @@ namespace CharacterAttributes
 {
    public enum FSMType
    {
+      WAIT,
       MOVEMENT,
       ATTACK, 
       HIT, 

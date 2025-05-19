@@ -1,22 +1,41 @@
 using CharacterAttributes;
+using ConnectionUtils;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 namespace GameFlow
 {
-   public class GameEndState : BaseGameState
-   {
-      public override void LateSetUp()
-      {
-         
-      }
+    public class GameEndState : BaseGameState
+    {
+        public override void SetUp(GameSceneFlowContext gameSceneFlowContext)
+        {
+            base.SetUp(gameSceneFlowContext);
+        }
+        public override void LateSetUp()
+        {
 
-      public override void Handle()
-      {
-            GameSceneManager.Instance.winnerUI.gameObject.SetActive(true);
+        }
+        void onExit()
+        {
+            if (NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.Shutdown();
+            }
+            Scene scene = SceneManager.GetSceneByName("Game_Main_Flow_Additive");
+            if (scene.isLoaded)
+            {
+                SceneManager.UnloadSceneAsync(scene);
+            }
+            Finish(GameStateType.GAME_END);
+            Context.EnterState(GameStateType.NONE);
+        }
+
+        void UpdateResultUI()
+        {
             var rankingList = new List<(ulong clientId, int score)>();
             foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
             {
@@ -41,12 +60,29 @@ namespace GameFlow
                 sb.AppendLine($"{i + 1}: Player {entry.clientId} - {entry.score}");
             }
             // Ãâ·Â
-            GameSceneManager.Instance.winnerUI.GetComponentInChildren<TMP_Text>().text = sb.ToString();
+            GameSceneManager.Instance.UI.winnerUI.GetComponentInChildren<TMP_Text>().text = sb.ToString();
+        }
+        public override void Handle()
+        {
+            GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(true);
+            GameSceneManager.Instance.UI.exit.onClick.AddListener(onExit);
+            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientsDisConnected;
+            UpdateResultUI();
         }
 
-      public override void OnExit()
-      {
-      
-      }
-   }
+        private void OnClientsDisConnected(ulong obj)
+        {
+            onExit();
+        }
+
+        public override void OnExit()
+        {
+            if(NetworkManager.Singleton != null)
+            {
+                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientsDisConnected;
+            }
+            GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(false);
+            GameSceneManager.Instance.UI.exit.onClick.RemoveListener(onExit);
+        }
+    }
 }

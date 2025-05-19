@@ -237,8 +237,7 @@ namespace CharacterAttributes
             
             _fsm = new CharacterFSMContext(this);
             _fsm.Initialize();
-
-            _fsm.SetState(FSMType.MOVEMENT); // 기본 상태
+            _fsm.SetState(FSMType.WAIT);
         }
 
         private void Update() {

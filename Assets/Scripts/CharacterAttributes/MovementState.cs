@@ -57,9 +57,14 @@ namespace CharacterAttributes
 
       public override void OnEnter()
       {
-         _moveSpeed = Owner.characterStatusNetwork.speed;
-         Owner.dashTimer.StartCharging();
-      }
+            _moveSpeed = Owner.characterStatusNetwork.speed;
+            Owner.dashTimer.StartCharging();
+
+            if (Owner.IsOwner)
+            {
+                Owner.playerInput.enabled = true;
+            }
+        }
       
       public override void OnUpdate()
       {

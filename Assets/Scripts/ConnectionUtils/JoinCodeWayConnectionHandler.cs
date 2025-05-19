@@ -1,6 +1,7 @@
 using GameFlow;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -22,29 +23,11 @@ namespace ConnectionUtils
         public TMP_InputField joinCodeInputField;
         public TMP_Text       joinCodeShowText;
 
-        public GameObject backgroundPanel;
-        
-        private bool _hasLoadedMainScene = false;
-        private bool _hasSpawnCalled     = false;
-        
         async void Start()
         {
-            backgroundPanel.gameObject.SetActive(true);
 #if UNITY_EDITOR
             Application.runInBackground = true;
 #endif
-
-            if (NetworkManager.Singleton == null)
-            {
-                Debug.Log("NetworkManager is null");
-            }
-            else
-            {
-                NetworkManager.Singleton.OnClientConnectedCallback += OnClientsConnected;
-                NetworkManager.Singleton.OnClientDisconnectCallback += OnClientsDisConnected;
-                NetworkManager.Singleton.OnClientStarted += OnClientStarted;
-            }
-            
             requestRelayButton.onClick.AddListener(Callback_btn_CreateRelay);
             joinRelayButton.onClick.AddListener(Callback_btn_JoinRelay);
             
@@ -57,21 +40,16 @@ namespace ConnectionUtils
             {
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
             }
-
+            NetworkManager.Singleton.OnClientStarted += OnClientStarted;
+            GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.NONE);
         }
 
-        private void OnClientsDisConnected(ulong obj)
-        {
-            NetworkManager.Singleton.Shutdown();
-            if (!GameSceneManager.Instance.gameSceneFlowContext.currentState.TryGetValue(GameStateType.GAME_END, out var _))
-            {
-                backgroundPanel.gameObject.SetActive(true);
-            }
-        }
         private void OnClientStarted()
         {
-            NetworkManager.Singleton.SceneManager.OnLoadComplete += SceneManager_OnLoadComplete;
+            GameSceneManager.Instance.LateInitialize();
+            GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.Game_WAIT);
         }
+
         public async void Callback_btn_CreateRelay()
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(6);
@@ -89,52 +67,9 @@ namespace ConnectionUtils
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartClient();
         }
-        public void OnClientsConnected(ulong clientID)
-        {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClientsList.Count == 2)
-            {
-                backgroundPanel.gameObject.SetActive(false);
-                
-                if (!_hasLoadedMainScene && NetworkManager.Singleton.IsHost)
-                {
-                    _hasLoadedMainScene = true;
-
-                   NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
-                }
-
-                /* bug fix by hp
-                    ngo는 LoadScene이 비동기적으로 진행되기 때문에 
-                    아직 씬이 로드되지 않은 상태에서 플레이어가 스폰되는 경우 땅으로 떨어지는 경우가 발생            
-                    따라서 씬로드 콜백 이후 게임 로직을 실행해야함
-                */
-            }
-        }
-        private void SceneManager_OnLoadComplete(ulong clientId, string sceneName, LoadSceneMode loadSceneMode)
-        {
-            if (sceneName == "Game_Main_Flow_Additive")
-            {
-                if (!_hasSpawnCalled)
-                {
-                    _hasSpawnCalled = true;
-                    // foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
-                    // {
-                    //     ulong id = kvp.ClientId;
-                    //     GameSceneManager.Instance.SpawnMe(id);
-                    // }
-                    GameSceneManager.Instance.LateInitialize();
-                    GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.GAME_START);
-                }
-            }
-        }
 
         private void OnDestroy()
         {
-            if (NetworkManager.Singleton != null)
-            {
-                NetworkManager.Singleton.OnClientConnectedCallback -= OnClientsConnected;
-                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientsDisConnected;
-                NetworkManager.Singleton.OnClientStarted -= OnClientStarted;
-            }
             requestRelayButton.onClick.RemoveListener(Callback_btn_CreateRelay);
             joinRelayButton.onClick.RemoveListener(Callback_btn_JoinRelay);
         }
