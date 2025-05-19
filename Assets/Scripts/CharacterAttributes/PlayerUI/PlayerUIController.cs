@@ -110,10 +110,7 @@ namespace CharacterAttributes.PlayerUI
                 _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
                 _owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
                 _owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
-
-                var gameCanvas            = GameObject.Find("GameCanvas");
-                var dashChargeUITransform = gameCanvas.transform.Find("DashCharge");
-                _chargeUI   = Instantiate(pfChargeUI, dashChargeUITransform);
+                _chargeUI   = Instantiate(pfChargeUI, GameSceneManager.Instance.UI.DashCharge.transform);
                 chargeImage = _chargeUI.transform.Find("DashChargeFill").GetComponent<Image>();
                 
                 // 적 점수 업데이트용 구독 시작

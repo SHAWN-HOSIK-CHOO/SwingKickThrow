@@ -110,6 +110,17 @@ namespace CharacterAttributes
         {
             LookInput = context.ReadValue<Vector2>();
         }
+        public void OnLock(InputAction.CallbackContext context)
+        {
+            if(Cursor.lockState == CursorLockMode.Locked)
+            {
+                Cursor.lockState = CursorLockMode.None;
+            }
+            else
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
 
         public void OnAttack(InputAction.CallbackContext context)
         {
@@ -226,8 +237,7 @@ namespace CharacterAttributes
             
             _fsm = new CharacterFSMContext(this);
             _fsm.Initialize();
-
-            _fsm.SetState(FSMType.MOVEMENT); // 기본 상태
+            _fsm.SetState(FSMType.WAIT);
         }
 
         private void Update() {

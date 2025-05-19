@@ -57,7 +57,6 @@ namespace FancyUI
                 Debug.LogWarning("Panels are not correctly assigned!");
                 return transition.obj;
             }
-
             float curvedT = transition.curve.curve.Evaluate(t);
             obj.material.SetFloat("_Blend", curvedT);
             return transition.obj;

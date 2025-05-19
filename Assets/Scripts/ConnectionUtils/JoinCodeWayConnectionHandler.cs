@@ -1,4 +1,7 @@
 using GameFlow;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
@@ -20,27 +23,11 @@ namespace ConnectionUtils
         public TMP_InputField joinCodeInputField;
         public TMP_Text       joinCodeShowText;
 
-        public GameObject backgroundPanel;
-        
-        private bool _hasLoadedMainScene = false;
-        private bool _hasSpawnCalled     = false;
-        
         async void Start()
         {
-            backgroundPanel.gameObject.SetActive(true);
 #if UNITY_EDITOR
             Application.runInBackground = true;
 #endif
-
-            if (NetworkManager.Singleton == null)
-            {
-                Debug.Log("NetworkManager is null");
-            }
-            else
-            {
-                NetworkManager.Singleton.OnClientConnectedCallback += OnClientsConnected;
-            }
-            
             requestRelayButton.onClick.AddListener(Callback_btn_CreateRelay);
             joinRelayButton.onClick.AddListener(Callback_btn_JoinRelay);
             
@@ -53,9 +40,16 @@ namespace ConnectionUtils
             {
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
             }
-
+            NetworkManager.Singleton.OnClientStarted += OnClientStarted;
+            GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.NONE);
         }
-        
+
+        private void OnClientStarted()
+        {
+            GameSceneManager.Instance.LateInitialize();
+            GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.Game_WAIT);
+        }
+
         public async void Callback_btn_CreateRelay()
         {
             Allocation allocation = await RelayService.Instance.CreateAllocationAsync(6);
@@ -65,42 +59,19 @@ namespace ConnectionUtils
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
             NetworkManager.Singleton.StartHost();
         }
-        
         public async void Callback_btn_JoinRelay()
         {
             string userInput = joinCodeInputField.text;
-
             var joinAllocation  = await RelayService.Instance.JoinAllocationAsync(userInput);
             var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
-
             NetworkManager.Singleton.StartClient();
         }
 
-        public void OnClientsConnected(ulong clientID)
+        private void OnDestroy()
         {
-            if (NetworkManager.Singleton != null && NetworkManager.Singleton.ConnectedClientsList.Count == 2)
-            {
-                backgroundPanel.gameObject.SetActive(false);
-                
-                if (!_hasLoadedMainScene && NetworkManager.Singleton.IsHost)
-                {
-                    _hasLoadedMainScene = true;
-                    NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
-                }
-
-                if (!_hasSpawnCalled)
-                {
-                    _hasSpawnCalled = true;
-                    // foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
-                    // {
-                    //     ulong id = kvp.ClientId;
-                    //     GameSceneManager.Instance.SpawnMe(id);
-                    // }
-                    GameSceneManager.Instance.LateInitialize();
-                    GameSceneManager.Instance.gameSceneFlowContext.EnterState(GameStateType.GAME_START);
-                }
-            }
+            requestRelayButton.onClick.RemoveListener(Callback_btn_CreateRelay);
+            joinRelayButton.onClick.RemoveListener(Callback_btn_JoinRelay);
         }
     }
 }

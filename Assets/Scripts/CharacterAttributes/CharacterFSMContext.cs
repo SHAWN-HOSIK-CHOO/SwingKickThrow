@@ -17,6 +17,7 @@ namespace CharacterAttributes
 
       public void Initialize() 
       {
+         statePool[FSMType.WAIT]     = new WaitState();
          statePool[FSMType.MOVEMENT] = new MovementState();
          statePool[FSMType.ATTACK]   = new AttackState();
          statePool[FSMType.HIT]      = new HitState();

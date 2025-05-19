@@ -10,13 +10,14 @@ namespace GameFlow
      */
     public enum GameStateType
     {
+        NONE,
+        Game_WAIT,
         GAME_START,
         GAME_IDLE,
         GAME_END,
         GAME_PAUSE,
         GAME_RESUME,
         GAME_BOX_GEN,
-        NONE,
         COUNT
     }
 
@@ -29,12 +30,13 @@ namespace GameFlow
         public void Initialize()
         {
             //TODO: Initialize all states
+            statePool[GameStateType.Game_WAIT]    = new GameWaitState();
             statePool[GameStateType.GAME_START]   = new GameStartState();
             statePool[GameStateType.GAME_IDLE]    = new GameIdleState();
             statePool[GameStateType.GAME_END]     = new GameEndState();
             statePool[GameStateType.GAME_BOX_GEN] = new GameBoxGenState();
 
-            statePool[GameStateType.NONE] = new GameStartState();
+            statePool[GameStateType.NONE] = new GameNoneState();
             
             foreach (var state in statePool)
             {
