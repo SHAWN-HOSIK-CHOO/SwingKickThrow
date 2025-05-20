@@ -20,7 +20,7 @@ namespace GameFlow
         {
 
         }
-        void onExitGame()
+        void OnExitGame()
         {
             if (NetworkManager.Singleton != null)
             {
@@ -36,6 +36,7 @@ namespace GameFlow
             GameSceneManager.Instance._playerSelectionAndSpawnHandler = null;
             GameSceneManager.Instance.playerReady = null;
 
+            GameSceneManager.Instance.UI.joinText.text = null;
             Finish(GameStateType.GAME_END);
             Context.EnterState(GameStateType.NONE);
         }
@@ -71,20 +72,14 @@ namespace GameFlow
         public override void Handle()
         {
             GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(true);
-            GameSceneManager.Instance.UI.exit.onClick.AddListener(onExitGame);
-            NetworkManager.Singleton.OnClientDisconnectCallback += OnClientsDisConnected;
+            GameSceneManager.Instance.UI.exit.onClick.AddListener(OnExitGame);
             UpdateResultUI();
-        }
-
-        private void OnClientsDisConnected(ulong obj)
-        {
-            onExitGame();
         }
 
         public override void OnExit()
         {
             GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(false);
-            GameSceneManager.Instance.UI.exit.onClick.RemoveListener(onExitGame);
+            GameSceneManager.Instance.UI.exit.onClick.RemoveListener(OnExitGame);
         }
     }
 }

@@ -17,6 +17,19 @@ public class PlayerReady : NetworkBehaviour
         }
     }
     private bool _spawnedPlayerSelect;
+
+    public bool SpawnedCharacter
+    {
+        get => _spawnedCharacter;
+        set
+        {
+            _spawnedCharacter = value;
+            SetReady();
+        }
+    }
+    private bool _spawnedCharacter;
+
+
     public bool SpawnedPlayerSelect
     {
         get => _spawnedPlayerSelect;
@@ -68,7 +81,7 @@ public class PlayerReady : NetworkBehaviour
     }
     public void SetReady()
     {
-        bool isReady = SpawnedTimer & SpawnedPlayerSelect;
+        bool isReady = SpawnedTimer & SpawnedPlayerSelect & _spawnedCharacter;
         SetReadyServerRpc(isReady);
     }
 }
