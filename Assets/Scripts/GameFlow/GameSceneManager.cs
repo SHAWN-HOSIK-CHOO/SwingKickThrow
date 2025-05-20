@@ -132,8 +132,8 @@ namespace GameFlow
         public void SpawnTimer()
         {
             gameTimer = Instantiate(gameTimerPf);
-            gameTimer.requestedTime.Value = gameTime;
             gameTimer.GetComponent<NetworkObject>().Spawn();
+            gameTimer.requestedTime.Value = gameTime;
         }
         public void SpawnPlayerReady()
         {
