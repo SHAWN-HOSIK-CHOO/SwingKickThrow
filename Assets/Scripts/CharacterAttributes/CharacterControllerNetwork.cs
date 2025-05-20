@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using CameraUtils;
 using CharacterAttributes.PlayerUI;
 using GameEvents;
+using GameFlow;
 using GameProps;
 using Unity.Cinemachine;
 using Unity.Netcode;
@@ -234,14 +235,18 @@ namespace CharacterAttributes
                 var effectCam = GameObject.FindAnyObjectByType<PlayerEffectCameraController>();
                 effectCam.cinemachineImpulseSource = impulseSource;
             }
-            
             _fsm = new CharacterFSMContext(this);
             _fsm.Initialize();
             _fsm.SetState(FSMType.WAIT);
+            if(IsOwner)
+            {
+                var player = GameSceneManager.Instance.playerReady;
+                player.SpawnedCharacter = true;
+            }
         }
 
         private void Update() {
-            if (!IsOwner) 
+            if (!IsOwner || !IsSpawned) 
                 return;
             
             _fsm.OnUpdate();
@@ -249,7 +254,7 @@ namespace CharacterAttributes
 
         private void LateUpdate()
         {
-            if(!IsOwner)
+            if(!IsOwner || !IsSpawned)
                 return;
             
             CameraRotation();

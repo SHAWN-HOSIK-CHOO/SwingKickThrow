@@ -16,11 +16,6 @@ namespace GameFlow
          GameSceneManager.Instance.UI.winnerUI.SetActive(false);
          if (NetworkManager.Singleton.IsHost)
          {
-            foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
-            {
-               ulong id = kvp.ClientId;
-               GameSceneManager.Instance.SpawnMe(id);
-            }
             Context.EnterState(GameStateType.GAME_BOX_GEN);
          }
 
@@ -38,8 +33,8 @@ namespace GameFlow
       private void GameTimerEnd()
       {
             GameEvents.GameEvents.Unsubscribe(GameEvents.GameEventType.GameEnd, GameTimerEnd);
-            Context.EnterState(GameStateType.GAME_END);
             Finish(GameStateType.GAME_START);
+            Context.EnterState(GameStateType.GAME_END);
       }
     }
 }

@@ -4,16 +4,15 @@ using UnityEngine;
 using GameEvents;
 using GameFlow;
 using TMPro;
-using UnityEngine.Rendering;
 using UnityEngine.Rendering.Universal;
 using UnityEngine.Serialization;
 using Unity.Netcode;
-using CharacterAttributes;
 using UnityEngine.UI;
+using System.Runtime.InteropServices.WindowsRuntime;
 
 namespace CharacterAttributes.PlayerUI
 {
-    public class PlayerUIController : MonoBehaviour
+    public class PlayerUIController : NetworkBehaviour
     {
         public UniversalRendererData rendererData;
         private ScriptableRendererFeature _targetFeature;
@@ -64,25 +63,18 @@ namespace CharacterAttributes.PlayerUI
         private GameObject      _chargeUI;
 
         #endregion
-        
+
+        public override void OnNetworkSpawn()
+        {
+
+
+
+
+        }
+
         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
             _isOwner = characterControllerNetwork.IsOwner;
-
-            foreach (var feature in rendererData.rendererFeatures)
-            {
-                if (feature.name == "FullScreenPassRendererFeature")
-                {
-                    _targetFeature = feature;
-                    break;
-                }
-            }
-
-            if (_targetFeature == null)
-                Debug.Log("There is no feature named 'FullScreenPassRendererFeature'");
-            else
-                _targetFeature.SetActive(false);
-
             if (_isOwner)
             {
                 _owner = characterControllerNetwork;
@@ -97,36 +89,50 @@ namespace CharacterAttributes.PlayerUI
                     Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
 
                 _dashChargeTimer = _owner.dashTimer;
-            }
-            
-        }
 
-        private void Start()
-        {
-            if (_isOwner)
-            {
                 SetTagBallCount(0, _owner.characterStatusNetwork.tagBalls.Value);
-                _owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
+                _owner.characterStatusNetwork.tagBalls.OnValueChanged -= SetTagBallCount;
                 _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
-                _owner.characterStatusNetwork.tagBalls.OnValueChanged   += SetTagBallCount;
+                _owner.characterStatusNetwork.tagBalls.OnValueChanged += SetTagBallCount;
                 _owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
-                _chargeUI   = Instantiate(pfChargeUI, GameSceneManager.Instance.UI.DashCharge.transform);
+
+                _chargeUI = Instantiate(pfChargeUI, GameSceneManager.Instance.UI.DashCharge.transform);
                 chargeImage = _chargeUI.transform.Find("DashChargeFill").GetComponent<Image>();
-                
                 // 적 점수 업데이트용 구독 시작
                 StartCoroutine(SubscribeToEnemyScore());
             }
-        }
 
+            foreach (var feature in rendererData.rendererFeatures)
+            {
+                if (feature.name == "FullScreenPassRendererFeature")
+                {
+                    _targetFeature = feature;
+                    break;
+                }
+            }
+
+            if (_targetFeature == null)
+                Debug.Log("There is no feature named 'FullScreenPassRendererFeature'");
+            else
+                _targetFeature.SetActive(false);
+        }
         private IEnumerator SubscribeToEnemyScore()
         {
-            // 상대 플레이어가 생성될 때까지 기다림
+
+            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer);
             yield return new WaitUntil(() =>
-                NetworkManager.Singleton != null &&
-                NetworkManager.Singleton.ConnectedClients.Count == 2);
-
+            {
+                ulong myClientId = NetworkManager.Singleton.LocalClientId;
+                foreach (var kvp in GameSceneManager.Instance.playerReady.ReadyList)
+                {
+                    if (kvp.ClientId != myClientId)
+                    {
+                        return kvp.IsReady;
+                    }
+                }
+                return false;
+            });
             ulong myClientId = NetworkManager.Singleton.LocalClientId;
-
             foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
             {
                 if (kvp.Key != myClientId)
@@ -137,26 +143,24 @@ namespace CharacterAttributes.PlayerUI
                         SetEnemyScore(0, _enemyStatus.scoreBalls.Value);
                         _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
                         _enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
+                        break;
                     }
-                    else
-                    {
-                        Debug.LogWarning("Enemy CharacterStatusNetwork not found.");
-                    }
-                    break;
+                    yield return null;
                 }
             }
         }
 
         private void Update()
         {
-            if(chargeImage == null)
+            if (!IsSpawned) return;
+            if (chargeImage == null)
                 return;
             chargeImage.fillAmount = _dashChargeTimer.GetChargedRatio();
         }
 
         private void OnDisable()
         {
-            if (!_isOwner)
+            if (!_isOwner || !IsSpawned)
                 return;
 
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);

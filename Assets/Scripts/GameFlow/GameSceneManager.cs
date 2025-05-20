@@ -29,6 +29,9 @@ namespace GameFlow
         [Header("Player prefabs")] 
         public GameObject[] pfPlayers;
 
+        [Header("Player Count")]
+        public int NumPlayer = 2;
+
         [Header("Play time")]
         public float gameTime;
         public PlayerReady playerReadyPf;
