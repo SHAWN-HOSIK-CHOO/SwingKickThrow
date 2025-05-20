@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -19,7 +20,7 @@ namespace GameFlow
         {
 
         }
-        void onExit()
+        void onExitGame()
         {
             if (NetworkManager.Singleton != null)
             {
@@ -30,6 +31,11 @@ namespace GameFlow
             {
                 SceneManager.UnloadSceneAsync(scene);
             }
+
+            GameSceneManager.Instance.gameTimer = null;
+            GameSceneManager.Instance._playerSelectionAndSpawnHandler = null;
+            GameSceneManager.Instance.playerReady = null;
+
             Finish(GameStateType.GAME_END);
             Context.EnterState(GameStateType.NONE);
         }
@@ -65,24 +71,20 @@ namespace GameFlow
         public override void Handle()
         {
             GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(true);
-            GameSceneManager.Instance.UI.exit.onClick.AddListener(onExit);
+            GameSceneManager.Instance.UI.exit.onClick.AddListener(onExitGame);
             NetworkManager.Singleton.OnClientDisconnectCallback += OnClientsDisConnected;
             UpdateResultUI();
         }
 
         private void OnClientsDisConnected(ulong obj)
         {
-            onExit();
+            onExitGame();
         }
 
         public override void OnExit()
         {
-            if(NetworkManager.Singleton != null)
-            {
-                NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientsDisConnected;
-            }
             GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(false);
-            GameSceneManager.Instance.UI.exit.onClick.RemoveListener(onExit);
+            GameSceneManager.Instance.UI.exit.onClick.RemoveListener(onExitGame);
         }
     }
 }
