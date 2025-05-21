@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using UnityEngine;
 using GameEvents;
 using GameFlow;
@@ -9,6 +10,7 @@ using UnityEngine.Serialization;
 using Unity.Netcode;
 using UnityEngine.UI;
 using System.Runtime.InteropServices.WindowsRuntime;
+using DG.Tweening;
 
 namespace CharacterAttributes.PlayerUI
 {
@@ -64,14 +66,17 @@ namespace CharacterAttributes.PlayerUI
 
         #endregion
 
-        public override void OnNetworkSpawn()
-        {
+        #region DamageStatus
 
+        public TMP_Text damageText;
+        #endregion
 
+        #region Health
 
+        public Image healthFill;
 
-        }
-
+        #endregion
+        
         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
             _isOwner = characterControllerNetwork.IsOwner;
@@ -80,11 +85,18 @@ namespace CharacterAttributes.PlayerUI
                 _owner = characterControllerNetwork;
                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
                 GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+                GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_CRASH,OnPlayerCrashShowDamage);
 
                 tagBallCountText = GameSceneManager.Instance.tagBallCountText;
-                playerScoreText = GameSceneManager.Instance.playerScoreText;
-                enemyScoreText = GameSceneManager.Instance.enemyScoreText;
+                playerScoreText  = GameSceneManager.Instance.playerScoreText;
+                enemyScoreText   = GameSceneManager.Instance.enemyScoreText;
+                damageText       = GameSceneManager.Instance.damageText;
+                damageText.gameObject.SetActive(false);
+                healthFill = GameSceneManager.Instance.healthFill;
 
+                healthFill.fillAmount = _owner.characterStatusNetwork.currentHealth.Value / _owner.characterStatusNetwork.maxHealth;
+                SubscribeHealth();
+                
                 if (enemyScoreText == null)
                     Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
 
@@ -165,9 +177,12 @@ namespace CharacterAttributes.PlayerUI
 
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH, OnPlayerCrashShowDamage);
             _owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
             _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
             _enemyStatus.scoreBalls.OnValueChanged                  -= SetEnemyScore;
+            
+            UnsubscribeHealth();
         }
 
         private void ActivateSpeedLine()
@@ -181,5 +196,59 @@ namespace CharacterAttributes.PlayerUI
             if (_targetFeature != null)
                 _targetFeature.SetActive(false);
         }
+
+        private void OnPlayerCrashShowDamage()
+        {
+            if (damageText == null) return;
+
+            // 예시 데미지 값 (원한다면 인자로 받아도 됨)
+            float damage = _owner.myCurrentDamage;
+            damageText.text = damage.ToString(CultureInfo.InvariantCulture);
+
+            // RectTransform 가져오기
+            RectTransform rectTransform = damageText.GetComponent<RectTransform>();
+
+            // 위치와 투명도 초기화
+            rectTransform.anchoredPosition = new Vector2(0, 100); // 예: 화면 중앙 위쪽
+            damageText.color               = Color.blue;      // 빨간색, 완전 불투명
+
+            // 텍스트를 보이게 함
+            damageText.gameObject.SetActive(true);
+
+            // DOTween 시퀀스
+            Sequence seq = DOTween.Sequence();
+            seq.Append(rectTransform.DOAnchorPosY(150f, 1f).SetEase(Ease.OutCubic)); // 위로 50만큼 이동
+            seq.Join(damageText.DOFade(0f, 1f));                                     // 동시에 페이드아웃
+
+            seq.OnComplete(() =>
+                           {
+                               // 애니메이션 끝나면 텍스트 숨기기
+                               damageText.gameObject.SetActive(false);
+
+                               // 색상 초기화 (다음 재사용 대비)
+                               damageText.color = Color.blue;
+                           });
+        }
+        
+        private void SubscribeHealth()
+        {
+            var status = _owner.characterStatusNetwork;
+            status.currentHealth.OnValueChanged += OnHealthChanged;
+        }
+        
+        private void UnsubscribeHealth()
+        {
+            if (_owner != null && _owner.characterStatusNetwork != null)
+            {
+                _owner.characterStatusNetwork.currentHealth.OnValueChanged -= OnHealthChanged;
+            }
+        }
+        
+        private void OnHealthChanged(float prev, float current)
+        {
+            float max = _owner.characterStatusNetwork.maxHealth;
+            healthFill.fillAmount = current / max;
+        }
     }
+    
 }

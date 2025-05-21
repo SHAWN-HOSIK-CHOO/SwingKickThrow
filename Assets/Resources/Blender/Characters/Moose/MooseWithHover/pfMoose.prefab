@@ -1710,10 +1710,10 @@ CharacterController:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 1984
+    m_Bits: 1600
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 40
+    m_Bits: 296
   m_LayerOverridePriority: 0
   m_ProvidesContacts: 0
   m_Enabled: 0
@@ -1835,6 +1835,7 @@ MonoBehaviour:
   animator: {fileID: 7318235746921636461}
   dashTimer: {fileID: 0}
   maxChargeAmount: 10
+  myCurrentDamage: 0
 --- !u!65 &7699289980036974714
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1845,7 +1846,7 @@ BoxCollider:
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 1856
+    m_Bits: 1600
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 48
@@ -1875,6 +1876,7 @@ MonoBehaviour:
   enemyScoreText: {fileID: 0}
   pfChargeUI: {fileID: 7944222974285134553, guid: 647a3fbaae4439f4bb7a2915654c5fbe, type: 3}
   chargeImage: {fileID: 0}
+  damageText: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1894,7 +1896,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.25, y: 2.13, z: 2.04}
+  m_Size: {x: 1.51, y: 2.13, z: 1.78}
   m_Center: {x: 0, y: 0.94, z: 0.27}
 --- !u!114 &-1011004066572381302
 MonoBehaviour:

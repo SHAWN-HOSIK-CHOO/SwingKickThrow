@@ -1,8 +1,6 @@
 using GameFlow;
-using System;
 using System.Collections;
 using Unity.Netcode;
-using UnityEditor.PackageManager;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,13 +12,13 @@ public class GameWaitState : BaseGameState
     }
     private IEnumerator CheckState()
     {
-        // playerReady°¡ nullÀÌ ¾Æ´Ò ¶§±îÁö ´ë±â
+        // playerReadyï¿½ï¿½ nullï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         yield return new WaitUntil(() => GameSceneManager.Instance.playerReady != null);
 
-        // ReadyList¿¡ µÎ ¸íÀÌ µé¾î¿Ã ¶§±îÁö ´ë±â
+        // ReadyListï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         yield return new WaitUntil(() => GameSceneManager.Instance.playerReady.ReadyList.Count == GameSceneManager.Instance.NumPlayer);
 
-        // µÎ ¸í ¸ðµÎ IsReady°¡ trueÀÏ ¶§±îÁö ´ë±â
+        // ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ IsReadyï¿½ï¿½ trueï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         yield return new WaitUntil(() => {
             bool allReady = true;
             for (int i = 0; i < GameSceneManager.Instance.playerReady.ReadyList.Count; i++)
@@ -30,7 +28,7 @@ public class GameWaitState : BaseGameState
             return allReady;
         });
         
-        // Á¶°Ç ÃæÁ· ¡æ ´ÙÀ½ »óÅÂ·Î ÀüÈ¯
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½È¯
         GameSceneManager.Instance.UI.MainCanvas.gameObject.SetActive(false);
         Finish(GameStateType.Game_WAIT);
         Context.EnterState(GameStateType.GAME_START);
@@ -38,7 +36,7 @@ public class GameWaitState : BaseGameState
 
     private IEnumerator WaitConnect()
     {        
-        // playerReady°¡ nullÀÌ ¾Æ´Ò ¶§±îÁö ´ë±â
+        // playerReadyï¿½ï¿½ nullï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer);
         if (NetworkManager.Singleton.IsHost)
         {
