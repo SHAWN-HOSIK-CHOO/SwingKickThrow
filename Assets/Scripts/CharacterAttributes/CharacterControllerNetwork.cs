@@ -210,19 +210,15 @@ namespace CharacterAttributes
             }
             
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
-            
             playerUIController.Initialize(this);
             this.transform.tag = "Player";
-            
             mainCamera = Camera.main;
-
             var vCams = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
             foreach (var cam in vCams)
             {
                 cam.Follow = cinemachineCameraTarget;
             }
             //GameObject.FindAnyObjectByType<CinemachineCamera>().Follow = cinemachineCameraTarget;
-            
             _cinemachineTargetYaw = cinemachineCameraTarget.eulerAngles.y;
 
             if (!GameObject.FindAnyObjectByType<PlayerEffectCameraController>())

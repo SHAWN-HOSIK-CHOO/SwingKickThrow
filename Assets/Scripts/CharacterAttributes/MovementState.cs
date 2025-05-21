@@ -1,11 +1,11 @@
 using Unity.Netcode;
 using UnityEngine;
-
 namespace CharacterAttributes
 {
    public class MovementState : BaseState
    {
       private CharacterController _characterController;
+      private ServerCharacter.ServerCharacter _ServerCharacter;
       private Transform           _cameraTransform;
       private float               _moveSpeed;
       private float               _speedChangeRate;
@@ -26,7 +26,9 @@ namespace CharacterAttributes
       private float               _originOffset;
       private float               _rayOffset;
       private float               _rayLength;
-      
+
+
+
       private float _fallTimeoutDelta;
       
 
@@ -51,7 +53,7 @@ namespace CharacterAttributes
          _rayOffset           = Owner.rayOffset;
          _rayLength           = Owner.rayLength;
          _originOffset        = Owner.originOffset;
-         
+         _ServerCharacter     = Owner.serverCharacter;
          _fallTimeoutDelta = _fallTimeout;
       }
 
@@ -90,12 +92,17 @@ namespace CharacterAttributes
          if (move == Vector2.zero)
          {
             targetSpeed = 0f;
+            _ServerCharacter.TriggerTrigger(ServerCharacter.ServerCharacter.Trigger.OffHoverBoardVfx);
          }
-
-         if (!Owner.dashTimer.IsPaused && _characterController.velocity.magnitude == 0f)
+         else
          {
-            Owner.dashTimer.StopCharging();
+                _ServerCharacter.TriggerTrigger(ServerCharacter.ServerCharacter.Trigger.OnHoverBoardVfx);
+
          }
+         if (!Owner.dashTimer.IsPaused && _characterController.velocity.magnitude == 0f)
+            {
+                Owner.dashTimer.StopCharging();
+            }
 
          if (Owner.dashTimer.IsPaused && _characterController.velocity.magnitude != 0f)
          {
