@@ -7,6 +7,7 @@ using TMPro;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GameFlow
 {
@@ -50,6 +51,13 @@ namespace GameFlow
         public TMP_Text playerScoreText;
         public TMP_Text enemyScoreText;
 
+        [Header("Damage")]
+        public TMP_Text damageText;
+
+        [Header("Health fill")]
+        public Image healthFill;
+        
+        [Header("UI")]
         public GameUI UI;
         #endregion
 
@@ -148,6 +156,7 @@ namespace GameFlow
            int seconds = (int)(leftSeconds % 60);
            string timeFormatted = $"{minutes}:{seconds:D2}";
            UI.timeText.text = timeFormatted;
+           
            // Check
            if(leftSeconds == 0)
            {

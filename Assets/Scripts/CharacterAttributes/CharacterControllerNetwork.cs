@@ -184,6 +184,13 @@ namespace CharacterAttributes
         public  float           maxChargeAmount;
         
         #endregion
+
+        [FormerlySerializedAs("_myCurrentDamage")]
+        [HideInInspector]
+        public float myCurrentDamage = 0f;
+
+        [HideInInspector]
+        public float damageIGot = 0f;
         
         public override void OnNetworkSpawn()
         {
@@ -294,7 +301,8 @@ namespace CharacterAttributes
                 _alreadyCrashedWith.Add(otherId);
                 
                 Debug.Log($"My Crash amount is {characterStatusNetwork.GetCrashFactor()}");
-                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, characterStatusNetwork.GetCrashFactor());
+                myCurrentDamage = characterStatusNetwork.GetCrashFactor();
+                ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, myCurrentDamage);
             }
         }
 
@@ -339,6 +347,7 @@ namespace CharacterAttributes
             if (!IsOwner)
                 return;
             
+            damageIGot = damage;
             _alreadyCrashedWith.Clear();
             GameEvents.GameEvents.Publish(GameEventType.PLAYER_CRASH);
             characterStatusNetwork.TakeDamage(damage);
