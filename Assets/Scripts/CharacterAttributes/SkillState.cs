@@ -64,16 +64,6 @@ namespace CharacterAttributes
             Vector3        move  = _forwardVector * (_currentSpeed * Time.deltaTime);
             move.y = 0f;
             CollisionFlags flags = _characterController.Move(move);
-
-            // if ((flags & CollisionFlags.Sides) != 0)
-            // {
-            //    Vector3 collisionNormal = -_forwardVector;
-            //    Vector3 bounceDirection = Vector3.Reflect(_forwardVector, collisionNormal).normalized;
-            //
-            //    _characterController.Move(bounceDirection * (_bounceBackForce * Time.deltaTime));
-            //    Finish(FSMType.SKILL);
-            //    return;
-            // }
             
             // float currentPitch  = Owner.transform.eulerAngles.x;
             // float smoothedPitch = Mathf.LerpAngle(currentPitch, _targetPitch, Time.deltaTime * 10f);
