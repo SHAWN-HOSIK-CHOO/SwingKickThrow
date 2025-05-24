@@ -14,6 +14,7 @@ namespace GameEvents
       PLAYER_RESPAWN,
       Count,
       GameEnd,
+      GameUpdate,
       GameStart,
     }
    

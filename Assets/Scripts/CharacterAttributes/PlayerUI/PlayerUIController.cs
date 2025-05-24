@@ -130,20 +130,19 @@ namespace CharacterAttributes.PlayerUI
         }
         private IEnumerator SubscribeToEnemyScore()
         {
-
-            yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer);
+            yield return new WaitUntil(() => GameSceneManager.Instance.playerReady.ReadyList.Count == GameSceneManager.Instance.NumPlayer);
             yield return new WaitUntil(() =>
             {
-                ulong myClientId = NetworkManager.Singleton.LocalClientId;
                 foreach (var kvp in GameSceneManager.Instance.playerReady.ReadyList)
                 {
-                    if (kvp.ClientId != myClientId)
+                    if (!kvp.IsReady)
                     {
-                        return kvp.IsReady;
+                        return false;
                     }
                 }
-                return false;
+                return true;
             });
+
             ulong myClientId = NetworkManager.Singleton.LocalClientId;
             foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
             {
@@ -155,9 +154,7 @@ namespace CharacterAttributes.PlayerUI
                         SetEnemyScore(0, _enemyStatus.scoreBalls.Value);
                         _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
                         _enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
-                        break;
                     }
-                    yield return null;
                 }
             }
         }
@@ -170,18 +167,34 @@ namespace CharacterAttributes.PlayerUI
             chargeImage.fillAmount = _dashChargeTimer.GetChargedRatio();
         }
 
+        private void OnEnable()
+        {
+            if (!_isOwner || !IsSpawned)
+                return;
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH, OnPlayerCrashShowDamage);
+
+            _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
+            _owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
+            _owner.characterStatusNetwork.tagBalls.OnValueChanged -= SetTagBallCount;
+            _owner.characterStatusNetwork.tagBalls.OnValueChanged += SetTagBallCount;
+            _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
+            _enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
+            SubscribeHealth();
+        }
+
+
         private void OnDisable()
         {
             if (!_isOwner || !IsSpawned)
                 return;
-
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH, ActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_END, InActivateSpeedLine);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH, OnPlayerCrashShowDamage);
             _owner.characterStatusNetwork.tagBalls.OnValueChanged   -= SetTagBallCount;
             _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
             _enemyStatus.scoreBalls.OnValueChanged                  -= SetEnemyScore;
-            
             UnsubscribeHealth();
         }
 
@@ -233,6 +246,7 @@ namespace CharacterAttributes.PlayerUI
         private void SubscribeHealth()
         {
             var status = _owner.characterStatusNetwork;
+            status.currentHealth.OnValueChanged -= OnHealthChanged;
             status.currentHealth.OnValueChanged += OnHealthChanged;
         }
         
