@@ -27,6 +27,21 @@ public class PlayerReady : NetworkBehaviour
             SetReady();
         }
     }
+
+    private bool _spawnedBoxSpawner;
+
+
+    public bool SpawnedBoxSpawner
+    {
+        get => _spawnedBoxSpawner;
+        set
+        {
+            _spawnedBoxSpawner = value;
+            SetReady();
+        }
+    }
+
+
     private bool _spawnedCharacter;
 
 
@@ -81,7 +96,7 @@ public class PlayerReady : NetworkBehaviour
     }
     public void SetReady()
     {
-        bool isReady = SpawnedTimer & SpawnedPlayerSelect & _spawnedCharacter;
+        bool isReady = SpawnedTimer & SpawnedPlayerSelect & SpawnedBoxSpawner &_spawnedCharacter;
         SetReadyServerRpc(isReady);
     }
 }

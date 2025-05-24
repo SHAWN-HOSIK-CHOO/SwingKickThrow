@@ -35,6 +35,8 @@ public class GameWaitState : BaseGameState
             GameSceneManager.Instance.SpawnPlayerReady();
             GameSceneManager.Instance.SpawnPlayerSelect();
             GameSceneManager.Instance.SpawnTimer();
+            GameSceneManager.Instance.SpawnBoxSpawner();
+
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
             foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
             {
