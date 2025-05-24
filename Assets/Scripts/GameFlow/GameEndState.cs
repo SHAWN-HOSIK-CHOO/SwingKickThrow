@@ -1,10 +1,8 @@
 using CharacterAttributes;
-using ConnectionUtils;
 using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -44,6 +42,13 @@ namespace GameFlow
         void UpdateResultUI()
         {
             var rankingList = new List<(ulong clientId, int score)>();
+
+            if(NetworkManager.Singleton.ConnectedClients.Count != GameSceneManager.Instance.NumPlayer)
+            {
+                Debug.LogWarning("Player Exit Before Scoring");
+                return;
+            }
+
             foreach (var kvp in NetworkManager.Singleton.ConnectedClients)
             {
                 var playerObject = kvp.Value.PlayerObject;

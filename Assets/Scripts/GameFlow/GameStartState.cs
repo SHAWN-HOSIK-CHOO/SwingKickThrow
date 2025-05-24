@@ -14,6 +14,7 @@ namespace GameFlow
       public override void Handle()
       {
          GameSceneManager.Instance.UI.winnerUI.SetActive(false);
+
          if (NetworkManager.Singleton.IsHost)
          {
             Context.EnterState(GameStateType.GAME_BOX_GEN);
