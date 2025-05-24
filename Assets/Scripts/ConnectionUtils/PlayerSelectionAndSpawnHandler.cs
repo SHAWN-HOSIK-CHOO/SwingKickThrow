@@ -41,8 +41,8 @@ namespace ConnectionUtils
             
             GameObject playerObject = Instantiate(GameSceneManager.Instance.pfPlayers[selectionInt], new Vector3(spawnTransform.position.x,spawnTransform.position.y, spawnTransform.position.z),spawnTransform.rotation);            
             playerObject.GetComponent<NetworkObject>().SpawnAsPlayerObject(playerID);
-            _playerTable[playerID] = playerObject;
-            Debug.Log($"playerTable of {playerID} null check : {_playerTable[playerID] == null}");
+            _playerTable[(ulong)spawnIndex] = playerObject;
+            //Debug.Log($"playerTable of {playerID} null check : {_playerTable[playerID] == null}");
         }
         public void SetPlayerSelection(int index)
         {
