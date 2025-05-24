@@ -82,12 +82,14 @@ namespace GameFlow
             {
                 //Debug.Log("IsOwner passed from respawn method");
 
-                if ((int)id >= spawnTransforms.Length)
-                {
-                    Debug.LogError("Overflow");
-                }
+                // if ((int)id >= spawnTransforms.Length)
+                // {
+                //     Debug.LogError("Overflow");
+                // }
+
+                int spawnID = id == 0 ? 0 : 1;
                 
-                Transform spawnTransform = spawnTransforms[(int)id];
+                Transform spawnTransform = spawnTransforms[spawnID];
                 player.transform.position =
                     new Vector3(spawnTransform.position.x, spawnTransform.position.y, spawnTransform.position.z);
                 player.transform.rotation = spawnTransform.rotation;

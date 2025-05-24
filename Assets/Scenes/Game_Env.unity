@@ -217,6 +217,75 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.0475569, y: 2, z: 0.3555406}
   m_Center: {x: 0.0007328691, y: 0, z: -0.07777028}
+--- !u!1001 &81251837
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -25.78135
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 6.75
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 21.42435
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0.7071068
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 8049408686307816393, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8326841202890821662, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
+      propertyPath: m_Name
+      value: WindowBuilding1
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d7590bdad38a1694cae796a011ac5f75, type: 3}
 --- !u!1001 &111636556
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1215,7 +1284,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 6416710637737551245, guid: 411a5cf6099229c4889df3f13a556ce1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 18.26
+      value: -5.99
       objectReference: {fileID: 0}
     - target: {fileID: 6416710637737551245, guid: 411a5cf6099229c4889df3f13a556ce1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1223,7 +1292,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6416710637737551245, guid: 411a5cf6099229c4889df3f13a556ce1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -15.25
+      value: 6.5
       objectReference: {fileID: 0}
     - target: {fileID: 6416710637737551245, guid: 411a5cf6099229c4889df3f13a556ce1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1893,7 +1962,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 40, y: 0.2, z: 40}
+  m_LocalScale: {x: 60, y: 0.2, z: 60}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -4593,3 +4662,4 @@ SceneRoots:
   - {fileID: 1244144705}
   - {fileID: 1265211116}
   - {fileID: 1855387434}
+  - {fileID: 81251837}
