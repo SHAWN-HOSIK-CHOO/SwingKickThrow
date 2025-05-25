@@ -19,7 +19,7 @@ namespace GameFlow
             base.SetUp(gameSceneFlowContext);
 
             _UI = GameSceneManager.Instance.UI;
-            boxGenElapsed = 0;
+            
         }
         public override void LateSetUp()
         {
@@ -28,6 +28,8 @@ namespace GameFlow
 
       public override void Handle()
       {
+         boxGenElapsed = GameSceneManager.Instance.BoxGenDelay;
+         lastUpdateTime = 0;
          GameSceneManager.Instance.UI.winnerUI.SetActive(false);
          _timer = GameSceneManager.Instance.gameTimer;
          _boxSpawner = GameSceneManager.Instance._boxSpawner;
@@ -56,7 +58,7 @@ namespace GameFlow
                     {
                         boxGenElapsed = 0;
                         _boxSpawner.SpawnBox();
-                        Debug.Log("Spawned Box");   
+                        Debug.Log("Spawned Box" + lastUpdateTime);   
                     }
                 }
             }
