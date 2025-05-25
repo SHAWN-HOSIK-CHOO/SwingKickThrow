@@ -94,19 +94,21 @@ namespace CharacterAttributes.PlayerUI
                 damageText.gameObject.SetActive(false);
                 healthFill = GameSceneManager.Instance.healthFill;
 
-                healthFill.fillAmount = _owner.characterStatusNetwork.currentHealth.Value / _owner.characterStatusNetwork.maxHealth;
                 SubscribeHealth();
+                healthFill.fillAmount = _owner.characterStatusNetwork.currentHealth.Value / _owner.characterStatusNetwork.maxHealth;
                 
                 if (enemyScoreText == null)
                     Debug.LogWarning("enemyScoreText is null! Check GameSceneManager setup.");
 
                 _dashChargeTimer = _owner.dashTimer;
 
-                SetTagBallCount(0, _owner.characterStatusNetwork.tagBalls.Value);
                 _owner.characterStatusNetwork.tagBalls.OnValueChanged -= SetTagBallCount;
-                _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
                 _owner.characterStatusNetwork.tagBalls.OnValueChanged += SetTagBallCount;
+                _owner.characterStatusNetwork.scoreBalls.OnValueChanged -= SetPlayerScore;
                 _owner.characterStatusNetwork.scoreBalls.OnValueChanged += SetPlayerScore;
+
+                SetPlayerScore(0, _owner.characterStatusNetwork.scoreBalls.Value);
+                SetTagBallCount(0, _owner.characterStatusNetwork.tagBalls.Value);
 
                 _chargeUI = Instantiate(pfChargeUI, GameSceneManager.Instance.UI.DashCharge.transform);
                 chargeImage = _chargeUI.transform.Find("DashChargeFill").GetComponent<Image>();
@@ -151,9 +153,9 @@ namespace CharacterAttributes.PlayerUI
                     _enemyStatus = kvp.Value.PlayerObject.GetComponent<CharacterStatusNetwork>();
                     if (_enemyStatus != null)
                     {
-                        SetEnemyScore(0, _enemyStatus.scoreBalls.Value);
                         _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
                         _enemyStatus.scoreBalls.OnValueChanged += SetEnemyScore;
+                        SetEnemyScore(0, _enemyStatus.scoreBalls.Value);
                     }
                 }
             }

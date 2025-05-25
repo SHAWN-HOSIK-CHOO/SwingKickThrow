@@ -51,11 +51,12 @@ namespace GameFlow
             {
                 if (_boxSpawner.IsSpawned)
                 {
-                    boxGenElapsed += lastUpdateTime;
+                    boxGenElapsed += deltaTime;
                     if (boxGenElapsed >= GameSceneManager.Instance.BoxGenDelay)
                     {
                         boxGenElapsed = 0;
                         _boxSpawner.SpawnBox();
+                        Debug.Log("Spawned Box");   
                     }
                 }
             }
