@@ -1,3 +1,4 @@
+using GameFlow;
 using System.Collections.Generic;
 using Unity.Netcode;
 using UnityEngine;
@@ -35,6 +36,13 @@ namespace GameProps
 
                 return _boxPool;
             }
+        }
+
+
+        public override void OnNetworkSpawn()
+        {
+            var player = GameSceneManager.Instance.playerReady;
+            player.SpawnedBoxSpawner = true;
         }
 
         public void Initialize(List<Transform> spawnTrans, GameObject pfBox_)

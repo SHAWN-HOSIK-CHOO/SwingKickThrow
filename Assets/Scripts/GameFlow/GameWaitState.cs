@@ -12,13 +12,8 @@ public class GameWaitState : BaseGameState
     }
     private IEnumerator CheckState()
     {
-        // playerReady�� null�� �ƴ� ������ ���
         yield return new WaitUntil(() => GameSceneManager.Instance.playerReady != null);
-
-        // ReadyList�� �� ���� ���� ������ ���
         yield return new WaitUntil(() => GameSceneManager.Instance.playerReady.ReadyList.Count == GameSceneManager.Instance.NumPlayer);
-
-        // �� �� ��� IsReady�� true�� ������ ���
         yield return new WaitUntil(() => {
             bool allReady = true;
             for (int i = 0; i < GameSceneManager.Instance.playerReady.ReadyList.Count; i++)
@@ -27,22 +22,21 @@ public class GameWaitState : BaseGameState
             }
             return allReady;
         });
-        
-        // ���� ���� �� ���� ���·� ��ȯ
         GameSceneManager.Instance.UI.MainCanvas.gameObject.SetActive(false);
         Finish(GameStateType.Game_WAIT);
         Context.EnterState(GameStateType.GAME_START);
     }
 
     private IEnumerator WaitConnect()
-    {        
-        // playerReady�� null�� �ƴ� ������ ���
+    {
         yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer);
         if (NetworkManager.Singleton.IsHost)
         {
             GameSceneManager.Instance.SpawnPlayerReady();
             GameSceneManager.Instance.SpawnPlayerSelect();
             GameSceneManager.Instance.SpawnTimer();
+            GameSceneManager.Instance.SpawnBoxSpawner();
+
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
             foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using CharacterAttributes;
 using ConnectionUtils;
@@ -23,6 +24,11 @@ namespace GameFlow
         
         [Header("Box Objects")] 
         public List<GameObject> pfBoxObjects;
+        [HideInInspector]
+        public BoxSpawner _boxSpawner;
+
+
+        public float BoxGenDelay = 60f;
 
         [Header("Player spawn Transforms")] 
         public Transform[] spawnTransforms;
@@ -38,10 +44,11 @@ namespace GameFlow
         public PlayerReady playerReadyPf;
         public PlayerReady playerReady;
         public GameTimer gameTimerPf;
+        [HideInInspector]
         public GameTimer gameTimer;
         public PlayerSelectionAndSpawnHandler playerSelectPf;
+        [HideInInspector]
         public PlayerSelectionAndSpawnHandler _playerSelectionAndSpawnHandler;
-
         #region UI
 
         [Header("Tag ball")] 
@@ -129,15 +136,21 @@ namespace GameFlow
             
         }
 
-        private void OnBoxGenCalled()
-        {
-            
-        }
-
         public void SpawnPlayerSelect()
         {
             var playerSelect = Instantiate(playerSelectPf);
             playerSelect.GetComponent<NetworkObject>().Spawn();
+        }
+
+        public void SpawnBoxSpawner()
+        {
+            if (NetworkManager.Singleton.IsServer)
+            {
+                var go = GameObject.Instantiate(pfBoxSpawner);
+                _boxSpawner = go.GetComponent<BoxSpawner>();
+                _boxSpawner.Initialize(boxTransforms, pfBoxObjects[0]);
+                go.GetComponent<NetworkObject>().Spawn();
+            }
         }
         public void SpawnTimer()
         {
@@ -152,14 +165,9 @@ namespace GameFlow
         }
         public void UpdateTime(float old, float elapsed)
         {
-           float leftSeconds = Mathf.Clamp(gameTimer.requestedTime.Value - gameTimer._elapsedTime.Value, 0, gameTimer.requestedTime.Value);
-           // Update UI 
-           int minutes = (int)(leftSeconds / 60);
-           int seconds = (int)(leftSeconds % 60);
-           string timeFormatted = $"{minutes}:{seconds:D2}";
-           UI.timeText.text = timeFormatted;
-           
-           // Check
+            float leftSeconds = Mathf.Clamp(gameTimer.requestedTime.Value - gameTimer._elapsedTime.Value, 0, gameTimer.requestedTime.Value);
+            GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameUpdate);
+            // Check
            if(leftSeconds == 0)
            {
                 GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameEnd);
@@ -170,7 +178,14 @@ namespace GameFlow
         {
             if (Input.GetKeyDown(KeyCode.M))
             {
-                gameSceneFlowContext.EnterState(GameStateType.GAME_BOX_GEN);
+                try
+                {
+                    _boxSpawner.SpawnBox();
+                }
+                catch
+                {
+
+                }
             }
         }
     }

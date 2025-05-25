@@ -200,13 +200,18 @@ namespace CharacterAttributes
             characterStatusNetwork      = this.GetComponent<CharacterStatusNetwork>();
             playerUIController          = this.GetComponent<PlayerUIController>();
             serverCharacter            = this.GetComponent<ServerCharacter.ServerCharacter>();
+
+
+            dashTimer = this.GetComponent<DashChargeTimer>();
+            dashTimer.Initialize(this, maxChargeAmount);
+
+            //다른 컴포넌트의 값변경 대해 구독이 있음으로 가장 먼저 호출할 것
+            playerUIController.Initialize(this);
             serverCharacter.Initialize(this);
             
             characterStatusNetwork.Initialize(speed,health,10f, pushedTime, pushedSpeed, tagBalls, mass);
             characterStatusNetwork.crashFactor = 10f;
 
-            dashTimer = this.GetComponent<DashChargeTimer>();
-            dashTimer.Initialize(this, maxChargeAmount);
             
             if (!IsOwner)
             {
@@ -217,7 +222,6 @@ namespace CharacterAttributes
             }
             
             impulseSource = this.GetComponent<CinemachineImpulseSource>();
-            playerUIController.Initialize(this);
             this.transform.tag = "Player";
             mainCamera = Camera.main;
             var vCams = FindObjectsByType<CinemachineCamera>(FindObjectsSortMode.None);
