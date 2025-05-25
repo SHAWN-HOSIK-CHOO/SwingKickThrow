@@ -6,11 +6,15 @@ namespace STC
     {
         string Name { get;}
         IState ParentState { get; }
-        IState currentState { get; }
         IState GetChildState(string name);
+
+        Dictionary<string, IState>.KeyCollection GetAllTaskState();
         Dictionary<string, IState>.KeyCollection GetAllChildState();
-        void DetachParent();
         string GetFullPath();
+        void TaskInChlid(string name);
+        void TaskOutChlid(string name);
+        void TaskChlid(string inTaskState, string outTaskState);
+        void SetParent(IState state);
         void Enter();
         void Exit();
         void Update();

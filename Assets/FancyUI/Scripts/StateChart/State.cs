@@ -4,28 +4,16 @@ namespace STC
 {
     public class State : IState
     {
-        public string GetFullPath()
-        {
-            List<string> pathParts = new List<string>();
-            IState? current = this;
-            while (current != null)
-            {
-                pathParts.Add(current.Name);
-                current = current.ParentState;
-            }
-            pathParts.Reverse();
-            return string.Join(".", pathParts);
-        }
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
-        public IState currentState { get; protected set; }
+        //Child State Chart
+        protected Dictionary<string, IState> Task;
         protected Dictionary<string, IState> ChildState;
         public State(string name)
         {
             Name = name;
-            currentState = this;
+            Task = new Dictionary<string, IState>();
             ChildState = new Dictionary<string, IState>();
-            ChildState.Add(Name,this);
         }
         public IState GetChildState(string name)
         {
@@ -35,42 +23,29 @@ namespace STC
             }
             return null;
         }
-        public Dictionary<string, IState>.KeyCollection GetAllChildState()
-        {
-            return ChildState.Keys;
-        }
         public void Update()
         {
-            if (currentState != this)
-            {
-                currentState.Update();
-            }
             OnUpdate();
+
+            foreach (var kvp in Task)
+            {
+                kvp.Value.Update();
+            }
         }
         public void Enter()
         {
-            if (currentState != this)
-            {
-                currentState.Enter();
-            }
             OnEnter();
+            foreach (var kvp in Task)
+            {
+                kvp.Value.Enter();
+            }
         }
         public void Exit()
         {
-            if (currentState != this)
-            {
-                currentState.Exit();
-            }
             OnExit();
-        }
-        public void ChangeState(string name)
-        {
-            var chlid = GetChildState(name);
-            if(chlid != null)
+            foreach (var kvp in Task)
             {
-                currentState.Exit();
-                currentState = chlid;
-                currentState.Enter();
+                kvp.Value.Exit();
             }
         }
         public virtual void OnEnter()
@@ -85,25 +60,66 @@ namespace STC
         {
 
         }
-        
-        
-        public void RemoveChild(string name)
+        public Dictionary<string, IState>.KeyCollection GetAllTaskState()
         {
-            if(currentState.Name == name)
+            return Task.Keys;
+        }
+        public Dictionary<string, IState>.KeyCollection GetAllChildState()
+        {
+            return ChildState.Keys;
+        }
+        public string GetFullPath()
+        {
+            List<string> pathParts = new List<string>();
+            IState current = this;
+            while (current != null)
             {
-                ChangeState(Name);
+                pathParts.Add(current.Name);
+                current = current.ParentState;
             }
-
-            var chlid = GetChildState(name);
-            if (chlid != null)
+            pathParts.Reverse();
+            return string.Join(".", pathParts);
+        }
+        public void TaskInChlid(string name)
+        {
+            if(Task.TryGetValue(name,out var val))
             {
-                ChildState.Remove(name);
-                chlid.DetachParent();
+                val.Exit();
+                Task.Remove(name);
+            }
+            var state = GetChildState(name);
+            if(state != null)
+            {
+                Task.Add(name, state);
+                state.Enter();
             }
         }
-        public void DetachParent()
+        public void TaskOutChlid(string name)
         {
-            ParentState = null;
+            if (Task.TryGetValue(name, out var val))
+            {
+                val.Exit();
+                Task.Remove(name);
+            }
+        }
+        public void TaskChlid(string inTaskState, string outTaskState)
+        {
+            TaskOutChlid(outTaskState);
+            TaskInChlid(inTaskState);
+        }
+        public void SetParent(IState state)
+        {
+            ParentState = state;
+        }
+        public void AddChild(IState state)
+        {
+            ChildState.Add(state.Name,state);
+            state.SetParent(this);
+        }
+        public void RemoveChild(IState state)
+        {
+            ChildState.Remove(state.Name);
+            state.SetParent(null);
         }
     }
 }
