@@ -16,7 +16,6 @@ namespace STC
             pathParts.Reverse();
             return string.Join(".", pathParts);
         }
-        public bool Mute { get; protected set; }
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
         public IState currentState { get; protected set; }
@@ -64,24 +63,6 @@ namespace STC
             }
             OnExit();
         }
-        public void RemoveChild(string name)
-        {
-            if(currentState.Name == name)
-            {
-                ChangeState(Name);
-            }
-
-            var chlid = GetChildState(name);
-            if (chlid != null)
-            {
-                ChildState.Remove(name);
-                chlid.DetachParent();
-            }
-        }
-        public void DetachParent()
-        {
-            ParentState = null;
-        }
         public void ChangeState(string name)
         {
             var chlid = GetChildState(name);
@@ -103,6 +84,26 @@ namespace STC
         public virtual void OnUpdate()
         {
 
+        }
+        
+        
+        public void RemoveChild(string name)
+        {
+            if(currentState.Name == name)
+            {
+                ChangeState(Name);
+            }
+
+            var chlid = GetChildState(name);
+            if (chlid != null)
+            {
+                ChildState.Remove(name);
+                chlid.DetachParent();
+            }
+        }
+        public void DetachParent()
+        {
+            ParentState = null;
         }
     }
 }
