@@ -66,6 +66,10 @@ namespace GameFlow
         
         [Header("UI")]
         public GameUI UI;
+
+        [Header("ESC Panel")]
+        public GameObject escPanel;
+        public Slider volumeSlider;
         #endregion
 
         public GameObject pfBoxSpawner;

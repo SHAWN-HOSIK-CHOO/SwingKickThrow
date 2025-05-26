@@ -27,8 +27,10 @@ namespace GameFlow
         }
 
       public override void Handle()
-      {
-         boxGenElapsed = GameSceneManager.Instance.BoxGenDelay;
+      { 
+          Cursor.lockState = CursorLockMode.Locked;
+          Cursor.visible   = false;
+          boxGenElapsed = GameSceneManager.Instance.BoxGenDelay;
          lastUpdateTime = 0;
          GameSceneManager.Instance.UI.winnerUI.SetActive(false);
          _timer = GameSceneManager.Instance.gameTimer;
