@@ -4,6 +4,18 @@ namespace STC
 {
     public class Condition : ICondition
     {
+        public struct AlwaysTrue : ICondition
+        {
+            public void AddCondition(ICondition condition)
+            {
+            }
+
+            public bool CheckCondition()
+            {
+                return true;
+            }
+        }
+
         List<ICondition> _conditionList;
         public Condition()
         {
