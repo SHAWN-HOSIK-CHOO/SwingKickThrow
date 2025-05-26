@@ -1777,8 +1777,8 @@ MonoBehaviour:
   rayLength: 1.2
   mainCamera: {fileID: 0}
   cinemachineCameraTarget: {fileID: 7620097801685716830}
-  topClamp: 40
-  bottomClamp: 39
+  topClamp: 80
+  bottomClamp: 0
   cameraYawSensitivity: 0.2
   cameraPitchSensitivity: 0.2
   characterStatusNetwork: {fileID: 0}
@@ -1836,6 +1836,7 @@ MonoBehaviour:
   dashTimer: {fileID: 0}
   maxChargeAmount: 10
   myCurrentDamage: 0
+  damageIGot: 0
 --- !u!65 &7699289980036974714
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1877,6 +1878,7 @@ MonoBehaviour:
   pfChargeUI: {fileID: 7944222974285134553, guid: 647a3fbaae4439f4bb7a2915654c5fbe, type: 3}
   chargeImage: {fileID: 0}
   damageText: {fileID: 0}
+  healthFill: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
