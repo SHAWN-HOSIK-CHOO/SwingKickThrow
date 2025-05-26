@@ -4347,7 +4347,7 @@ GameObject:
   - component: {fileID: 426126973}
   m_Layer: 9
   m_Name: OutTrigger
-  m_TagString: Untagged
+  m_TagString: RespawnNeeded
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -4411,7 +4411,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: d43252675ebf2496e82bbc87997c5ee9, type: 2}
+  - {fileID: 2100000, guid: 5f5ba7641700d1344b4ddf46eef4d250, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
