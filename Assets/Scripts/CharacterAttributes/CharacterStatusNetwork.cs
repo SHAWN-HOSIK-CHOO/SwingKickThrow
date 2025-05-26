@@ -66,6 +66,17 @@ namespace CharacterAttributes
             }
         }
 
+        public void MakeCurrentHealthZero()
+        {
+            MakeCurrentHealthZeroServerRPC();
+        }
+        
+        [ServerRpc]
+        private void MakeCurrentHealthZeroServerRPC()
+        {
+            currentHealth.Value = 0f;
+        }
+        
         private void OnHealthChanged(float previousValue, float newValue)
         {
             if (!IsServer) return;
@@ -122,10 +133,9 @@ namespace CharacterAttributes
         {
             float damageTaken = Mathf.Max(damage - defense.Value, 1f);
             currentHealth.Value = Mathf.Max(currentHealth.Value - damageTaken, 0f);
-            lastAttackerId = rpcParams.Receive.SenderClientId; // 기록해두긴 하지만 안 써도 됨
+            lastAttackerId = rpcParams.Receive.SenderClientId; 
         }
-
-        //서버에서만 실행되어야 하는 메소드
+        
         public void AddOrMinusTagBalls(int count)
         {
             AddOrMinusTagBallsServerRPC(count);
@@ -197,7 +207,7 @@ namespace CharacterAttributes
             if (!IsOwner) 
                 return;
             
-            if(transform.localScale.magnitude >= new Vector3(4f,4f,4f).magnitude)
+            if(transform.localScale.magnitude >= new Vector3(2.5f,2.5f,2.5f).magnitude)
                 return;
             
             transform.localScale *= factor;
