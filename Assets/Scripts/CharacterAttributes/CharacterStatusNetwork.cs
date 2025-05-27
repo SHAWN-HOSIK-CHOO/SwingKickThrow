@@ -1,4 +1,5 @@
 using GameEvents;
+using GameFlow;
 using GameProps.SO;
 using Unity.Netcode;
 using UnityEngine;
@@ -65,9 +66,10 @@ namespace CharacterAttributes
                 currentHealth.OnValueChanged += OnHealthChanged;
             }
         }
-
+        
         public void MakeCurrentHealthZero()
         {
+            GameSceneManager.Instance.currentPlayerCrashedUI = GameSceneManager.Instance.splashedScreenUI;
             MakeCurrentHealthZeroServerRPC();
         }
         
@@ -117,6 +119,8 @@ namespace CharacterAttributes
             {
                 Debug.Log("You are dead");
                 GameEvents.GameEvents.Publish(GameEventType.PLAYER_DEATH);
+                //물에 빠진 경우에 currentPlayerCrashedUI = splashedScreenUI로 변경하기 때문에 되돌려줘야 함
+                GameSceneManager.Instance.currentPlayerCrashedUI = GameSceneManager.Instance.playerCrashedScreenUI;
             }
         }
 
