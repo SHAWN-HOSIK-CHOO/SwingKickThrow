@@ -58,12 +58,17 @@ namespace STC
         }
         public struct TaskEvent : StateChartEvent
         {
-            public IState state;
+            public IState DstState;
+
+            public TaskEvent(IState dst)
+            {
+                DstState = dst;
+            }
             public void Do()
             {
-                if(StateChart.Instance.CheckPathValid(state))
+                if(StateChart.Instance.CheckPathValid(DstState))
                 {
-                    var fullPath = state.GetFullPath();
+                    var fullPath = DstState.GetFullPath();
                     var pathParts = fullPath.Split('.');
                     IState currentState = Instance;
                     for (int i = 1; i < pathParts.Length; i++)

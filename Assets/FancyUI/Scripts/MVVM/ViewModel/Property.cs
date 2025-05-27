@@ -10,6 +10,7 @@ namespace MVVM.Property
         delegate void DelegateSubscribe();
         void Subscribe(DelegateSubscribe callback);
     }
+
     public class Property<T> : IProperty
     {
         private T _value;
@@ -26,10 +27,12 @@ namespace MVVM.Property
             }
         }
         public event Action<T> OnValueChanged;
-        
         public void Subscribe(DelegateSubscribe callback)
         {
             OnValueChanged += (value) => callback?.Invoke();    
         }
     }
+    public class IntProperty : Property<int> { }
+    public class BoolProperty : Property<bool> { }
+    public class FloatProperty : Property<bool> { }
 }

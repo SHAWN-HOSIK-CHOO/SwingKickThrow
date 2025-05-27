@@ -1,5 +1,6 @@
 using MVVM.ViewModel.Window.BIND;
 using STC;
+using static MVVM.ViewModel.Window.State.NonInteractiveState;
 namespace MVVM.ViewModel.Window.State
 {
     public class VisibleState : STC.State
@@ -7,7 +8,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsVisible : Condition
         {
             IWindowViewModel Owner;
-            public IsVisible(IWindowViewModel owner) : base(true)
+            public IsVisible(IWindowViewModel owner) : base(nameof(IsVisible), true)
             {
                 Owner = owner;
                 Owner.Visible.Subscribe(Callback);
@@ -38,10 +39,23 @@ namespace MVVM.ViewModel.Window.State
         {
             if (e is Event.SetModalEvent modalEvent)
             {
-                IViewEventBinding modalWindow = Owner.ModalWindow as IViewEventBinding;
-                IViewEventBinding ownerWindow = Owner as IViewEventBinding;
                 Owner.IsModal.Value = modalEvent.active;
                 modalEvent.Consumed.isConsumed = true;
+            }
+            else if (e is Event.SetInterativeEvent interactEvent)
+            {
+                Owner.Interactable.Value = interactEvent.interative;
+                interactEvent.Consumed.isConsumed = true;
+
+            }
+        }
+
+        public override void OnEnter()
+        {
+            foreach(var w in Owner.ChildWindow)
+            {
+                var child = w as IViewEventBinding;
+                child.ShowWindow();
             }
         }
     }

@@ -6,6 +6,7 @@ namespace STC
 {
     public interface ICondition
     {
+        string Name { get; }
         Property<bool> IsActive { get; }
 
         event Action Dirty;
@@ -14,6 +15,6 @@ namespace STC
         void AddCondition(ICondition condition);
         void RemoveCondition(ICondition condition);
         
-        void RaiseDirty();
+        void CheckDirty();
     }
 }

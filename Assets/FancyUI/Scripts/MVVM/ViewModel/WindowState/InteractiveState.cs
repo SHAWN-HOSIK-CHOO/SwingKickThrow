@@ -1,6 +1,7 @@
 using MVVM.ViewModel.Window.BIND;
 using STC;
 using UnityEngine;
+using static MVVM.ViewModel.Window.State.ModalState;
 using static MVVM.ViewModel.Window.State.VisibleState;
 using static UnityEngine.UI.GridLayoutGroup;
 
@@ -13,7 +14,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsInteractive : Condition
         {
             IWindowViewModel Owner;
-            public IsInteractive(IWindowViewModel owner) : base(true)
+            public IsInteractive(IWindowViewModel owner) : base(nameof(IsInteractive), true)
             {
                 Owner = owner;
                 Owner.Visible.Subscribe(Callback);

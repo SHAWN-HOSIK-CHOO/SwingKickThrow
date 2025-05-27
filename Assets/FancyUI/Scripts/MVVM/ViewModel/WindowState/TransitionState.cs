@@ -12,7 +12,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsTransition : Condition
         {
             IWindowViewModel Onwer;
-            public IsTransition(IWindowViewModel owner) : base(true)
+            public IsTransition(IWindowViewModel owner) : base(nameof(TransitionState), true)
             {
                 Onwer = owner;
                 Onwer.IsTransition.Subscribe(Callback);
@@ -25,7 +25,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsNoTransition : Condition
         {
             IWindowViewModel Onwer;
-            public IsNoTransition(IWindowViewModel owner) : base(true)
+            public IsNoTransition(IWindowViewModel owner) : base(nameof(IsNoTransition),true)
             {
                 Onwer = owner;
                 Onwer.IsTransition.Subscribe(Callback);

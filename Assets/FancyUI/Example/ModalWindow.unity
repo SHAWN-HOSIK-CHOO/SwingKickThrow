@@ -416,6 +416,7 @@ MonoBehaviour:
   ChildWindowList:
   - {fileID: 1197267831}
   - {fileID: 663145899}
+  viewInteractable: 0
 --- !u!114 &162178979
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -818,6 +819,7 @@ MonoBehaviour:
   ParentWindow: {fileID: 0}
   ModalWindow: {fileID: 1919754110}
   ChildWindowList: []
+  viewInteractable: 0
 --- !u!114 &663145900
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -860,7 +862,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 75202f5974a141e4fa1ea63047f38d98, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  treeState: 
+  treeState: "\u2514\u2500\u2500 Origin\u2705\r\n"
 --- !u!4 &809101460
 Transform:
   m_ObjectHideFlags: 0
@@ -1511,6 +1513,7 @@ MonoBehaviour:
   ParentWindow: {fileID: 0}
   ModalWindow: {fileID: 0}
   ChildWindowList: []
+  viewInteractable: 0
   close: {fileID: 216167261}
 --- !u!114 &1152252374
 MonoBehaviour:
@@ -1618,6 +1621,7 @@ MonoBehaviour:
   ParentWindow: {fileID: 0}
   ModalWindow: {fileID: 0}
   ChildWindowList: []
+  viewInteractable: 0
 --- !u!114 &1197267832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2277,6 +2281,7 @@ MonoBehaviour:
   ParentWindow: {fileID: 0}
   ModalWindow: {fileID: 0}
   ChildWindowList: []
+  viewInteractable: 0
   close: {fileID: 1229032530}
 --- !u!114 &1919754111
 MonoBehaviour:

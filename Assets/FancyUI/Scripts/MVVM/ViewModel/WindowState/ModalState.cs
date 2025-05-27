@@ -1,5 +1,6 @@
 using MVVM.ViewModel.Window.BIND;
 using STC;
+using static MVVM.ViewModel.Window.State.IDLEState;
 namespace MVVM.ViewModel.Window.State
 {
     public class ModalState : STC.State
@@ -9,7 +10,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsModal : Condition
         {
             IWindowViewModel Owner;
-            public IsModal(IWindowViewModel owner) : base(true)
+            public IsModal(IWindowViewModel owner) : base(nameof(IsModal),true)
             {
                 Owner = owner;
                 Owner.IsModal.Subscribe(Callback);
@@ -22,7 +23,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsNoModal : Condition
         {
             IWindowViewModel Owner;
-            public IsNoModal(IWindowViewModel owner) : base(true)
+            public IsNoModal(IWindowViewModel owner) : base(nameof(IsNoModal), true)
             {
                 Owner = owner;
                 Owner.IsModal.Subscribe(Callback);

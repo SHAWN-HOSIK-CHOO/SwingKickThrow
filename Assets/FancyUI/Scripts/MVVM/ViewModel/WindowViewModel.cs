@@ -3,9 +3,6 @@ using MVVM.ViewModel.Window.Event;
 using STC;
 using System.Collections.Generic;
 using UnityEngine;
-using static MVVM.ViewModel.Window.State.ModalState;
-using static MVVM.ViewModel.Window.State.TransitionState;
-using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window
 {
     public class WindowViewModel : STC.State , Window.IWindowViewModel, BIND.IViewEventBinding , IWindowState
@@ -75,7 +72,6 @@ namespace MVVM.ViewModel.Window
         {
             ModalWindow = modal;
         }
-
         public void ShowWindow()
         {
             Handle(new SetVisibleWindowEvent(true));
@@ -92,27 +88,66 @@ namespace MVVM.ViewModel.Window
         {
             Handle(new SetModalEvent(false));
         }
+        public void SetInteractable()
+        {
+            Handle(new SetInterativeEvent(true));
+        }
+        public void SetNonInteractable()
+        {
+            Handle(new SetInterativeEvent(false));
+        }
         public void OnClick(Vector2 pos)
         {
 
         }
         public void SetParentWindow(IWindowViewModel parent)
         {
+            if (ParentWindow == parent) return;
+            if(ParentWindow != null)
+            {
+                var w = ParentWindow as IViewEventBinding;
+                w.RemoveChildWindow(this);
+            }
             ParentWindow = parent;
+            if(ParentWindow!=null)
+            {
+                var w = ParentWindow as IViewEventBinding;
+                w.AddChildWindow(this);
+            }
+        }
+        public void RemoveChildWindow(IWindowViewModel child)
+        {
+            if (!ChildWindow.Contains(child)) return;
+            ChildWindow.Remove(child);
+            var w = child as IViewEventBinding;
+            w.SetParentWindow(null);
         }
         public void AddChildWindow(IWindowViewModel child)
         {
+            if (ChildWindow.Contains(child)) return;
             ChildWindow.Add(child);
+            var w = child as IViewEventBinding;
+            w.SetParentWindow(this);
         }
-
         #endregion
 
         public override void OnHandle(STC.Event.IStateEvent e)
         {
             if (e is Event.SetVisibleWindowEvent visibleEvent)
             {
-                Visible.Value = visibleEvent.visible;
-                visibleEvent.Consumed.isConsumed = true;
+                if(ParentWindow != null)
+                {
+                    if (ParentWindow.Visible.Value)
+                    {
+                        Visible.Value = visibleEvent.visible;
+                        visibleEvent.Consumed.isConsumed = true;
+                    }
+                }
+                else
+                {
+                    Visible.Value = visibleEvent.visible;
+                    visibleEvent.Consumed.isConsumed = true;
+                }
             }
         }
 

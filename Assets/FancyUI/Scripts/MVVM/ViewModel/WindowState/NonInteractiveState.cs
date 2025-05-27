@@ -11,7 +11,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsNonInteractive : Condition
         {
             IWindowViewModel Owner;
-            public IsNonInteractive(IWindowViewModel owner) : base(true)
+            public IsNonInteractive(IWindowViewModel owner) : base(nameof(IsNonInteractive), true)
             {
                 Owner = owner;
                 Owner.Interactable.Subscribe(Callback);

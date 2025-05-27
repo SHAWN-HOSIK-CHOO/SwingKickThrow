@@ -12,7 +12,7 @@ namespace MVVM.ViewModel.Window.State
         public class IsIDLE : Condition
         {
             IWindowViewModel Owner;
-            public IsIDLE(IWindowViewModel owner) : base(true)
+            public IsIDLE(IWindowViewModel owner) : base( nameof(IsIDLE),true)
             {
                 Owner = owner;
                 Owner.Interactable.Subscribe(Callback);

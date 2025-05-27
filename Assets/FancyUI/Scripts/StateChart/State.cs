@@ -2,6 +2,7 @@ using STC.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static STC.StateChart;
 namespace STC
 {
     public class State : IState
@@ -116,8 +117,21 @@ namespace STC
                         var state = GetFSMState(src);
                         if (FSMTask == state)
                         {
-                            FSMTask.Exit();
                             FSMTask = null;
+                            state.Exit();
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        var srcState = GetFSMState(src);
+                        var dstState = GetFSMState(dst);
+                        if(CheckTask(src))
+                        {
+                            FSMTask = null;
+                            srcState.Exit();
+                            FSMTask = dstState;
+                            FSMTask.Enter();
                             return true;
                         }
                     }
@@ -234,7 +248,9 @@ namespace STC
             {
                 if (FSMTask != null)
                 {
-                    FSMTask.Exit();
+                    var state = FSMTask;
+                    FSMTask = null;
+                    state.Exit();
                 }
             }
             else
@@ -447,7 +463,9 @@ namespace STC
 
         void TransitionDirty(ITransition transition)
         {
-            DoTransition(transition.Src, transition.Dst);
+            var dst = GetState(transition.Dst);
+
+            StateChart.Instance.PublishEvent(new TaskEvent(dst));
         }
 
         public Dictionary<string, IState> GetAllChild()

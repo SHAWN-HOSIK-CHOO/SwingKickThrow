@@ -13,18 +13,12 @@ namespace STC
         public string treeState = "";
         void Update()
         {
-            bool dump = false;
-#if UNITY_EDITOR
-            if (StateChart.Instance.GetEventListNum() > 0)
-            {
-                dump = true;
-            }
-        #endif
             StateChart.Instance.Update();
-            if(dump)
-            {
-                DumpStateTree();
-            }
+        }
+
+        private void FixedUpdate()
+        {
+            DumpStateTree();
         }
         public void DumpStateTree()
         {

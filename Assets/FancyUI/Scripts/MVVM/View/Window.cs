@@ -1,6 +1,4 @@
 using MVVM.Property;
-using MVVM.ViewModel.Window;
-using MVVM.ViewModel.Window.BIND;
 using STC;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,21 +10,32 @@ namespace MVVM.View.Window
     [RequireComponent(typeof(EventTrigger))]
     public class Window : MonoBehaviour
     {
-        protected EventTrigger eventTrigger;
-        protected IViewEventBinding viewEventBinding;
-        protected IWindowViewModel viewModel;
+        public WindowViewBinder Binder;
 
+        protected EventTrigger eventTrigger;
 
         [HideInInspector] public Window ParentWindow;
-        public ModalWindow ModalWindow;
         public List<Window> ChildWindowList;
-
-        IProperty.DelegateSubscribe Visible;
+        public ModalWindow ModalWindow;
+        
+        //[Inspector - View] Binding
+        public bool Interact;
+        BoolProperty _Interact;
         IProperty.DelegateSubscribe Interactable;
-        IProperty.DelegateSubscribe Transition;
-        IProperty.DelegateSubscribe Modal;
+
         protected virtual void Awake()
         {
+            BindView();
+            Binder = new WindowViewBinder();
+            Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString());
+            Binder.BindVisibleAction(OnVisible);
+            Binder.BindTransitionAction(OnTransition);
+            Binder.BindModalAction(OnModal);
+            Binder.BindInteractiveAction(OnInteractable);
+
+            eventTrigger = GetComponent<EventTrigger>();
+            EventTriggerHelper.AddTriggerEvent(eventTrigger, EventTriggerType.PointerClick, OnClick);
+
             foreach (var w in ChildWindowList)
             {
                 w.ParentWindow = this;
@@ -36,76 +45,103 @@ namespace MVVM.View.Window
                 ModalWindow.ParentWindow = this;
             }
 
-            eventTrigger = GetComponent<EventTrigger>();
-            EventTriggerHelper.AddTriggerEvent(eventTrigger, EventTriggerType.PointerClick, OnClick);
-            BindViewModel();
+            StateChart.Instance.FlushEventList();
         }
         protected virtual void Start()
         {
-            StateChart.Instance.FlushEventList();
+            InitializeViewModel();
+        }
+        void InitializeViewModel()
+        {
             foreach (var w in ChildWindowList)
             {
-                viewEventBinding.AddChildWindow(w.viewModel);
-                w.viewEventBinding.SetParentWindow(viewModel);
+                Binder.ViewEventBinding.AddChildWindow(w.Binder.ViewModel);
             }
-            viewEventBinding.SetModal(ModalWindow?.viewModel);
 
             if (gameObject.activeSelf)
             {
-                viewEventBinding.ShowWindow();
+                Binder.ViewEventBinding.ShowWindow();
             }
             else
             {
-                viewEventBinding.HideWindow();
+                Binder.ViewEventBinding.HideWindow();
+            }
+
+            SetInteractable();
+        }
+        // Bind [ Inspector - view ] 
+        private void Update()
+        {
+            CheckInteractDirty();
+        }
+        void BindView()
+        {
+            Interactable = SetInteractable;
+            _Interact = new BoolProperty();
+            _Interact.Value = Interact;
+            _Interact.Subscribe(Interactable);
+        }
+        void CheckInteractDirty()
+        {
+            if (_Interact != null)
+            {
+                _Interact.Value = Interact;
             }
         }
 
-        void BindViewModel()
+        //Request ViewModel
+        private void OnDisable()
         {
-            WindowViewModel model = new WindowViewModel(gameObject.name + gameObject.GetInstanceID().ToString());
-            viewModel = model;
-            viewEventBinding = model;
-
-            Visible = OnVisible;
-            Interactable = OnInteractable;
-            Modal = OnModal;
-            Transition = OnTransition;
-
-            viewModel.Visible.Subscribe(Visible);
-            viewModel.Interactable.Subscribe(Interactable);
-            viewModel.IsModal.Subscribe(Modal);
-            viewModel.IsTransition.Subscribe(Transition);
+            Binder.ViewEventBinding.HideWindow();
         }
+        private void OnEnable()
+        {
+            Binder.ViewEventBinding.ShowWindow();
+        }
+        void SetInteractable()
+        {
+            if (_Interact.Value)
+            {
+                Binder.ViewEventBinding.SetInteractable();
+            }
+            else
+            {
+                Binder.ViewEventBinding.SetNonInteractable();
+            }
+        }
+
+        public void ModalOpenRequest()
+        {
+            Binder.ViewEventBinding.OpenModal();
+        }
+        public void ModalCloseRequest()
+        {
+            Binder.ViewEventBinding.CloseModal();
+        }
+
+        // Update View
+
         private void OnVisible()
         {
-            this.gameObject.SetActive(viewModel.Visible.Value);
+            gameObject.SetActive(Binder.ViewModel.Visible.Value);
         }
         private void OnInteractable()
         {
-            eventTrigger.enabled = viewModel.Interactable.Value;
+            Interact = Binder.ViewModel.Interactable.Value;
+            eventTrigger.enabled = Binder.ViewModel.Interactable.Value;
         }
         private void OnModal()
         {
-            this.gameObject.SetActive(true);
+            gameObject.SetActive(true);
         }
         private void OnTransition()
         {
 
         }
-
-        public void ModalOpenRequest()
-        {
-            viewEventBinding.OpenModal();
-        }
-        public void ModalCloseRequest()
-        {
-            viewEventBinding.CloseModal();
-        }
-
         private void OnClick(BaseEventData data)
         {
             PointerEventData pointerData = data as PointerEventData;
-            viewEventBinding.OnClick(pointerData.position);
+            Binder.ViewEventBinding.OnClick(pointerData.position);
         }
     }
 }

@@ -14,7 +14,7 @@ namespace STC
         {
             Src = src;
             Dst = dst;
-            Condition = new Condition(true);
+            Condition = new Condition(nameof(Transition),true);
             Condition.Dirty += ConditionDirty;
         }
         public void AddCondition(ICondition condition)
