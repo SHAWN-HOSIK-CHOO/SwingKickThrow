@@ -13,26 +13,31 @@ namespace STC
         public string treeState = "";
         void Update()
         {
+            bool dump = false;
 #if UNITY_EDITOR
-            if(StateChart.Instance.GetEventListNum() > 0)
+            if (StateChart.Instance.GetEventListNum() > 0)
             {
-                treeState = DumpStateTree();
+                dump = true;
             }
-#endif
+        #endif
             StateChart.Instance.Update();
+            if(dump)
+            {
+                DumpStateTree();
+            }
         }
-        public string DumpStateTree()
+        public void DumpStateTree()
         {
             var builder = new System.Text.StringBuilder();
             DumpStateRecursive(StateChart.Instance, builder, "", true);
-            return builder.ToString();
+            treeState =  builder.ToString();
         }
         private void DumpStateRecursive(IState state, System.Text.StringBuilder builder, string indent, bool isLast)
         {
             bool isActive = true;
             if (state.ParentState != null)
             {
-                if (!state.ParentState.GetAllTaskState().Contains(state.Name))
+                if (!state.ParentState.CheckTask(state.Name))
                 {
                     isActive = false;
                 }
@@ -41,13 +46,14 @@ namespace STC
             string branch = isLast ? "└── " : "├── ";
             builder.AppendLine($"{indent}{branch}{state.Name}{(isActive ? "✅" : "❌")}");
 
-            var children = state.GetAllChildState().ToList();
-            for (int i = 0; i < children.Count; i++)
+            var children = state.GetAllChild();
+            int i = 0;
+            foreach (var child in children)
             {
-                var child = children[i];
                 bool lastChild = (i == children.Count - 1);
                 string newIndent = indent + (isLast ? "    " : "│   ");
-                DumpStateRecursive(state.GetChildState(child), builder, newIndent, lastChild);
+                DumpStateRecursive(state.GetState(child.Key), builder, newIndent, lastChild);
+                i++;
             }
         }
     }

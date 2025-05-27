@@ -1,12 +1,10 @@
+using MVVM.Property;
 using MVVM.ViewModel.Window;
 using MVVM.ViewModel.Window.BIND;
-using MVVM.ViewModel.Window.State;
 using STC;
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using static UnityEditor.Profiling.HierarchyFrameDataView;
 
 namespace MVVM.View.Window
 {
@@ -15,10 +13,18 @@ namespace MVVM.View.Window
     public class Window : MonoBehaviour
     {
         protected EventTrigger eventTrigger;
-        protected IViewEventBinding viewModel;
+        protected IViewEventBinding viewEventBinding;
+        protected IWindowViewModel viewModel;
+
+
         [HideInInspector] public Window ParentWindow;
         public ModalWindow ModalWindow;
         public List<Window> ChildWindowList;
+
+        IProperty.DelegateSubscribe Visible;
+        IProperty.DelegateSubscribe Interactable;
+        IProperty.DelegateSubscribe Transition;
+        IProperty.DelegateSubscribe Modal;
         protected virtual void Awake()
         {
             foreach (var w in ChildWindowList)
@@ -39,55 +45,67 @@ namespace MVVM.View.Window
             StateChart.Instance.FlushEventList();
             foreach (var w in ChildWindowList)
             {
-                viewModel.AddChildWindow(w.viewModel as IWindowViewModel);
-                w.viewModel.SetParentWindow(viewModel as IWindowViewModel);
+                viewEventBinding.AddChildWindow(w.viewModel);
+                w.viewEventBinding.SetParentWindow(viewModel);
             }
-            viewModel.SetModal(ModalWindow?.viewModel as IWindowViewModel);
-            viewModel.Visible();
+            viewEventBinding.SetModal(ModalWindow?.viewModel);
+
+            if (gameObject.activeSelf)
+            {
+                viewEventBinding.ShowWindow();
+            }
+            else
+            {
+                viewEventBinding.HideWindow();
+            }
         }
 
         void BindViewModel()
         {
             WindowViewModel model = new WindowViewModel(gameObject.name + gameObject.GetInstanceID().ToString());
-            model.VisibleState.OnStateEnter += OnVisibleState;
-            model.HiddenState.OnStateEnter += OnHiddenState;
-            model.InteractiveState.OnStateEnter += OnInteractiveState;
-            model.NonInteractiveState.OnStateEnter += OnNonInteractiveState;
             viewModel = model;
-        }
+            viewEventBinding = model;
 
-        private void OnNonInteractiveState(IState state)
+            Visible = OnVisible;
+            Interactable = OnInteractable;
+            Modal = OnModal;
+            Transition = OnTransition;
+
+            viewModel.Visible.Subscribe(Visible);
+            viewModel.Interactable.Subscribe(Interactable);
+            viewModel.IsModal.Subscribe(Modal);
+            viewModel.IsTransition.Subscribe(Transition);
+        }
+        private void OnVisible()
         {
-            eventTrigger.enabled = false;
+            this.gameObject.SetActive(viewModel.Visible.Value);
         }
-
-        private void OnInteractiveState(IState state)
+        private void OnInteractable()
         {
-            eventTrigger.enabled = true;
+            eventTrigger.enabled = viewModel.Interactable.Value;
         }
-
-        private void OnVisibleState(STC.IState state)
+        private void OnModal()
         {
             this.gameObject.SetActive(true);
         }
-        private void OnHiddenState(STC.IState state)
+        private void OnTransition()
         {
-            this.gameObject.SetActive(false);
-        }
 
+        }
 
         public void ModalOpenRequest()
         {
-            viewModel.OpenModal();
+            viewEventBinding.OpenModal();
         }
         public void ModalCloseRequest()
         {
-            viewModel.CloseModal();
+            viewEventBinding.CloseModal();
         }
+
         private void OnClick(BaseEventData data)
         {
             PointerEventData pointerData = data as PointerEventData;
-            viewModel.OnClick(pointerData.position);
+            viewEventBinding.OnClick(pointerData.position);
         }
     }
 }

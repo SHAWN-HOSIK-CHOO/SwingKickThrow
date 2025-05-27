@@ -18,7 +18,6 @@ public class STCEditor : Editor
 
         EditorGUILayout.Space();
         EditorGUILayout.LabelField("State Tree:", EditorStyles.boldLabel);
-
         scrollPos = EditorGUILayout.BeginScrollView(scrollPos, GUILayout.Height(300));
         EditorGUILayout.TextArea(stc.treeState, GUILayout.ExpandHeight(true));
         EditorGUILayout.EndScrollView();

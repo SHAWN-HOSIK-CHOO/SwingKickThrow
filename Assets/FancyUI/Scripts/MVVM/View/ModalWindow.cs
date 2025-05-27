@@ -13,7 +13,6 @@ namespace MVVM.View.Window
         protected override void Start()
         {
             base.Start();
-            viewModel.Hide();
             close.onClick.AddListener(OnClose);
         }
 

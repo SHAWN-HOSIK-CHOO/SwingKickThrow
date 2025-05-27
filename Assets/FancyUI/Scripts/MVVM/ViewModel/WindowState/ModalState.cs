@@ -1,64 +1,54 @@
+using MVVM.ViewModel.Window.BIND;
 using STC;
-using UnityEngine;
-using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window.State
 {
     public class ModalState : STC.State
     {
+        public const string StateName = "Modal";
         IWindowViewModel Owner;
-        public ModalState(IWindowViewModel owner, string name = "Modal") : base(name)
+        public class IsModal : Condition
+        {
+            IWindowViewModel Owner;
+            public IsModal(IWindowViewModel owner) : base(true)
+            {
+                Owner = owner;
+                Owner.IsModal.Subscribe(Callback);
+            }
+            public override bool OnCheck()
+            {
+                return Owner.IsModal.Value;
+            }
+        }
+        public class IsNoModal : Condition
+        {
+            IWindowViewModel Owner;
+            public IsNoModal(IWindowViewModel owner) : base(true)
+            {
+                Owner = owner;
+                Owner.IsModal.Subscribe(Callback);
+            }
+            public override bool OnCheck()
+            {
+                return !Owner.IsModal.Value;
+            }
+        }
+        public ModalState(IWindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
+            STC.IState nonInteractiveState = (Owner as IWindowState).NonInteractiveState;
+            //NonInteractive -> Modal
+            var transition = new STC.Transition(NonInteractiveState.StateName, ModalState.StateName);
+            transition.AddCondition(new IsModal(owner));
+            nonInteractiveState.AddTransition(transition);
         }
-        public override void OnSetUp()
-        {
-            var modalWindow = Owner.ModalWindow as BIND.IViewEventBinding;
-            StateChart.Instance.PublishEvent(new STC.StateChart.TaskInEvent()
-            {
-                task = modalWindow.VisibleState,
-                condition = new STC.Condition.AlwaysTrue(),
-                ReDo = false,
-                ForceActivatePath = true
-            });
-        }
+
         public override void OnEnter()
         {
-            foreach (var w in Owner.ChildWindow)
-            {
-                var chlidWindow = w as BIND.IViewEventBinding;
-                StateChart.Instance.PublishEvent(new STC.StateChart.TaskInEvent()
-                {
-                    task = chlidWindow.NonInteractiveState,
-                    condition = new STC.Condition.AlwaysTrue(),
-                    ReDo = false,
-                    ForceActivatePath = true
-                });
-            }
+
         }
         public override void OnExit()
         {
-            foreach (var w in Owner.ChildWindow)
-            {
-                var chlidWindow = w as BIND.IViewEventBinding;
-                StateChart.Instance.PublishEvent(new STC.StateChart.TaskInEvent()
-                {
-                    task = chlidWindow.InteractiveState,
-                    condition = new STC.Condition.AlwaysTrue(),
-                    ReDo = false,
-                    ForceActivatePath = true
-                });
-            }
-        }
-        public override void OnFinish()
-        {
-            var modalWindow = Owner.ModalWindow as BIND.IViewEventBinding;
-            StateChart.Instance.PublishEvent(new STC.StateChart.TaskInEvent()
-            {
-                task = modalWindow.HiddenState,
-                condition = new STC.Condition.AlwaysTrue(),
-                ReDo = false,
-                ForceActivatePath = true
-            });
+
         }
     }
 }

@@ -1,62 +1,228 @@
+using STC.Event;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Events;
 namespace STC
 {
     public class State : IState
     {
+        public enum StateType
+        {
+            FSM,
+            Parallel
+        }
+        public StateType Type { get; protected set; }
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
-        public event Action<IState> OnStateSetUp;
-        public event Action<IState> OnStateEnter;
-        public event Action<IState> OnStateExit;
-        public event Action<IState> OnStateUpdate;
-        public event Action<IState> OnStateFinish;
-        //Child State Chart
-        protected Dictionary<string, IState> Task;
-        protected Dictionary<string, IState> TaskOutMap;
-        protected Dictionary<string, IState> ChildState;
 
-        public State(string name)
+        //Fsm
+        protected IState FSMTask;
+        protected Dictionary<string, IState> FSMState;
+        protected DoubleKeyDict<string, string, ITransition> FSMTransition;
+        //Parallel
+        protected Dictionary<string, IState> ParallelTask;
+        protected Dictionary<string, IState> ParallelState;
+        protected DoubleKeyDict<string, string, ITransition> ParallelTransition;
+
+        public event Action<IState> OnStateEnter;
+        public event Action<IState> OnStateUpdate;
+        public event Action<IState> OnStateExit;
+
+        public State(string name, StateType type)
         {
             Name = name;
-            Task = new Dictionary<string, IState>();
-            TaskOutMap = new Dictionary<string, IState>();
-            ChildState = new Dictionary<string, IState>();
+            Type = type;
+
+            if (type == StateType.FSM)
+            {
+                FSMState = new Dictionary<string, IState>();
+                FSMTransition = new DoubleKeyDict<string, string, ITransition>();
+            }
+            else
+            {
+                ParallelTask = new Dictionary<string, IState>();
+                ParallelState = new Dictionary<string, IState>();
+                ParallelTransition = new DoubleKeyDict<string, string, ITransition>();
+            }
         }
-        public IState GetChildState(string name)
+        
+        
+        public IState GetState(string name)
         {
-            if(ChildState.TryGetValue(name,out var val ))
+            if (Type == StateType.FSM)
+            {
+                return GetFSMState(name);
+            }
+            else
+            {
+                return GetParallelState(name);
+            }
+        }
+        public IState GetFSMState(string name)
+        {
+            if (FSMState.TryGetValue(name, out var val))
             {
                 return val;
             }
             return null;
         }
-        public void SetUp()
+        public IState GetParallelState(string name)
         {
-            OnSetUp();
-            OnStateSetUp?.Invoke(this);
+            if (ParallelState.TryGetValue(name, out var val))
+            {
+                return val;
+            }
+            return null;
+        }
+        public bool CheckTransition(string src, string dst)
+        {
+            if (Type == StateType.FSM)
+            {
+                if (FSMTransition.TryGetValue(src, dst, out var transition))
+                {
+                    return transition.CheckCondition();
+                }
+            }
+            else
+            {
+                if (ParallelTransition.TryGetValue(src, dst, out var transition))
+                {
+                    return transition.CheckCondition();
+                }
+            }
+            return false;
+        }
+        public bool DoTransition(string src, string dst)
+        {
+            if (Type == StateType.FSM)
+            {
+                if (CheckTransition(src, dst))
+                {
+                    if (src == Name)
+                    {
+                        if (FSMTask == null)
+                        {
+                            var newState = GetFSMState(dst);
+                            if (newState != null)
+                            {
+                                FSMTask = newState;
+                                FSMTask.Enter();
+                                return true;
+                            }
+                        }
+                    }
+                    else if (dst == Name)
+                    {
+                        var state = GetFSMState(src);
+                        if (FSMTask == state)
+                        {
+                            FSMTask.Exit();
+                            FSMTask = null;
+                            return true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (CheckTransition(src, dst))
+                {
+                    if (src == Name)
+                    {
+                        if (!ParallelTask.TryGetValue(dst, out var state))
+                        {
+                            state = GetParallelState(dst);
+                            ParallelTask.Add(dst, state);
+                            state.Enter();
+                            return true;
+                        }
+                    }
+                    else if (dst == Name)
+                    {
+                        if (ParallelTask.TryGetValue(src, out var state))
+                        {
+                            ParallelTask.Remove(src);
+                            state.Exit();
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        public void DoTransitionTo(string dsc)
+        {
+            if (Type == StateType.FSM)
+            {
+                if (FSMTransition.TryGetValueByKey2(dsc, out var transitionList))
+                {
+                    foreach (var kvp in transitionList)
+                    {
+                        if (DoTransition(kvp.Key, dsc))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (ParallelTransition.TryGetValueByKey2(dsc, out var transitionList))
+                {
+                    foreach (var kvp in transitionList)
+                    {
+                        DoTransition(kvp.Key, dsc);
+                    }
+                }
+            }
+        }
+        public void DoTransitionFrom(string src)
+        {
+            if (Type == StateType.FSM)
+            {
+                if (FSMTransition.TryGetValueByKey1(src, out var transitionList))
+                {
+                    foreach (var kvp in transitionList)
+                    {
+                        if (DoTransition(src, kvp.Key))
+                        {
+                            break;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (ParallelTransition.TryGetValueByKey1(src, out var transitionList))
+                {
+                    foreach (var kvp in transitionList)
+                    {
+                        DoTransition(src, kvp.Key);
+                    }
+                }
+            }
         }
         public void Enter()
         {
             OnEnter();
             OnStateEnter?.Invoke(this);
-            foreach (var kvp in Task.ToList())
-            {
-                if (Task.ContainsKey(kvp.Key))
-                {
-                    kvp.Value.Enter();
-                }
-            }
+            DoTransitionFrom(Name);
         }
         public void Update()
         {
             OnUpdate();
             OnStateUpdate?.Invoke(this);
-            foreach (var kvp in Task.ToList())
+
+            if (Type == StateType.FSM)
             {
-                if (Task.ContainsKey(kvp.Key))
+                if (FSMTask != null)
+                {
+                    FSMTask.Update();
+                }
+            }
+            else
+            {
+                foreach (var kvp in ParallelTask)
                 {
                     kvp.Value.Update();
                 }
@@ -64,29 +230,96 @@ namespace STC
         }
         public void Exit()
         {
-            foreach (var kvp in Task.ToList())
+            if (Type == StateType.FSM)
             {
-                if (Task.ContainsKey(kvp.Key))
+                if (FSMTask != null)
                 {
-                    Task.Remove(kvp.Key);
-                    kvp.Value.Exit();
-                    kvp.Value.Finish();
+                    FSMTask.Exit();
+                }
+            }
+            else
+            {
+                foreach (var key in ParallelTask.Keys.ToList())
+                {
+                    var state = GetParallelState(key);
+                    ParallelTask.Remove(key);
+                    state.Exit();
                 }
             }
             OnExit();
             OnStateExit?.Invoke(this);
         }
-        public void Finish()
+        public bool CheckTask(string name)
         {
-            OnFinish();
-            OnStateFinish?.Invoke(this);
-        }
-        public void Handle(global::STC.Event.IStateEvent e)
-        {
-            if(ParentState !=null)
+            if (Type == StateType.FSM)
             {
-                if(ParentState.GetAllTaskState().Contains(Name))
+                if(FSMTask == null)
                 {
+                    if (name == Name)
+                    {
+                        return true;
+                    }
+                }
+                else
+                {
+                    if (name == FSMTask.Name)
+                    {
+                        return true;
+                    }
+                }
+
+            }
+            else
+            {
+                if (ParallelTask.TryGetValue(name, out var _))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        public void Handle(IStateEvent e)
+        {
+            bool checkValid = false;
+            if (ParentState != null)
+            {
+                if (ParentState.Type == StateType.FSM)
+                {
+                    if (ParentState.CheckTask(Name) && !e.Consumed.isConsumed)
+                    {
+                        checkValid = true;
+                    }
+                }
+                else
+                {
+                    if (ParentState.CheckTask(Name))
+                    {
+                        checkValid = true;
+                    }
+                }
+            }
+
+            if (checkValid)
+            {
+                if (Type == StateType.FSM)
+                {
+                    if (FSMTask != null)
+                    {
+                        FSMTask.Handle(e);
+                    }
+
+                    if (!e.Consumed.isConsumed)
+                    {
+                        OnHandle(e);
+                    }
+                }
+                else
+                {
+                    e.Consumed = new ConsumeEvent();
+                    foreach (var state in ParallelTask)
+                    {
+                        state.Value.Handle(e);
+                    }
                     OnHandle(e);
                 }
             }
@@ -115,14 +348,6 @@ namespace STC
         {
 
         }
-        public List<string> GetAllTaskState()
-        {
-            return Task.Keys.ToList();
-        }
-        public List<string> GetAllChildState()
-        {
-            return ChildState.Keys.ToList();
-        }
         public string GetFullPath()
         {
             List<string> pathParts = new List<string>();
@@ -141,85 +366,100 @@ namespace STC
             IState current = this;
             foreach (string part in pathParts)
             {
-                current = current.GetChildState(part);
-                if(current == null)
+                current = current.GetState(part);
+                if (current == null)
                 {
                     return null;
                 }
             }
             return current;
         }
-        public void TaskInChlid(string name)
-        {
-            var state = GetChildState(name);
-            if(state != null)
-            {
-                foreach (var v in state.GetTaskOutMap())
-                {
-                    if (Task.TryGetValue(v, out var t))
-                    {
-                        Task.Remove(t.Name);
-                        t.Exit();
-                        t.Finish();
-                    }
-                }
-
-                if (Task.TryGetValue(name, out var val))
-                {
-                    Task.Remove(name);
-                    val.Exit();
-                    val.Finish();
-                }
-
-
-                state.SetUp();
-                Task.Add(name, state);
-                state.Enter();
-            }
-        }
-        public void TaskOutChlid(string name)
-        {
-            if (Task.TryGetValue(name, out var val))
-            {
-                Task.Remove(name);
-                val.Exit();
-                val.Finish();
-            }
-        }
-        public void TaskChlid(string inTaskState, string outTaskState)
-        {
-            TaskOutChlid(outTaskState);
-            TaskInChlid(inTaskState);
-        }
         public void SetParent(IState state)
         {
             ParentState = state;
         }
-        public void AddTaskOutMap(IState state)
-        {
-            TaskOutMap.Add(state.Name, state);
-        }
-        public void RemoveTaskOutMap(IState state)
-        {
-            if (TaskOutMap.TryGetValue(state.Name, out var val))
-            {
-                TaskOutMap.Remove(state.Name);
-            }
-        }
         public void AddChild(IState state)
         {
-            ChildState.Add(state.Name,state);
-            state.SetParent(this);
+            if (Type == StateType.FSM)
+            {
+                FSMState.Add(state.Name, state);
+            }
+            else
+            {
+                ParallelState.Add(state.Name, state);
+            }
         }
         public void RemoveChild(IState state)
         {
-            TaskOutChlid(state.Name);
-            ChildState.Remove(state.Name);
-            state.SetParent(null);
+            if (state.Type == StateType.FSM)
+            {
+                FSMState.Remove(state.Name);
+            }
+            else
+            {
+                ParallelState.Remove(state.Name);
+            }
         }
-        public List<string> GetTaskOutMap()
+
+        public ITransition GetTransition(string src, string dst)
         {
-            return TaskOutMap.Keys.ToList();
+            if (Type == StateType.FSM)
+            {
+                if(FSMTransition.TryGetValue(src, dst, out var val))
+                {
+                    return val;
+                }
+            }
+            else
+            {
+                if(ParallelTransition.TryGetValue(src, dst, out var val))
+                {
+                    return val;
+                }
+            }
+            return null;
+        }
+
+        public void RemoveTransition(string src, string dst)
+        {
+            if (Type == StateType.FSM)
+            {
+                FSMTransition.Remove(src, dst);
+            }
+            else
+            {
+                ParallelTransition.Remove(src, dst);
+            }
+        }
+
+        public void AddTransition(ITransition transition)
+        {
+            if (Type == StateType.FSM)
+            {
+                FSMTransition.TryAdd(transition.Src, transition.Dst, transition);
+            }
+            else
+            {
+                ParallelTransition.TryAdd(transition.Src, transition.Dst, transition);
+            }
+            transition.Dirty += TransitionDirty;
+        }
+
+        void TransitionDirty(ITransition transition)
+        {
+            DoTransition(transition.Src, transition.Dst);
+        }
+
+        public Dictionary<string, IState> GetAllChild()
+        {
+            if (Type == StateType.FSM)
+            {
+                return FSMState;
+            }
+            else
+            {
+                return ParallelState;
+            }
         }
     }
 }

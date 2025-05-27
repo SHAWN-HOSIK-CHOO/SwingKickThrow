@@ -1,37 +1,48 @@
+using MVVM.Property;
+using System;
 using System.Collections.Generic;
 
 namespace STC
 {
     public class Condition : ICondition
     {
-        public struct AlwaysTrue : ICondition
-        {
-            public void AddCondition(ICondition condition)
-            {
-            }
-
-            public bool CheckCondition()
-            {
-                return true;
-            }
-        }
-
+        public Property<bool> IsActive { get;}
         List<ICondition> _conditionList;
-        public Condition()
+        protected IProperty.DelegateSubscribe Callback;
+        public event Action Dirty;
+        public Condition(bool isActive)
         {
             _conditionList = new List<ICondition>();
+            IsActive = new Property<bool>();
+            IsActive.Value = isActive;
+            Callback = RaiseDirty;
+            IsActive.Subscribe(Callback);
+        }
+
+        public void RaiseDirty()
+        {
+            Dirty?.Invoke();
         }
         public void AddCondition(ICondition condition)
         {
             _conditionList.Add(condition);
         }
+        public void RemoveCondition(ICondition condition)
+        {
+            _conditionList.Remove(condition);
+        }
         public bool CheckCondition()
         {
+            if (!IsActive.Value) return true;
             foreach (var condition in _conditionList)
             {
                 if (!condition.CheckCondition())
                     return false;
             }
+            return OnCheck();
+        }
+        public virtual bool OnCheck()
+        {
             return true;
         }
     }
