@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using CharacterAttributes;
 using ConnectionUtils;
+using GameEvents;
 using GameProps;
 using TMPro;
 using Unity.Netcode;
@@ -70,6 +71,14 @@ namespace GameFlow
         [Header("ESC Panel")]
         public GameObject escPanel;
         public Slider volumeSlider;
+
+        [Header("Full screen UI ex). Crashed UI")]
+        public GameObject splashedScreenUI;
+        public  GameObject playerCrashedScreenUI;
+        public  GameObject enemyCrashedScreenUI;
+        
+        [HideInInspector]
+        public GameObject currentPlayerCrashedUI;
         #endregion
 
         public GameObject pfBoxSpawner;
@@ -124,6 +133,15 @@ namespace GameFlow
             gameSceneFlowContext.Initialize();
         }
 
+        private void Start()
+        {
+            currentPlayerCrashedUI = playerCrashedScreenUI;
+            currentPlayerCrashedUI.gameObject.SetActive(false);
+            splashedScreenUI.gameObject.SetActive(false);
+            enemyCrashedScreenUI.gameObject.SetActive(false);
+            playerCrashedScreenUI.gameObject.SetActive(false);
+        }
+
         //클라이언트가 연결되고 수행되어야 할 설정들
         public void LateInitialize()
         {
@@ -132,14 +150,72 @@ namespace GameFlow
         
         private void OnEnable()
         {
-            
+            GameEvents.GameEvents.Subscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DEATH, DisplayPlayerCrashedScreenUI);
         }
         
         private void OnDisable()
         {
-            
+            GameEvents.GameEvents.Unsubscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DEATH,DisplayPlayerCrashedScreenUI);
         }
 
+        private Coroutine _displayCoroutine;
+        
+        private void DisplayPlayerCrashedScreenUI()
+        {
+            if (AnyScreenIsActive())
+                return;
+            
+            if(_displayCoroutine != null)
+                StopCoroutine(_displayCoroutine);
+
+            _displayCoroutine = StartCoroutine(CoDisplayScreenUI(1));
+        }
+
+        private void DisplayEnemyCrashedScreenUI()
+        {
+            if (AnyScreenIsActive())
+                return;
+            
+            if(_displayCoroutine != null)
+                StopCoroutine(_displayCoroutine);
+
+            _displayCoroutine = StartCoroutine(CoDisplayScreenUI(0));
+        }
+
+        private IEnumerator CoDisplayScreenUI(int num)
+        {
+            if (AnyScreenIsActive())
+            {
+                yield break; // 코루틴 종료
+            }
+            
+            if (num == 0)
+            {
+                enemyCrashedScreenUI.gameObject.SetActive(true);
+            }
+            else if (num == 1)
+            {
+                currentPlayerCrashedUI.gameObject.SetActive(true);
+            }
+
+            yield return new WaitForSeconds(2.3f);
+            
+            playerCrashedScreenUI.gameObject.SetActive(false);
+            splashedScreenUI.gameObject.SetActive(false);
+            enemyCrashedScreenUI.gameObject.SetActive(false);
+            currentPlayerCrashedUI.gameObject.SetActive(false);
+        }
+
+        private bool AnyScreenIsActive()
+        {
+            return playerCrashedScreenUI.gameObject.activeInHierarchy ||
+                   splashedScreenUI.gameObject.activeInHierarchy      ||
+                   currentPlayerCrashedUI.gameObject.activeInHierarchy;
+        }
+
+        
         public void SpawnPlayerSelect()
         {
             var playerSelect = Instantiate(playerSelectPf);
