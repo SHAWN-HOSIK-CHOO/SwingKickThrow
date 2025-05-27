@@ -62,20 +62,22 @@ namespace GameFlow
                     Debug.LogWarning($"Client {kvp.Key} has no CharacterStatusNetwork.");
                 }
             }
-            // Á¡¼ö ±âÁØÀ¸·Î ³»¸²Â÷¼ø Á¤·Ä
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             rankingList.Sort((a, b) => b.score.CompareTo(a.score));
-            // ÅØ½ºÆ® ±¸¼º
+            // ï¿½Ø½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < rankingList.Count; i++)
             {
                 var entry = rankingList[i];
                 sb.AppendLine($"{i + 1}: Player {entry.clientId} - {entry.score}");
             }
-            // Ãâ·Â
+            // ï¿½ï¿½ï¿½
             GameSceneManager.Instance.UI.winnerUI.GetComponentInChildren<TMP_Text>().text = sb.ToString();
         }
         public override void Handle()
         {
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible   = true;
             GameSceneManager.Instance.UI.winnerUI.gameObject.SetActive(true);
             GameSceneManager.Instance.UI.exit.onClick.AddListener(OnExitGame);
             UpdateResultUI();

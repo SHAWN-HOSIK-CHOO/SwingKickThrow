@@ -308,6 +308,10 @@ namespace CharacterAttributes
                 myCurrentDamage = characterStatusNetwork.GetCrashFactor();
                 ReportCrashDataServerRpc(NetworkObjectId, otherController.NetworkObjectId, myCurrentDamage);
             }
+            else if (other.CompareTag("RespawnNeeded"))
+            {
+                characterStatusNetwork.MakeCurrentHealthZero();
+            }
         }
 
         [ServerRpc]
