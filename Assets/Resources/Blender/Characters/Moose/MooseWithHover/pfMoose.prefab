@@ -1856,8 +1856,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 2.77, y: 2, z: 3.95}
-  m_Center: {x: 0, y: 0.94, z: 0.27}
+  m_Size: {x: 2.77, y: 2.357992, z: 3.9500003}
+  m_Center: {x: 0, y: 0.7610041, z: 0.26999998}
 --- !u!114 &8572458798320354437
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1879,6 +1879,8 @@ MonoBehaviour:
   chargeImage: {fileID: 0}
   damageText: {fileID: 0}
   healthFill: {fileID: 0}
+  escPanel: {fileID: 0}
+  volumeSlider: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
