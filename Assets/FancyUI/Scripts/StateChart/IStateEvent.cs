@@ -8,6 +8,7 @@ namespace STC.Event
     }
     public interface IStateEvent
     {
+        bool DownStream { get; }
         ConsumeEvent Consumed { get; set; }
     }
 }

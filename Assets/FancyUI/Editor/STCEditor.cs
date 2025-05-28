@@ -5,12 +5,15 @@ using UnityEngine.Rendering;
 [CustomEditor(typeof(STC.STC))]
 public class STCEditor : Editor
 {
+    STC.STC stc;
     private Vector2 scrollPos;
+
+    private void OnEnable()
+    {
+        stc = (STC.STC)target;
+    }
     public override void OnInspectorGUI()
     {
-        base.OnInspectorGUI();
-
-        var stc = (STC.STC)target;
         if (GUILayout.Button("Show State Tree"))
         {
             stc.DumpStateTree();

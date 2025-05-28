@@ -1,52 +1,42 @@
-using MVVM.ViewModel.Window.BIND;
 using STC;
-using STC.Event;
-using UnityEngine;
 using static MVVM.ViewModel.Window.State.VisibleState;
-using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window.State
 {
     public class HiddenState : STC.State
     {
-        public class IsHidden : Condition
+        public class CanHidden : Condition
         {
-            IWindowViewModel Owner;
-            public IsHidden(IWindowViewModel owner) : base(nameof(IsHidden),true)
+            WindowViewModel Owner;
+            public CanHidden(WindowViewModel owner) : base(nameof(CanHidden),true)
             {
                 Owner = owner;
-                Owner.Visible.Subscribe(Callback);
+                Owner.VisibleTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return !Owner.Visible.Value;
+                return !Owner.VisibleTrigger.Value;
             }
         }
         public const string StateName = "Hidden";
-        IWindowViewModel Owner;
-        public HiddenState(IWindowViewModel owner) : base(StateName, StateType.FSM)
+        WindowViewModel Owner;
+        public HiddenState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
-
             IState OwnerState = Owner as IState;
-            //Onwer -> Hidden
+            //Owner -> Hidden
             var transition = new STC.Transition(OwnerState.Name, HiddenState.StateName);
-            transition.AddCondition(new IsHidden(owner));
+            transition.AddCondition(new CanHidden(owner));
             OwnerState.AddTransition(transition);
 
             //Visible -> Hidden
             transition = new STC.Transition(VisibleState.StateName, HiddenState.StateName);
-            transition.AddCondition(new IsHidden(owner));
+            transition.AddCondition(new CanHidden(owner));
             OwnerState.AddTransition(transition);
         }
 
-        public override void OnEnter()
+        public override void OnActivate()
         {
-            foreach (var w in Owner.ChildWindow)
-            {
-                var child = w as IViewEventBinding;
-                child.HideWindow();
-            }
+            Owner.Binder.VisibleVal.Value = false;
         }
-
     }
 }

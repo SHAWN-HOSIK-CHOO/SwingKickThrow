@@ -1,4 +1,3 @@
-using MVVM.ViewModel.Window.BIND;
 using STC;
 using UnityEngine;
 using static MVVM.ViewModel.Window.State.ModalState;
@@ -10,34 +9,43 @@ namespace MVVM.ViewModel.Window.State
     public class InteractiveState : STC.State 
     {
         public const string StateName = "Interactive";
-        IWindowViewModel Owner;
-        public class IsInteractive : Condition
+        WindowViewModel Owner;
+        public class CanInteractable : Condition
         {
-            IWindowViewModel Owner;
-            public IsInteractive(IWindowViewModel owner) : base(nameof(IsInteractive), true)
+            WindowViewModel Owner;
+            public CanInteractable(WindowViewModel owner) : base(nameof(CanInteractable), true)
             {
                 Owner = owner;
-                Owner.Visible.Subscribe(Callback);
+                Owner.InteractableTrigger.Subscribe(CheckDirty);
+                Owner.ModalTrigger.Subscribe(CheckDirty);
+                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return Owner.Interactable.Value;
+                return !(Owner.ModalTrigger.Value || Owner.TransitionTrigger.Value) && Owner.InteractableTrigger.Value;
             }
         }
 
-        public InteractiveState(IWindowViewModel owner) : base(StateName, StateType.FSM)
+        public InteractiveState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
             STC.IState visibleState = (Owner as IWindowState).VisibleState;
 
-            //Visible -> Interactive
+            //Visible -> Visible.Interactiveon
             var transition = new STC.Transition(VisibleState.StateName, InteractiveState.StateName);
-            transition.AddCondition(new IsInteractive(owner));
+            transition.AddCondition(new CanInteractable(owner));
             visibleState.AddTransition(transition);
-            //NonInteractive -> Interactive
-            transition = new STC.Transition(NonInteractiveState.StateName,InteractiveState.StateName);
-            transition.AddCondition(new IsInteractive(owner));
+
+            //Visible.NonInteractive -> Visible.Interactive
+            transition = new STC.Transition(NonInteractableState.StateName,InteractiveState.StateName);
+            transition.AddCondition(new CanInteractable(owner));
             visibleState.AddTransition(transition);
         }
+
+        public override void OnActivate()
+        {
+            Owner.Binder.InteractableVal.Value = true;
+        }
+
     }
 }

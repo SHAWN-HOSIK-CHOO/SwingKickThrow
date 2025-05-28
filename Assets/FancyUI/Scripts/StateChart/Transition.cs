@@ -7,9 +7,9 @@ namespace STC
     {
         public string Src { get; private set; }
         public string Dst { get; private set; }
-        public event Action<ITransition> Dirty;
 
-        ICondition Condition;
+        public event Action<ITransition> Dirty;
+        public ICondition Condition { get; private set; }
         public Transition(string src, string dst)
         {
             Src = src;
@@ -22,12 +22,10 @@ namespace STC
             condition.Dirty += ConditionDirty;
             Condition.AddCondition(condition);
         }
-
         void ConditionDirty()
         {
             Dirty?.Invoke(this);
         }
-
         public bool CheckCondition()
         {
             return Condition.CheckCondition();

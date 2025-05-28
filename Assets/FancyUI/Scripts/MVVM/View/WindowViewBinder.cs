@@ -1,44 +1,56 @@
-using MVVM.Property;
-using MVVM.ViewModel.Window.BIND;
 using MVVM.ViewModel.Window;
+using System;
+
 namespace MVVM.View.Window
 { 
     public class WindowViewBinder
     {
-        public IViewEventBinding ViewEventBinding;
-        public IWindowViewModel ViewModel;
+        public IWindowViewBinding ViewBinding;
 
-        IProperty.DelegateSubscribe Visible;
-        IProperty.DelegateSubscribe Interactable;
-        IProperty.DelegateSubscribe Transition;
-        IProperty.DelegateSubscribe Modal;
+        Action Visible;
+        Action Interactable;
+        Action Transition;
+        Action Modal;
 
-        public void BindViewModel(string name)
+        public void ForceNotify()
         {
-            WindowViewModel model = new WindowViewModel(name);
-            ViewModel = model;
-            ViewEventBinding = model;
+            ViewBinding.Visible.Invoke();
+            ViewBinding.Modal.Invoke();
+            ViewBinding.Interactable.Invoke();
+            ViewBinding.Transition.Invoke();
         }
-        public void BindVisibleAction(IProperty.DelegateSubscribe visible)
+
+        public void BindViewModel(string name, bool visible, bool interact, bool modal, bool transition)
+        {
+            var model = new WindowViewModel(name);
+            model.VisibleTrigger.Value = visible;
+            model.InteractableTrigger.Value = interact;
+            model.ModalTrigger.Value = modal;
+            model.TransitionTrigger.Value = transition;
+
+            ViewBinding = model.Binder ;
+
+
+        }
+        public void BindVisibleAction(Action visible)
         {
             Visible = visible;
-            ViewModel.Visible.Subscribe(Visible);
+            ViewBinding.Visible.Subscribe(Visible);
         }
-        public void BindModalAction(IProperty.DelegateSubscribe modal)
+        public void BindModalAction(Action modal)
         {
             Modal = modal;
-            ViewModel.IsModal.Subscribe(Modal);
+            ViewBinding.Modal.Subscribe(Modal);
         }
-        public void BindInteractiveAction(IProperty.DelegateSubscribe interactable)
+        public void BindInteractiveAction(Action interactable)
         {
             Interactable = interactable;
-            ViewModel.Interactable.Subscribe(Interactable);
+            ViewBinding.Interactable.Subscribe(Interactable);
         }
-        public void BindTransitionAction(IProperty.DelegateSubscribe transition)
+        public void BindTransitionAction(Action transition)
         {
             Transition = transition;
-            ViewModel.IsTransition.Subscribe(Visible);
+            ViewBinding.Transition.Subscribe(Visible);
         }
-
     }
 }

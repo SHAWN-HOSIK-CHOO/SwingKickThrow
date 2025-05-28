@@ -56,31 +56,16 @@ namespace STC
                 child.SetParent(null);
             }
         }
-        public struct TaskEvent : StateChartEvent
+        public struct TansitionEvent : StateChartEvent
         {
-            public IState DstState;
-
-            public TaskEvent(IState dst)
+            public IState State;
+            public TansitionEvent(IState state)
             {
-                DstState = dst;
+                State = state;
             }
             public void Do()
             {
-                if(StateChart.Instance.CheckPathValid(DstState))
-                {
-                    var fullPath = DstState.GetFullPath();
-                    var pathParts = fullPath.Split('.');
-                    IState currentState = Instance;
-                    for (int i = 1; i < pathParts.Length; i++)
-                    {
-                        string name = pathParts[i];
-                        if (!currentState.CheckTask(name))
-                        {
-                            currentState.DoTransitionTo(name);
-                        }
-                        currentState = currentState.GetState(name);
-                    }
-                }
+                State.DoAllTransition();
             }
         }
         private static StateChart _instance;
@@ -99,22 +84,7 @@ namespace STC
         private StateChart(string name) : base(name,StateType.Parallel)
         {
             EventList = new List<StateChartEvent>();
-        }
-        public bool CheckPathValid(IState state)
-        {
-            var fullPath = state.GetFullPath();
-            var pathParts = fullPath.Split('.');
-            IState currentState = state;
-            for (int i = pathParts.Length-1; i > 0 ; i--)
-            {
-                string name = pathParts[i];
-                if(!currentState.ParentState.CheckTransition(currentState.ParentState.Name, currentState.Name))
-                {
-                    return false;
-                }
-                currentState = currentState.ParentState;
-            }
-            return true;
+            IsActive = true;
         }
         public void PublishEvent(StateChartEvent e)
         {

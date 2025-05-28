@@ -12,9 +12,8 @@ namespace STC
         event Action Dirty;
 
         bool CheckCondition();
+        void CheckDirty();
         void AddCondition(ICondition condition);
         void RemoveCondition(ICondition condition);
-        
-        void CheckDirty();
     }
 }

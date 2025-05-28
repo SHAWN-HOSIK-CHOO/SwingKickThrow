@@ -26,19 +26,33 @@ namespace STC
             DumpStateRecursive(StateChart.Instance, builder, "", true);
             treeState =  builder.ToString();
         }
+
+        public string GetStatusMark(bool IsActive,bool IsTask)
+        {
+            string status = "❌";
+            if (IsActive == true)
+            {
+                status = "✅";
+            }
+            else if (IsTask)
+            {
+                status = "➖";
+            }
+            return status;
+        }
+
         private void DumpStateRecursive(IState state, System.Text.StringBuilder builder, string indent, bool isLast)
         {
-            bool isActive = true;
+            bool isTask = false;
             if (state.ParentState != null)
             {
-                if (!state.ParentState.CheckTask(state.Name))
+                if (state.ParentState.CheckTask(state.Name))
                 {
-                    isActive = false;
+                    isTask = true;
                 }
             }
-
             string branch = isLast ? "└── " : "├── ";
-            builder.AppendLine($"{indent}{branch}{state.Name}{(isActive ? "✅" : "❌")}");
+            builder.AppendLine($"{indent}{branch}{state.Name}{(GetStatusMark(state.IsActive, isTask))}");
 
             var children = state.GetAllChild();
             int i = 0;

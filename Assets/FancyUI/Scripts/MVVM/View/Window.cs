@@ -1,6 +1,7 @@
 using MVVM.Property;
 using STC;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -10,24 +11,30 @@ namespace MVVM.View.Window
     [RequireComponent(typeof(EventTrigger))]
     public class Window : MonoBehaviour
     {
-        public WindowViewBinder Binder;
-
-        protected EventTrigger eventTrigger;
-
-        [HideInInspector] public Window ParentWindow;
         public List<Window> ChildWindowList;
         public ModalWindow ModalWindow;
-        
-        //[Inspector - View] Binding
-        public bool Interact;
-        BoolProperty _Interact;
-        IProperty.DelegateSubscribe Interactable;
+        public GameObject RenderObj;
+
+        [HideInInspector]  public Window ParentWindow;
+
+        [HideInInspector][SerializeField] public bool __visible;
+        [HideInInspector][SerializeField] public bool __Interact;
+        [HideInInspector][SerializeField] public bool __Modal;
+        [HideInInspector][SerializeField] public bool __Transition;
+
+        [HideInInspector]  public BoolProperty Visible;
+        [HideInInspector]  public BoolProperty Interact;
+        [HideInInspector]  public BoolProperty Transition;
+        [HideInInspector]  public BoolProperty Modal;
+
+        public WindowViewBinder Binder;
+        protected EventTrigger eventTrigger;
 
         protected virtual void Awake()
         {
             BindView();
             Binder = new WindowViewBinder();
-            Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString());
+            Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString(), __visible, __Interact, __Modal, __Transition);
             Binder.BindVisibleAction(OnVisible);
             Binder.BindTransitionAction(OnTransition);
             Binder.BindModalAction(OnModal);
@@ -53,95 +60,91 @@ namespace MVVM.View.Window
         }
         void InitializeViewModel()
         {
+            if(ModalWindow != null)
+            {
+                Binder.ViewBinding.BindModalWindow(ModalWindow.Binder.ViewBinding);
+                Binder.ViewBinding.AddChildWindow(ModalWindow.Binder.ViewBinding);
+            }
+
             foreach (var w in ChildWindowList)
             {
-                Binder.ViewEventBinding.AddChildWindow(w.Binder.ViewModel);
+                Binder.ViewBinding.AddChildWindow(w.Binder.ViewBinding);
             }
 
-            if (gameObject.activeSelf)
-            {
-                Binder.ViewEventBinding.ShowWindow();
-            }
-            else
-            {
-                Binder.ViewEventBinding.HideWindow();
-            }
-
+            SetVisible();
             SetInteractable();
-        }
-        // Bind [ Inspector - view ] 
-        private void Update()
-        {
-            CheckInteractDirty();
+            SetModal();
         }
         void BindView()
         {
-            Interactable = SetInteractable;
-            _Interact = new BoolProperty();
-            _Interact.Value = Interact;
-            _Interact.Subscribe(Interactable);
-        }
-        void CheckInteractDirty()
-        {
-            if (_Interact != null)
-            {
-                _Interact.Value = Interact;
-            }
+            Visible = new BoolProperty() { Value = __visible};
+            Visible.Subscribe(SetVisible);
+            Interact = new BoolProperty() { Value = __Interact };
+            Interact.Subscribe(SetInteractable);
+            Transition = new BoolProperty() { Value = __Transition };
+            Transition.Subscribe(null);
+            Modal = new BoolProperty() { Value = __Modal };
+            Modal.Subscribe(SetModal);
         }
 
         //Request ViewModel
-        private void OnDisable()
-        {
-            Binder.ViewEventBinding.HideWindow();
-        }
-        private void OnEnable()
-        {
-            Binder.ViewEventBinding.ShowWindow();
-        }
         void SetInteractable()
         {
-            if (_Interact.Value)
+            if (Interact.Value == true)
             {
-                Binder.ViewEventBinding.SetInteractable();
+                Binder.ViewBinding.InteractableWindow(true);
             }
             else
             {
-                Binder.ViewEventBinding.SetNonInteractable();
+                Binder.ViewBinding.NonInteractableWindow(true);
             }
         }
-
-        public void ModalOpenRequest()
+        void SetVisible()
         {
-            Binder.ViewEventBinding.OpenModal();
+            if (Visible.Value)
+            {
+                Binder.ViewBinding.ShowWindow(true);
+            }
+            else
+            {
+                Binder.ViewBinding.HideWindow(true);
+            }
         }
-        public void ModalCloseRequest()
+        void SetModal()
         {
-            Binder.ViewEventBinding.CloseModal();
+            if (Modal.Value == true)
+            {
+                Binder.ViewBinding.OpenModal(true);
+            }
+            else
+            {
+                Binder.ViewBinding.CloseModal(true);
+            }
         }
-
+        
         // Update View
-
         private void OnVisible()
         {
-            gameObject.SetActive(Binder.ViewModel.Visible.Value);
+            Visible.Value = Binder.ViewBinding.Visible.Get();
+            RenderObj.gameObject.SetActive(Binder.ViewBinding.Visible.Get());
         }
         private void OnInteractable()
         {
-            Interact = Binder.ViewModel.Interactable.Value;
-            eventTrigger.enabled = Binder.ViewModel.Interactable.Value;
+            Interact.Value = Binder.ViewBinding.Interactable.Get();
+            eventTrigger.enabled = Binder.ViewBinding.Interactable.Get();
         }
         private void OnModal()
         {
-            gameObject.SetActive(true);
+            Modal.Value = Binder.ViewBinding.Modal.Get();
         }
         private void OnTransition()
         {
-
+            Transition.Value = Binder.ViewBinding.Transition.Get();
         }
         private void OnClick(BaseEventData data)
         {
             PointerEventData pointerData = data as PointerEventData;
-            Binder.ViewEventBinding.OnClick(pointerData.position);
+            Binder.ViewBinding.OnClick(pointerData.position);
         }
     }
 }

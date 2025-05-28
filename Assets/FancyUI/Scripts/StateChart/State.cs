@@ -16,6 +16,8 @@ namespace STC
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
 
+        public bool IsActive { get; protected set; }
+
         //Fsm
         protected IState FSMTask;
         protected Dictionary<string, IState> FSMState;
@@ -25,10 +27,11 @@ namespace STC
         protected Dictionary<string, IState> ParallelState;
         protected DoubleKeyDict<string, string, ITransition> ParallelTransition;
 
+        public event Action<IState> OnStateActivate;
         public event Action<IState> OnStateEnter;
         public event Action<IState> OnStateUpdate;
         public event Action<IState> OnStateExit;
-
+        public event Action<IState> OnStateInActivate;
         public State(string name, StateType type)
         {
             Name = name;
@@ -46,8 +49,19 @@ namespace STC
                 ParallelTransition = new DoubleKeyDict<string, string, ITransition>();
             }
         }
-        
-        
+        public string GetFSMTask()
+        {
+            if (Type == StateType.FSM)
+            {
+
+                if (FSMTask == null)
+                {
+                    return Name;
+                }
+                return FSMTask.Name;
+            }
+            return null;
+        }
         public IState GetState(string name)
         {
             if (Type == StateType.FSM)
@@ -75,7 +89,7 @@ namespace STC
             }
             return null;
         }
-        public bool CheckTransition(string src, string dst)
+        public bool CheckTransitionCondition(string src, string dst)
         {
             if (Type == StateType.FSM)
             {
@@ -89,77 +103,6 @@ namespace STC
                 if (ParallelTransition.TryGetValue(src, dst, out var transition))
                 {
                     return transition.CheckCondition();
-                }
-            }
-            return false;
-        }
-        public bool DoTransition(string src, string dst)
-        {
-            if (Type == StateType.FSM)
-            {
-                if (CheckTransition(src, dst))
-                {
-                    if (src == Name)
-                    {
-                        if (FSMTask == null)
-                        {
-                            var newState = GetFSMState(dst);
-                            if (newState != null)
-                            {
-                                FSMTask = newState;
-                                FSMTask.Enter();
-                                return true;
-                            }
-                        }
-                    }
-                    else if (dst == Name)
-                    {
-                        var state = GetFSMState(src);
-                        if (FSMTask == state)
-                        {
-                            FSMTask = null;
-                            state.Exit();
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        var srcState = GetFSMState(src);
-                        var dstState = GetFSMState(dst);
-                        if(CheckTask(src))
-                        {
-                            FSMTask = null;
-                            srcState.Exit();
-                            FSMTask = dstState;
-                            FSMTask.Enter();
-                            return true;
-                        }
-                    }
-                }
-            }
-            else
-            {
-                if (CheckTransition(src, dst))
-                {
-                    if (src == Name)
-                    {
-                        if (!ParallelTask.TryGetValue(dst, out var state))
-                        {
-                            state = GetParallelState(dst);
-                            ParallelTask.Add(dst, state);
-                            state.Enter();
-                            return true;
-                        }
-                    }
-                    else if (dst == Name)
-                    {
-                        if (ParallelTask.TryGetValue(src, out var state))
-                        {
-                            ParallelTask.Remove(src);
-                            state.Exit();
-                            return true;
-                        }
-                    }
                 }
             }
             return false;
@@ -216,41 +159,209 @@ namespace STC
                 }
             }
         }
+        public bool DoTransition(string src, string dst)
+        {
+            if (Type == StateType.FSM)
+            {
+                if (CheckTransitionCondition(src, dst))
+                {
+                    if (src == Name)
+                    {
+                        if (FSMTask == null)
+                        {
+                            var newState = GetFSMState(dst);
+                            if (newState != null)
+                            {
+                                FSMTask = newState;
+                                FSMTask.Enter();
+                                if (IsActive)
+                                {
+                                    FSMTask.Activate();
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                    else if (dst == Name)
+                    {
+                        var state = GetFSMState(src);
+                        if (FSMTask == state)
+                        {
+                            FSMTask = null;
+                            state.Exit();
+                            if (state.IsActive)
+                            {
+                                state.InActivate();
+                            }
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        var srcState = GetFSMState(src);
+                        var dstState = GetFSMState(dst);
+                        if(CheckTask(src))
+                        {
+                            FSMTask = null;
+                            srcState.Exit();
+                            if (srcState.IsActive)
+                            {
+                                srcState.InActivate();
+                            }
+                            FSMTask = dstState;
+                            FSMTask.Enter();
+                            if (IsActive)
+                            {
+                                FSMTask.Activate();
+                            }
+                            FSMTask.DoAllTransition();
+                            return true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if (CheckTransitionCondition(src, dst))
+                {
+                    if (src == Name)
+                    {
+                        if (!ParallelTask.TryGetValue(dst, out var state))
+                        {
+                            state = GetParallelState(dst);
+                            ParallelTask.Add(dst, state);
+                            state.Enter();
+                            if (IsActive)
+                            {
+                                state.Activate();
+                            }
+                            return true;
+                        }
+                    }
+                    else if (dst == Name)
+                    {
+                        if (ParallelTask.TryGetValue(src, out var state))
+                        {
+                            ParallelTask.Remove(src);
+                            state.Exit();
+                            if (state.IsActive)
+                            {
+                                state.InActivate();
+                            }
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+        public bool DoAllTransition()
+        {
+            bool trans = false;
+            if (Type == StateType.FSM)
+            {
+                foreach (var (key1, key2, transition) in FSMTransition.GetEnumerator())
+                {
+                    if (transition.CheckCondition())
+                    {
+                        if(DoTransition(transition.Src, transition.Dst))
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                foreach (var (key1, key2, transition) in ParallelTransition.GetEnumerator())
+                {
+                    if (transition.CheckCondition())
+                    {
+                        if(DoTransition(transition.Src, transition.Dst))
+                        {
+                            trans = true;
+                        }
+                    }
+                }
+            }
+            return trans;
+        }
+        public void Activate()
+        {
+            IsActive = true;
+            OnActivate();
+            OnStateActivate?.Invoke(this);
+            if(!DoAllTransition())
+            {
+                if (Type == StateType.FSM)
+                {
+                    if (FSMTask != null)
+                    {
+                        var state = FSMTask;
+                        state.Activate();
+                    }
+                }
+                else
+                {
+                    foreach (var key in ParallelTask.Keys.ToList())
+                    {
+                        var state = GetParallelState(key);
+                        state.Activate();
+                    }
+                }
+            }
+        }
         public void Enter()
         {
             OnEnter();
             OnStateEnter?.Invoke(this);
-            DoTransitionFrom(Name);
         }
         public void Update()
         {
             OnUpdate();
             OnStateUpdate?.Invoke(this);
-
-            if (Type == StateType.FSM)
+            if (!DoAllTransition())
             {
-                if (FSMTask != null)
+                if (Type == StateType.FSM)
                 {
-                    FSMTask.Update();
+                    if (FSMTask != null)
+                    {
+                        var state = FSMTask;
+                        if (state.IsActive)
+                        {
+                            state.Update();
+                        }
+                    }
                 }
-            }
-            else
-            {
-                foreach (var kvp in ParallelTask)
+                else
                 {
-                    kvp.Value.Update();
+                    foreach (var key in ParallelTask.Keys.ToList())
+                    {
+                        var state = GetParallelState(key);
+                        if (state.IsActive)
+                        {
+                            state.Update();
+                        }
+                    }
                 }
             }
         }
         public void Exit()
         {
+            OnExit();
+            OnStateExit?.Invoke(this);
+        }
+        public void InActivate()
+        {
+            IsActive = false;
+            OnInActivate();
+            OnStateInActivate?.Invoke(this);
             if (Type == StateType.FSM)
             {
                 if (FSMTask != null)
                 {
                     var state = FSMTask;
-                    FSMTask = null;
-                    state.Exit();
+                    state.InActivate();
                 }
             }
             else
@@ -258,12 +369,9 @@ namespace STC
                 foreach (var key in ParallelTask.Keys.ToList())
                 {
                     var state = GetParallelState(key);
-                    ParallelTask.Remove(key);
-                    state.Exit();
+                    state.InActivate();
                 }
             }
-            OnExit();
-            OnStateExit?.Invoke(this);
         }
         public bool CheckTask(string name)
         {
@@ -294,49 +402,71 @@ namespace STC
             }
             return false;
         }
-        public void Handle(IStateEvent e)
+        private bool CanHandle(IStateEvent e)
         {
             bool checkValid = false;
             if (ParentState != null)
             {
                 if (ParentState.Type == StateType.FSM)
                 {
-                    if (ParentState.CheckTask(Name) && !e.Consumed.isConsumed)
+                    if (!e.Consumed.isConsumed)
                     {
                         checkValid = true;
                     }
                 }
                 else
                 {
-                    if (ParentState.CheckTask(Name))
-                    {
-                        checkValid = true;
-                    }
+                    checkValid = true;
                 }
             }
+            return checkValid;
 
-            if (checkValid)
+        }
+        public void Handle(IStateEvent e)
+        {
+            if (CanHandle(e))
             {
                 if (Type == StateType.FSM)
                 {
-                    if (FSMTask != null)
-                    {
-                        FSMTask.Handle(e);
-                    }
-
-                    if (!e.Consumed.isConsumed)
+                    if (e.DownStream)
                     {
                         OnHandle(e);
+                        foreach (var state in FSMState)
+                        {
+                            state.Value.Handle(e);
+                        }
+                    }
+                    else
+                    {
+
+                        foreach (var state in FSMState)
+                        {
+                            state.Value.Handle(e);
+                        }
+                        if (CanHandle(e))
+                        {
+                            OnHandle(e);
+                        }
                     }
                 }
                 else
                 {
-                    e.Consumed = new ConsumeEvent();
-                    foreach (var state in ParallelTask)
+                    if (e.DownStream)
                     {
-                        state.Value.Handle(e);
+                        OnHandle(e);
+                        foreach (var state in ParallelState)
+                        {
+                            state.Value.Handle(e);
+                        }
                     }
-                    OnHandle(e);
+                    else
+                    {
+                        foreach (var state in ParallelState)
+                        {
+                            state.Value.Handle(e);
+                        }
+                        OnHandle(e);
+                    }
                 }
             }
         }
@@ -344,7 +474,8 @@ namespace STC
         {
 
         }
-        public virtual void OnSetUp()
+
+        public virtual void OnActivate()
         {
 
         }
@@ -352,15 +483,15 @@ namespace STC
         {
 
         }
+        public virtual void OnUpdate()
+        {
+
+        }
         public virtual void OnExit()
         {
 
         }
-        public virtual void OnFinish()
-        {
-
-        }
-        public virtual void OnUpdate()
+        public virtual void OnInActivate()
         {
 
         }
@@ -416,7 +547,6 @@ namespace STC
                 ParallelState.Remove(state.Name);
             }
         }
-
         public ITransition GetTransition(string src, string dst)
         {
             if (Type == StateType.FSM)
@@ -435,7 +565,6 @@ namespace STC
             }
             return null;
         }
-
         public void RemoveTransition(string src, string dst)
         {
             if (Type == StateType.FSM)
@@ -447,7 +576,6 @@ namespace STC
                 ParallelTransition.Remove(src, dst);
             }
         }
-
         public void AddTransition(ITransition transition)
         {
             if (Type == StateType.FSM)
@@ -460,14 +588,10 @@ namespace STC
             }
             transition.Dirty += TransitionDirty;
         }
-
         void TransitionDirty(ITransition transition)
         {
-            var dst = GetState(transition.Dst);
-
-            StateChart.Instance.PublishEvent(new TaskEvent(dst));
+            StateChart.Instance.PublishEvent(new TansitionEvent(this));
         }
-
         public Dictionary<string, IState> GetAllChild()
         {
             if (Type == StateType.FSM)

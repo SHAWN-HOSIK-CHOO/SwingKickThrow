@@ -2,14 +2,17 @@ using STC.Event;
 using UnityEngine;
 namespace MVVM.ViewModel.Window.Event
 {
-    public struct SetInterativeEvent : STC.Event.IStateEvent
+    public struct InteratableEvent : STC.Event.IStateEvent
     {
         public bool interative;
+        public bool DownStream { get; set; }
+
         public ConsumeEvent Consumed { get; set; }
-        public SetInterativeEvent(bool interative)
+        public InteratableEvent(bool interative, bool downStream)
         {
             this.interative = interative;
             Consumed = new ConsumeEvent();
+            DownStream = downStream;
         }
     }
 }

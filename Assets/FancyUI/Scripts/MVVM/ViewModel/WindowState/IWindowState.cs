@@ -1,14 +1,20 @@
+using MVVM.Property;
 using UnityEngine;
 namespace MVVM.ViewModel.Window
 {
     public interface IWindowState
     {
-        public STC.IState InteractiveState { get; }
-        public STC.IState NonInteractiveState { get; }
-        public STC.IState IDLEState { get; }
-        public STC.IState TransitionState { get; }
-        public STC.IState ModalState { get; }
-        public STC.IState VisibleState { get; }
-        public STC.IState HiddenState { get; }
+        IWindowViewBinding Binder { get; }
+        STC.IState InteractiveState { get; }
+        BoolProperty InteractableTrigger { get; }
+        STC.IState NonInteractableState { get; }
+        STC.IState IDLEState { get; }
+        STC.IState TransitionState { get; }
+        STC.IState ModalState { get; }
+        BoolProperty TransitionTrigger { get; }
+        BoolProperty ModalTrigger { get; }
+        STC.IState VisibleState { get; }
+        STC.IState HiddenState { get; }
+        BoolProperty VisibleTrigger { get; }
     }
 }

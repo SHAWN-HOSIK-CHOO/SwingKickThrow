@@ -1,4 +1,3 @@
-using MVVM.ViewModel.Window.BIND;
 using STC;
 using UnityEngine;
 using static MVVM.ViewModel.Window.State.InteractiveState;
@@ -7,43 +6,58 @@ namespace MVVM.ViewModel.Window.State
     public class TransitionState : STC.State
     {
         public const string StateName = "Transition";
-        IWindowViewModel Owner;
+        WindowViewModel Owner;
 
         public class IsTransition : Condition
         {
-            IWindowViewModel Onwer;
-            public IsTransition(IWindowViewModel owner) : base(nameof(TransitionState), true)
+            WindowViewModel Owner;
+            public IsTransition(WindowViewModel owner) : base(nameof(TransitionState), true)
             {
-                Onwer = owner;
-                Onwer.IsTransition.Subscribe(Callback);
+                Owner = owner;
+                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return Onwer.IsTransition.Value;
+                return Owner.TransitionTrigger.Value == true;
             }
         }
         public class IsNoTransition : Condition
         {
-            IWindowViewModel Onwer;
-            public IsNoTransition(IWindowViewModel owner) : base(nameof(IsNoTransition),true)
+            WindowViewModel Owner;
+            public IsNoTransition(WindowViewModel owner) : base(nameof(IsNoTransition),true)
             {
-                Onwer = owner;
-                Onwer.IsTransition.Subscribe(Callback);
+                Owner = owner;
+                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return !Onwer.IsTransition.Value;
+                return !Owner.TransitionTrigger.Value;
             }
         }
 
-        public TransitionState(IWindowViewModel owner) : base(StateName, StateType.FSM)
+        public TransitionState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
-            STC.IState nonInteractiveState = (Owner as IWindowState).NonInteractiveState;
-            //NonInteractive -> Transition
-            var transition = new STC.Transition(NonInteractiveState.StateName, TransitionState.StateName);
+            STC.IState nonInteractiveState = (Owner as IWindowState).NonInteractableState;
+            //NonInteractable -> NonInteractableState.Transition
+            var transition = new STC.Transition(NonInteractableState.StateName, TransitionState.StateName);
             transition.AddCondition(new IsTransition(owner));
             nonInteractiveState.AddTransition(transition);
+
+            //NonInteractableState.Transition -> NonInteractable
+            transition = new STC.Transition(TransitionState.StateName,NonInteractableState.StateName);
+            transition.AddCondition(new IsNoTransition(owner));
+            nonInteractiveState.AddTransition(transition);
+        }
+        public override void OnActivate()
+        {
+            var view = Owner.Binder as IWindowViewBinding;
+            view.TransitionVal.Value = true;
+        }
+        public override void OnInActivate()
+        {
+            var view = Owner.Binder as IWindowViewBinding;
+            view.TransitionVal.Value = false;
         }
     }
 }
