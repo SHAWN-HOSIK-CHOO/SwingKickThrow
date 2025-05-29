@@ -19,7 +19,7 @@ namespace MVVM.View.Window
 
         void OnClose()
         {
-            Visible.Value = false;
+            Binder.ViewBinding.HideWindow();
         }
     }
 }

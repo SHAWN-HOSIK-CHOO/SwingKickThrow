@@ -6,7 +6,7 @@ namespace MVVM.ViewModel.Window.State
 {
     public class NonInteractableState : STC.State 
     {
-        public const string StateName = "NonInteractive";
+        public const string StateName = "NonInteractable";
         WindowViewModel Owner;
         public class CanNonInteractable : Condition
         {
@@ -14,13 +14,10 @@ namespace MVVM.ViewModel.Window.State
             public CanNonInteractable(WindowViewModel owner) : base(nameof(CanNonInteractable), true)
             {
                 Owner = owner;
-                Owner.InteractableTrigger.Subscribe(CheckDirty);
-                Owner.ModalTrigger.Subscribe(CheckDirty);
-                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return Owner.ModalTrigger.Value || Owner.TransitionTrigger.Value || !Owner.InteractableTrigger.Value;
+                return Owner.Binder.Modal.Get() || Owner.Binder.Transition.Get() || !Owner.Binder.Interactable.Get();
             }
         }
         public NonInteractableState(WindowViewModel owner) : base(StateName, StateType.Parallel)
@@ -33,7 +30,7 @@ namespace MVVM.ViewModel.Window.State
             visibleState.AddTransition(transition);
 
             //Visible.Interactive -> Visible.NonInteractive
-            transition = new STC.Transition(InteractiveState.StateName, NonInteractableState.StateName);
+            transition = new STC.Transition(InteractableState.StateName, NonInteractableState.StateName);
             transition.AddCondition(new CanNonInteractable(owner));
             visibleState.AddTransition(transition);
 

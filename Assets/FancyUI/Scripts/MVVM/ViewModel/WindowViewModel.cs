@@ -7,32 +7,29 @@ namespace MVVM.ViewModel.Window
     public class WindowViewModel : STC.State , IWindowState
     {
         public STC.IState InteractiveState { get; private set; }
-        public BoolProperty InteractableTrigger { get; private set; }
         public STC.IState NonInteractableState { get; private set; }
         public STC.IState IDLEState { get; private set; }
         public STC.IState TransitionState { get; private set; }
-        public BoolProperty TransitionTrigger { get; private set; }
+        //public BoolProperty TransitionTrigger { get; private set; }
+        //public BoolProperty InteractableTrigger { get; private set; }
+        //public BoolProperty ModalTrigger { get; private set; }
+        //public BoolProperty VisibleTrigger { get; private set; }
         public STC.IState ModalState { get; private set; }
-        public BoolProperty ModalTrigger { get; private set; }
-
         public STC.IState VisibleState { get; private set; }
         public STC.IState HiddenState { get; private set; }
-        public BoolProperty VisibleTrigger { get; private set; }
         public IWindowViewBinding Binder { get; private set; }
         public WindowViewModel(string name) : base(name, StateType.FSM)
         {
             Binder = new WindowViewBinder(this);
-            ModalTrigger = new BoolProperty();
-            VisibleTrigger = new BoolProperty();
-            TransitionTrigger = new BoolProperty();
-            InteractableTrigger = new BoolProperty();
-            ModalTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
-            TransitionTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
-
-
+            //ModalTrigger = new BoolProperty();
+            //VisibleTrigger = new BoolProperty();
+            //TransitionTrigger = new BoolProperty();
+            //InteractableTrigger = new BoolProperty();
+            //ModalTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
+            //TransitionTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
             VisibleState = new State.VisibleState(this);
             HiddenState = new State.HiddenState(this); 
-            InteractiveState = new State.InteractiveState(this);
+            InteractiveState = new State.InteractableState(this);
             NonInteractableState = new State.NonInteractableState(this);
             IDLEState = new State.IDLEState(this);
             TransitionState = new State.TransitionState(this);
@@ -59,10 +56,10 @@ namespace MVVM.ViewModel.Window
         }
         public override void OnHandle(STC.Event.IStateEvent e)
         {
-            if (e is Event.SetVisibleWindowEvent visibleEvent)
+            if (e is Event.VisibleWindowEvent visibleEvent)
             {
                 visibleEvent.Consumed.isConsumed = true;
-                VisibleTrigger.Value = visibleEvent.visible;   
+                Binder.VisibleVal.Value = visibleEvent.Visible;   
             }
         }
     }

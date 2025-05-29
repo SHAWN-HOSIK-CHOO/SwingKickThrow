@@ -11,6 +11,7 @@ namespace MVVM.Property
     public interface IPropertySetter<T>
     {
         T Value { get; set; }
+        void SetSilently(T val);
     }
     public class Property<T> : IPropertySetter<T>, IPropertyNofier<T> 
     {
@@ -39,14 +40,39 @@ namespace MVVM.Property
             OnValueChanged?.Invoke(Value);
         }
 
+        public void SetSilently(T val)
+        {
+            _value = val;
+        }
+
         public void Subscribe(Action callback)
         {
             OnValueChanged += (value) => callback?.Invoke();
         }
+
     }
-     public class IntProperty : Property<int> { }
+     public class IntProperty : Property<int> 
+    { 
+        public IntProperty() : base()
+        {
 
-    public class BoolProperty : Property<bool> { }
+        }
+    }
 
-    public class FloatProperty : Property<bool> { }
+    public class BoolProperty : Property<bool>
+    {
+        public BoolProperty() : base()
+        {
+
+        }
+    }
+
+    public class FloatProperty : Property<bool>
+    {
+        public FloatProperty() : base()
+        {
+
+        }
+
+    }
 }

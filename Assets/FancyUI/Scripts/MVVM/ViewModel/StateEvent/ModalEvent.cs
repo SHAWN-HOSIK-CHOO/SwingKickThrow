@@ -5,12 +5,14 @@ namespace MVVM.ViewModel.Window.Event
 {
     public struct ModalEvent : STC.Event.IStateEvent
     {
-        public bool active;
+        public bool Modal;
+        public bool Active { get; set; }
         public bool DownStream { get; set; }
         public ConsumeEvent Consumed { get; set; }
-        public ModalEvent(bool active, bool downStream)
+        public ModalEvent(bool modal,bool active, bool downStream)
         {
-            this.active = active;
+            Modal = modal;
+            Active = active;
             Consumed = new ConsumeEvent();
             DownStream = downStream;
         }

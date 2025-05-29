@@ -19,15 +19,16 @@ namespace MVVM.ViewModel.Window
         IPropertyNofier<bool> Modal { get; }
         IPropertyNofier<bool> Transition { get; }
 
-        void ShowWindow(bool downStream);
-        void HideWindow(bool downStream);
-        void InteractableWindow(bool downStream);
-        void NonInteractableWindow(bool downStream);
-        void OpenModal(bool downStream);
-        void CloseModal(bool downStream);
+        void ShowWindow();
+        void HideWindow();
+        void InteractableWindow();
+        void NonInteractableWindow();
+        void TransitionStart();
+        void TransitionEnd();
+        void OpenModal();
+        void CloseModal();
         void BindModalWindow(IWindowViewBinding modal);
         void OnClick(Vector2 pos);
-
         void SetParentWindow(IWindowViewBinding parent);
         void AddChildWindow(IWindowViewBinding child);
         void RemoveChildWindow(IWindowViewBinding child);

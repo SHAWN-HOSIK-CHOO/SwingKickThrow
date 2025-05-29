@@ -1,4 +1,5 @@
 using STC;
+using Unity.VisualScripting;
 namespace MVVM.ViewModel.Window.State
 {
     public class VisibleState : STC.State
@@ -9,12 +10,15 @@ namespace MVVM.ViewModel.Window.State
             public CanVisible(WindowViewModel owner) : base(nameof(CanVisible), true)
             {
                 Owner = owner;
-                Owner.VisibleTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                var window = Owner as IWindowViewBinding;
-                return (Owner.VisibleTrigger.Value == true);
+                var window = Owner.Binder;
+                if(window.ParentWindow != null && window.ParentWindow.ModalWindow == window)
+                {
+                    return (Owner.Binder.Visible.Get()) && (window.ParentWindow.ModalVal.Value);
+                }
+                return (Owner.Binder.Visible.Get());
             }
         }
         public const string StateName = "Visible";
@@ -39,13 +43,17 @@ namespace MVVM.ViewModel.Window.State
             if (e is Event.InteratableEvent interactEvent)
             {
                 interactEvent.Consumed.isConsumed = true;
-                Owner.InteractableTrigger.Value = interactEvent.interative;
+                Owner.Binder.InteractableVal.Value = interactEvent.interative;
             }
         }
 
+
         public override void OnActivate()
         {
-            Owner.Binder.VisibleVal.Value = true;
+            foreach(var w in Owner.Binder.ChildWindow)
+            {
+                w.ShowWindow();
+            }
         }
     }
 }

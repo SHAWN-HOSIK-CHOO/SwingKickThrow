@@ -1,6 +1,6 @@
 using STC;
 using UnityEngine;
-using static MVVM.ViewModel.Window.State.InteractiveState;
+using static MVVM.ViewModel.Window.State.InteractableState;
 namespace MVVM.ViewModel.Window.State
 {
     public class IDLEState : STC.State 
@@ -12,7 +12,7 @@ namespace MVVM.ViewModel.Window.State
             Owner = owner;
             STC.IState interactiveState = (Owner as IWindowState).InteractiveState;
             //Interactive -> IDLE
-            var transition = new STC.Transition(InteractiveState.StateName, IDLEState.StateName);
+            var transition = new STC.Transition(InteractableState.StateName, IDLEState.StateName);
             interactiveState.AddTransition(transition);
         }
     }

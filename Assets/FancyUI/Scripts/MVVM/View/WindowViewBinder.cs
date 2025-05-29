@@ -19,18 +19,14 @@ namespace MVVM.View.Window
             ViewBinding.Interactable.Invoke();
             ViewBinding.Transition.Invoke();
         }
-
         public void BindViewModel(string name, bool visible, bool interact, bool modal, bool transition)
         {
             var model = new WindowViewModel(name);
-            model.VisibleTrigger.Value = visible;
-            model.InteractableTrigger.Value = interact;
-            model.ModalTrigger.Value = modal;
-            model.TransitionTrigger.Value = transition;
-
+            model.Binder.VisibleVal.Value = visible;
+            model.Binder.InteractableVal.Value = interact;
+            model.Binder.ModalVal.Value = modal;
+            model.Binder.TransitionVal.Value = transition;
             ViewBinding = model.Binder ;
-
-
         }
         public void BindVisibleAction(Action visible)
         {
@@ -50,7 +46,7 @@ namespace MVVM.View.Window
         public void BindTransitionAction(Action transition)
         {
             Transition = transition;
-            ViewBinding.Transition.Subscribe(Visible);
+            ViewBinding.Transition.Subscribe(transition);
         }
     }
 }

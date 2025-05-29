@@ -12,11 +12,10 @@ namespace MVVM.ViewModel.Window.State
             public IsModal(WindowViewModel owner) : base(nameof(IsModal),true)
             {
                 Owner = owner;
-                Owner.ModalTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return Owner.ModalTrigger.Value;
+                return Owner.Binder.Modal.Get();
             }
         }
         public class IsNoModal : Condition
@@ -25,18 +24,17 @@ namespace MVVM.ViewModel.Window.State
             public IsNoModal(WindowViewModel owner) : base(nameof(IsNoModal), true)
             {
                 Owner = owner;
-                Owner.ModalTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return !Owner.ModalTrigger.Value;
+                return !Owner.Binder.Modal.Get();
             }
         }
         public ModalState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
             STC.IState nonInteractiveState = (Owner as IWindowState).NonInteractableState;
-            //NonInteractive -> Modal
+            //NonInteractive ->NonInteractive.Modal
             var transition = new STC.Transition(NonInteractableState.StateName, ModalState.StateName);
             transition.AddCondition(new IsModal(owner));
             nonInteractiveState.AddTransition(transition);
@@ -47,18 +45,22 @@ namespace MVVM.ViewModel.Window.State
             if (e is Event.ModalEvent modalEvent)
             {
                 modalEvent.Consumed.isConsumed = true;
-                Owner.ModalTrigger.Value = modalEvent.active;
+                Owner.Binder.ModalVal.Value = modalEvent.Modal;
             }
         }
         public override void OnActivate()
         {
-            var view = Owner.Binder as IWindowViewBinding;
-            view.ModalVal.Value = true;
+            if (Owner.Binder.ModalWindow != null)
+            {
+                Owner.Binder.ModalWindow.ShowWindow();
+            }
         }
         public override void OnInActivate()
         {
-            var view = Owner.Binder as IWindowViewBinding;
-            view.ModalVal.Value = false;
+            if(Owner.Binder.ModalWindow != null)
+            {
+                Owner.Binder.ModalWindow.HideWindow();
+            }
         }
     }
 }

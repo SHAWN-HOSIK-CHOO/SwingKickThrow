@@ -32,8 +32,8 @@ public class CreateWindowView
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         Window w = windowGO.GetComponent<Window>();
-        w.Visible.Value = true;
-        w.Interact.Value = true;
+        w.__visible = true;
+        w.__Interact = true;
         w.RenderObj = renderObj;
 
         // 선택 항목을 새로 생성한 Window로 지정
@@ -69,8 +69,8 @@ public class CreateWindowView
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         Window w = windowGO.GetComponent<Window>();
-        w.Visible.Value = true;
-        w.Interact.Value = true;
+        w.__visible = true;
+        w.__Interact = true;
         w.RenderObj = renderObj;
 
         // 선택 항목을 새로 생성한 Window로 지정

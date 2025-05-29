@@ -6,13 +6,15 @@ namespace MVVM.ViewModel.Window.Event
     {
         public bool interative;
         public bool DownStream { get; set; }
-
+        public bool Active { get; set; }
+        
         public ConsumeEvent Consumed { get; set; }
-        public InteratableEvent(bool interative, bool downStream)
+        public InteratableEvent(bool interative, bool active, bool downStream)
         {
             this.interative = interative;
             Consumed = new ConsumeEvent();
             DownStream = downStream;
+            Active = active;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace MVVM.ViewModel.Window
 
         IPropertySetter<bool> IWindowViewBinding.InteractableVal => Interactable;
 
-        IPropertySetter<bool> IWindowViewBinding.ModalVal => IsModal;
+        IPropertySetter<bool> IWindowViewBinding.ModalVal => Modal;
 
         IPropertySetter<bool> IWindowViewBinding.TransitionVal => IsTransition;
 
@@ -24,13 +24,13 @@ namespace MVVM.ViewModel.Window
 
         IPropertyNofier<bool> IWindowViewBinding.Interactable => Interactable;
 
-        IPropertyNofier<bool> IWindowViewBinding.Modal => IsModal;
+        IPropertyNofier<bool> IWindowViewBinding.Modal => Modal;
 
         IPropertyNofier<bool> IWindowViewBinding.Transition => IsTransition;
 
         public BoolProperty Visible { get; protected set; }
         public BoolProperty Interactable { get; protected set; }
-        public BoolProperty IsModal { get; protected set; }
+        public BoolProperty Modal { get; protected set; }
         public BoolProperty IsTransition { get; protected set; }
 
         IState OwnerWindow;
@@ -39,10 +39,9 @@ namespace MVVM.ViewModel.Window
         {
             OwnerWindow = owner;
             Visible = new BoolProperty();
-            IsModal = new BoolProperty();
+            Modal = new BoolProperty();
             IsTransition = new BoolProperty();
             Interactable = new BoolProperty();
-
             ChildWindow = new List<IWindowViewBinding>();
         }
 
@@ -50,34 +49,41 @@ namespace MVVM.ViewModel.Window
         {
             ModalWindow = modal;
         }
-        void IWindowViewBinding.ShowWindow(bool downStream)
+        void IWindowViewBinding.ShowWindow()
         {
-            OwnerWindow.Handle(new SetVisibleWindowEvent(true, downStream));
+            OwnerWindow.Handle(new VisibleWindowEvent(true, true , true));
         }
-        void IWindowViewBinding.HideWindow(bool downStream)
+        void IWindowViewBinding.HideWindow()
         {
-            OwnerWindow.Handle(new SetVisibleWindowEvent(false, downStream));
+            OwnerWindow.Handle(new VisibleWindowEvent(false, true, true));
         }
-        void IWindowViewBinding.OpenModal(bool downStream)
+        void IWindowViewBinding.OpenModal()
         {
-            OwnerWindow.Handle(new ModalEvent(true, downStream));
+            OwnerWindow.Handle(new ModalEvent(true, false, true));
         }
-        void IWindowViewBinding.CloseModal(bool downStream)
+        void IWindowViewBinding.CloseModal()
         {
-            OwnerWindow.Handle(new ModalEvent(false, downStream));
+            OwnerWindow.Handle(new ModalEvent(false, true, true));
         }
-        void IWindowViewBinding.InteractableWindow(bool downStream)
+        void IWindowViewBinding.InteractableWindow()
         {
-            OwnerWindow.Handle(new InteratableEvent(true, downStream));
+            OwnerWindow.Handle(new InteratableEvent(true,false, true));
         }
-        void IWindowViewBinding.NonInteractableWindow(bool downStream)
+        void IWindowViewBinding.NonInteractableWindow()
         {
-            OwnerWindow.Handle(new InteratableEvent(false, downStream));
+            OwnerWindow.Handle(new InteratableEvent(false, false, true));
         }
-        public void OnClick(Vector2 pos)
-        {
 
+        public void TransitionStart()
+        {
+            OwnerWindow.Handle(new TransitionEvent(true, false, true));
         }
+
+        public void TransitionEnd()
+        {
+            OwnerWindow.Handle(new TransitionEvent(false, true, true));
+        }
+
         void IWindowViewBinding.SetParentWindow(IWindowViewBinding parent)
         {
             if (ParentWindow == parent) return;
@@ -106,6 +112,11 @@ namespace MVVM.ViewModel.Window
             ChildWindow.Add(child );
             var w = child as IWindowViewBinding;
             w.SetParentWindow(this);
+        }
+
+        public void OnClick(Vector2 pos)
+        {
+
         }
     }
 }

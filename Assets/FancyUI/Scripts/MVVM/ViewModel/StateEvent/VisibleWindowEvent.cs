@@ -2,16 +2,17 @@ using STC.Event;
 
 namespace MVVM.ViewModel.Window.Event
 {
-    public struct SetVisibleWindowEvent : STC.Event.IStateEvent
+    public struct VisibleWindowEvent : STC.Event.IStateEvent
     {
-        public bool visible;
+        public bool Visible;
         public bool DownStream { get; set; }
+        public bool Active { get; set; }
         public ConsumeEvent Consumed { get; set; }
-        public SetVisibleWindowEvent(bool visible, bool downStream)
+        public VisibleWindowEvent(bool visible,bool active, bool downStream)
         {
-            this.visible = visible;
+            Visible = visible;
             Consumed = new ConsumeEvent();
-
+            Active = active;
             DownStream = downStream;
         }
     }

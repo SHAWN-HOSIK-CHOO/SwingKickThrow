@@ -214,7 +214,6 @@ namespace STC
                             {
                                 FSMTask.Activate();
                             }
-                            FSMTask.DoAllTransition();
                             return true;
                         }
                     }
@@ -391,7 +390,6 @@ namespace STC
                         return true;
                     }
                 }
-
             }
             else
             {
@@ -419,6 +417,10 @@ namespace STC
                     checkValid = true;
                 }
             }
+            if(e.Active && !IsActive)
+            {
+                checkValid = false;
+            }
             return checkValid;
 
         }
@@ -434,6 +436,10 @@ namespace STC
                         foreach (var state in FSMState)
                         {
                             state.Value.Handle(e);
+                            if(e.Consumed.isConsumed)
+                            {
+                                break;
+                            }
                         }
                     }
                     else
@@ -457,6 +463,10 @@ namespace STC
                         foreach (var state in ParallelState)
                         {
                             state.Value.Handle(e);
+                            if (e.Consumed.isConsumed)
+                            {
+                                break;
+                            }
                         }
                     }
                     else

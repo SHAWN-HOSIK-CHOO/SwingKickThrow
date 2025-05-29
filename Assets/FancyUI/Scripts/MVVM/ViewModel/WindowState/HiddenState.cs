@@ -10,11 +10,15 @@ namespace MVVM.ViewModel.Window.State
             public CanHidden(WindowViewModel owner) : base(nameof(CanHidden),true)
             {
                 Owner = owner;
-                Owner.VisibleTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return !Owner.VisibleTrigger.Value;
+                var window = Owner.Binder;
+                if (window.ParentWindow != null && window.ParentWindow.ModalWindow == window)
+                {
+                    return (!Owner.Binder.Visible.Get()) && (!window.ParentWindow.Modal.Get());
+                }
+                return !Owner.Binder.Visible.Get();
             }
         }
         public const string StateName = "Hidden";
@@ -36,7 +40,10 @@ namespace MVVM.ViewModel.Window.State
 
         public override void OnActivate()
         {
-            Owner.Binder.VisibleVal.Value = false;
+            foreach (var w in Owner.Binder.ChildWindow)
+            {
+                w.HideWindow();
+            }
         }
     }
 }

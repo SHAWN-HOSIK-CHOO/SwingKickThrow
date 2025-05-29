@@ -419,6 +419,7 @@ MonoBehaviour:
   RenderObj: {fileID: 1808841529}
   ParentWindow: {fileID: 0}
   __visible: 0
+  __visibleLocal: 0
   __Interact: 0
   __Modal: 0
   __Transition: 0
@@ -832,7 +833,8 @@ MonoBehaviour:
   ModalWindow: {fileID: 0}
   RenderObj: {fileID: 1423152209}
   ParentWindow: {fileID: 0}
-  __visible: 0
+  __visible: 1
+  __visibleLocal: 0
   __Interact: 1
   __Modal: 0
   __Transition: 0
@@ -998,6 +1000,7 @@ MonoBehaviour:
   RenderObj: {fileID: 1510414101}
   ParentWindow: {fileID: 0}
   __visible: 0
+  __visibleLocal: 0
   __Interact: 0
   __Modal: 0
   __Transition: 0
@@ -1997,6 +2000,7 @@ MonoBehaviour:
   RenderObj: {fileID: 1947614353}
   ParentWindow: {fileID: 0}
   __visible: 0
+  __visibleLocal: 0
   __Interact: 0
   __Modal: 0
   __Transition: 0
@@ -2078,6 +2082,7 @@ MonoBehaviour:
   RenderObj: {fileID: 892833687}
   ParentWindow: {fileID: 0}
   __visible: 0
+  __visibleLocal: 0
   __Interact: 0
   __Modal: 0
   __Transition: 0
@@ -2772,6 +2777,7 @@ MonoBehaviour:
   RenderObj: {fileID: 507533099}
   ParentWindow: {fileID: 0}
   __visible: 1
+  __visibleLocal: 0
   __Interact: 1
   __Modal: 0
   __Transition: 0
@@ -3048,6 +3054,7 @@ MonoBehaviour:
   RenderObj: {fileID: 173685934}
   ParentWindow: {fileID: 0}
   __visible: 0
+  __visibleLocal: 0
   __Interact: 0
   __Modal: 0
   __Transition: 0

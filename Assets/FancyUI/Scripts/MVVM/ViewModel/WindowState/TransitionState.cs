@@ -1,6 +1,6 @@
 using STC;
 using UnityEngine;
-using static MVVM.ViewModel.Window.State.InteractiveState;
+using static MVVM.ViewModel.Window.State.InteractableState;
 namespace MVVM.ViewModel.Window.State
 {
     public class TransitionState : STC.State
@@ -14,11 +14,10 @@ namespace MVVM.ViewModel.Window.State
             public IsTransition(WindowViewModel owner) : base(nameof(TransitionState), true)
             {
                 Owner = owner;
-                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return Owner.TransitionTrigger.Value == true;
+                return Owner.Binder.Transition.Get();
             }
         }
         public class IsNoTransition : Condition
@@ -27,11 +26,10 @@ namespace MVVM.ViewModel.Window.State
             public IsNoTransition(WindowViewModel owner) : base(nameof(IsNoTransition),true)
             {
                 Owner = owner;
-                Owner.TransitionTrigger.Subscribe(CheckDirty);
             }
             public override bool OnCheck()
             {
-                return !Owner.TransitionTrigger.Value;
+                return !Owner.Binder.Transition.Get();
             }
         }
 
@@ -49,15 +47,23 @@ namespace MVVM.ViewModel.Window.State
             transition.AddCondition(new IsNoTransition(owner));
             nonInteractiveState.AddTransition(transition);
         }
+
+        public override void OnHandle(STC.Event.IStateEvent e)
+        {
+            if (e is Event.TransitionEvent transitionEvent)
+            {
+                transitionEvent.Consumed.isConsumed = true;
+                Owner.Binder.TransitionVal.Value = transitionEvent.State;
+            }
+        }
+
+
         public override void OnActivate()
         {
-            var view = Owner.Binder as IWindowViewBinding;
-            view.TransitionVal.Value = true;
         }
         public override void OnInActivate()
         {
-            var view = Owner.Binder as IWindowViewBinding;
-            view.TransitionVal.Value = false;
+
         }
     }
 }
