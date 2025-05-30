@@ -8,7 +8,6 @@ using UnityEngine.EventSystems;
 namespace MVVM.View.Window
 {
     [RequireComponent(typeof(RectTransform))]
-    [RequireComponent(typeof(EventTrigger))]
     public class Window : MonoBehaviour
     {
         public List<Window> ChildWindowList;
@@ -23,6 +22,8 @@ namespace MVVM.View.Window
         
         public WindowViewBinder Binder;
         protected EventTrigger eventTrigger;
+        protected CanvasGroup canvasGroup;
+
 
         protected virtual void Awake()
         {
@@ -32,7 +33,8 @@ namespace MVVM.View.Window
             Binder.BindTransitionAction(OnTransition);
             Binder.BindModalAction(OnModal);
             Binder.BindInteractiveAction(OnInteractable);
-            eventTrigger = GetComponent<EventTrigger>();
+            eventTrigger = RenderObj.GetComponent<EventTrigger>();
+            canvasGroup = RenderObj.GetComponent<CanvasGroup>();  
             EventTriggerHelper.AddTriggerEvent(eventTrigger, EventTriggerType.PointerClick, OnClick);
 
             foreach (var w in ChildWindowList)
@@ -55,6 +57,7 @@ namespace MVVM.View.Window
             {
                 Binder.ViewBinding.BindModalWindow(ModalWindow.Binder.ViewBinding);
                 Binder.ViewBinding.AddChildWindow(ModalWindow.Binder.ViewBinding);
+                Binder.ViewBinding.ModalVal.Value = __Modal;
             }
 
             foreach (var w in ChildWindowList)
@@ -64,25 +67,26 @@ namespace MVVM.View.Window
         }
         
         // Update View
-        private void OnVisible()
+        protected virtual void OnVisible()
         {
             var visible = Binder.ViewBinding.Visible.Get();
-            RenderObj.gameObject.SetActive(visible);
+            canvasGroup.alpha = visible ? 1 : 0;
         }
-        private void OnInteractable()
+        protected virtual void OnInteractable()
         {
             var Interactable = Binder.ViewBinding.Interactable.Get();
-            eventTrigger.enabled = Interactable;
+            canvasGroup.blocksRaycasts = !Interactable;
         }
-        private void OnModal()
+        protected virtual void OnModal()
         {
             var modal = Binder.ViewBinding.Modal.Get();
+            canvasGroup.blocksRaycasts = modal;
         }
-        private void OnTransition()
+        protected virtual void OnTransition()
         {
             var transition = Binder.ViewBinding.Transition.Get();
         }
-        private void OnClick(BaseEventData data)
+        protected virtual void OnClick(BaseEventData data)
         {
             PointerEventData pointerData = data as PointerEventData;
             Binder.ViewBinding.OnClick(pointerData.position);

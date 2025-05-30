@@ -71,13 +71,12 @@ namespace MVVM.ViewModel.Window
         }
         void IWindowViewBinding.InteractableWindow()
         {
-            OwnerWindow.Handle(new InteratableEvent(true,false, true));
+            OwnerWindow.Handle(new InteratableEvent(true, false, true));
         }
         void IWindowViewBinding.NonInteractableWindow()
         {
             OwnerWindow.Handle(new InteratableEvent(false, false, true));
         }
-
         public void TransitionStart()
         {
             OwnerWindow.Handle(new TransitionEvent(true, false, true));

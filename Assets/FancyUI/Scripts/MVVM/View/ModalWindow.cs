@@ -6,15 +6,13 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 namespace MVVM.View.Window
 {
-    [RequireComponent(typeof(RectTransform))]
-    [RequireComponent(typeof(EventTrigger))]
     public class ModalWindow : Window
     {
-        public Button close;
+        public Button closeButton;
         protected override void Start()
         {
             base.Start();
-            close.onClick.AddListener(OnClose);
+            closeButton.onClick.AddListener(OnClose);
         }
 
         void OnClose()
