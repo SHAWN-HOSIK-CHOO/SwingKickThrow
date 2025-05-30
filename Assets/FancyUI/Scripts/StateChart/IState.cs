@@ -7,7 +7,8 @@ namespace STC
     public interface IState
     {
         string Name { get;}
-        bool IsActive { get; }
+        bool Task { get;  }
+        bool Active { get; }
         IState ParentState { get; }
         StateType Type { get; }
 

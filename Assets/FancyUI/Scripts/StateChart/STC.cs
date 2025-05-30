@@ -52,7 +52,7 @@ namespace STC
                 }
             }
             string branch = isLast ? "└── " : "├── ";
-            builder.AppendLine($"{indent}{branch}{state.Name}{(GetStatusMark(state.IsActive, isTask))}");
+            builder.AppendLine($"{indent}{branch}{state.Name}{(GetStatusMark(state.Active, isTask))}");
 
             var children = state.GetAllChild();
             int i = 0;

@@ -18,7 +18,7 @@ namespace MVVM.ViewModel.Window
 
         IPropertySetter<bool> IWindowViewBinding.ModalVal => Modal;
 
-        IPropertySetter<bool> IWindowViewBinding.TransitionVal => IsTransition;
+        IPropertySetter<bool> IWindowViewBinding.TransitionVal => Transition;
 
         IPropertyNofier<bool> IWindowViewBinding.Visible => Visible;
 
@@ -26,22 +26,26 @@ namespace MVVM.ViewModel.Window
 
         IPropertyNofier<bool> IWindowViewBinding.Modal => Modal;
 
-        IPropertyNofier<bool> IWindowViewBinding.Transition => IsTransition;
+        IPropertyNofier<bool> IWindowViewBinding.Transition => Transition;
 
         public BoolProperty Visible { get; protected set; }
         public BoolProperty Interactable { get; protected set; }
         public BoolProperty Modal { get; protected set; }
-        public BoolProperty IsTransition { get; protected set; }
+        public BoolProperty Transition { get; protected set; }
 
         IState OwnerWindow;
 
-        public WindowViewBinder(IState owner)
+        public WindowViewBinder(IState owner, bool visible, bool interact, bool modal, bool transition)
         {
             OwnerWindow = owner;
             Visible = new BoolProperty();
+            Visible.Value = visible;
             Modal = new BoolProperty();
-            IsTransition = new BoolProperty();
+            Modal.Value = modal;
+            Transition = new BoolProperty();
+            Transition.Value = transition;
             Interactable = new BoolProperty();
+            Interactable.Value = interact;
             ChildWindow = new List<IWindowViewBinding>();
         }
 

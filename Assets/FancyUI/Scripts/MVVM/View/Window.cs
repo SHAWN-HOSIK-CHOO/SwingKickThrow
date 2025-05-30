@@ -15,11 +15,11 @@ namespace MVVM.View.Window
         public ModalWindow ModalWindow;
         public GameObject RenderObj;
 
-        [HideInInspector]  public Window ParentWindow;
+        [HideInInspector] public Window ParentWindow;
         [HideInInspector] public bool __visible;
         [HideInInspector] public bool __Interact;
         [HideInInspector] public bool __Modal;
-        [HideInInspector] public  bool __Transition;
+        [HideInInspector] public bool __Transition;
         
         public WindowViewBinder Binder;
         protected EventTrigger eventTrigger;
@@ -43,7 +43,6 @@ namespace MVVM.View.Window
             {
                 ModalWindow.ParentWindow = this;
             }
-
             StateChart.Instance.FlushEventList();
         }
         protected virtual void Start()

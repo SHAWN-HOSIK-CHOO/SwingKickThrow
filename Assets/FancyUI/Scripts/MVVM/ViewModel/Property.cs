@@ -1,3 +1,4 @@
+using STC;
 using System;
 
 namespace MVVM.Property

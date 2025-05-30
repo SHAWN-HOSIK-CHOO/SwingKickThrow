@@ -1,23 +1,32 @@
 using STC.Event;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using static STC.StateChart;
 namespace STC
 {
     public class State : IState
     {
+        /*
+        * 상태는 계층 구조(부모-자식)와 수평 구조(동등 레벨 상태)로 구성될 수 있다.
+        * 상태는 FSM, Parallel 두가지 타입으로 구분되며 
+        * 각각 단일 혹은 병렬 상태를 하위 상태로 나타냄을 의미한다.
+        * 
+        */
+
         public enum StateType
         {
             FSM,
             Parallel
         }
+        public bool Active { get; protected set; }
+
+        public bool Task { get; protected set; }
+
         public StateType Type { get; protected set; }
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
-
-        public bool IsActive { get; protected set; }
-
         //Fsm
         protected IState FSMTask;
         protected Dictionary<string, IState> FSMState;
@@ -32,6 +41,7 @@ namespace STC
         public event Action<IState> OnStateUpdate;
         public event Action<IState> OnStateExit;
         public event Action<IState> OnStateInActivate;
+
         public State(string name, StateType type)
         {
             Name = name;
@@ -174,7 +184,7 @@ namespace STC
                             {
                                 FSMTask = newState;
                                 FSMTask.Enter();
-                                if (IsActive)
+                                if (Active)
                                 {
                                     FSMTask.Activate();
                                 }
@@ -189,7 +199,7 @@ namespace STC
                         {
                             FSMTask = null;
                             state.Exit();
-                            if (state.IsActive)
+                            if (state.Active)
                             {
                                 state.InActivate();
                             }
@@ -204,13 +214,13 @@ namespace STC
                         {
                             FSMTask = null;
                             srcState.Exit();
-                            if (srcState.IsActive)
+                            if (srcState.Active)
                             {
                                 srcState.InActivate();
                             }
                             FSMTask = dstState;
                             FSMTask.Enter();
-                            if (IsActive)
+                            if (Active)
                             {
                                 FSMTask.Activate();
                             }
@@ -230,7 +240,7 @@ namespace STC
                             state = GetParallelState(dst);
                             ParallelTask.Add(dst, state);
                             state.Enter();
-                            if (IsActive)
+                            if (Active)
                             {
                                 state.Activate();
                             }
@@ -243,7 +253,7 @@ namespace STC
                         {
                             ParallelTask.Remove(src);
                             state.Exit();
-                            if (state.IsActive)
+                            if (state.Active)
                             {
                                 state.InActivate();
                             }
@@ -287,7 +297,8 @@ namespace STC
         }
         public void Activate()
         {
-            IsActive = true;
+            UnityEngine.Debug.Log("Activate : " + Name);
+            Active = true;
             OnActivate();
             OnStateActivate?.Invoke(this);
             if(!DoAllTransition())
@@ -312,6 +323,8 @@ namespace STC
         }
         public void Enter()
         {
+            Task = true;
+            UnityEngine.Debug.Log("Enter : " +Name);
             OnEnter();
             OnStateEnter?.Invoke(this);
         }
@@ -326,7 +339,7 @@ namespace STC
                     if (FSMTask != null)
                     {
                         var state = FSMTask;
-                        if (state.IsActive)
+                        if (state.Active)
                         {
                             state.Update();
                         }
@@ -337,7 +350,7 @@ namespace STC
                     foreach (var key in ParallelTask.Keys.ToList())
                     {
                         var state = GetParallelState(key);
-                        if (state.IsActive)
+                        if (state.Active)
                         {
                             state.Update();
                         }
@@ -347,12 +360,16 @@ namespace STC
         }
         public void Exit()
         {
+            UnityEngine.Debug.Log("Exit : " + Name);
+            Task = false; 
             OnExit();
             OnStateExit?.Invoke(this);
         }
+        
         public void InActivate()
         {
-            IsActive = false;
+            UnityEngine.Debug.Log("InActivate : " + Name);
+            Active = false;
             OnInActivate();
             OnStateInActivate?.Invoke(this);
             if (Type == StateType.FSM)
@@ -417,7 +434,7 @@ namespace STC
                     checkValid = true;
                 }
             }
-            if(e.Active && !IsActive)
+            if(e.Active && !Active)
             {
                 checkValid = false;
             }
@@ -484,7 +501,6 @@ namespace STC
         {
 
         }
-
         public virtual void OnActivate()
         {
 

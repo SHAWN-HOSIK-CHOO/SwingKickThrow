@@ -1,5 +1,7 @@
 using STC;
+using System.Threading;
 using Unity.VisualScripting;
+using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window.State
 {
     public class VisibleState : STC.State
@@ -14,11 +16,18 @@ namespace MVVM.ViewModel.Window.State
             public override bool OnCheck()
             {
                 var window = Owner.Binder;
-                if(window.ParentWindow != null && window.ParentWindow.ModalWindow == window)
+                if(window.ParentWindow != null)
                 {
-                    return (Owner.Binder.Visible.Get()) && (window.ParentWindow.ModalVal.Value);
+                    if(!window.ParentWindow.Visible.Get())
+                    {
+                        return false;
+                    }
+                    if (window.ParentWindow.ModalWindow == window && !window.ParentWindow.ModalVal.Value)
+                    {
+                        return false;
+                    }
                 }
-                return (Owner.Binder.Visible.Get());
+                return true;
             }
         }
         public const string StateName = "Visible";
@@ -26,15 +35,19 @@ namespace MVVM.ViewModel.Window.State
         public VisibleState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
-            STC.IState OwnerState = Owner as STC.IState;
+            STC.IState OwnerState = Owner;
+            var cond = new CanVisible(owner);
+            var barrier = new STC.BoolBarrier(Owner.VisibleTrigger, false ,OwnerState.Name + VisibleState.StateName);
+
             //Owner -> Visible
             var transition = new STC.Transition(OwnerState.Name, VisibleState.StateName);
-            transition.AddCondition(new CanVisible(owner));
+            transition.AddCondition(cond).AddCondition(barrier);
             OwnerState.AddTransition(transition);
 
             //Owner.Hidden -> Owner.Visible 
             transition = new STC.Transition(HiddenState.StateName,VisibleState.StateName);
-            transition.AddCondition(new CanVisible(owner));
+            barrier = new STC.BoolBarrier(Owner.VisibleTrigger, false ,HiddenState.StateName + VisibleState.StateName);
+            transition.AddCondition(cond).AddCondition(barrier);
             OwnerState.AddTransition(transition);
         }
 
@@ -43,16 +56,35 @@ namespace MVVM.ViewModel.Window.State
             if (e is Event.InteratableEvent interactEvent)
             {
                 interactEvent.Consumed.isConsumed = true;
-                Owner.Binder.InteractableVal.Value = interactEvent.interative;
+                Owner.InteractableTrigger.Value = interactEvent.interative;
             }
         }
 
-
         public override void OnActivate()
         {
+            Owner.Binder.VisibleVal.Value = true;
             foreach(var w in Owner.Binder.ChildWindow)
             {
                 w.ShowWindow();
+            }
+        }
+
+        public override void OnEnter()
+        {
+            Owner.VisibleTrigger.Value = true;
+        }
+
+
+        public override void OnExit()
+        {
+            Owner.VisibleTrigger.Value = false;
+        }
+        public override void OnInActivate()
+        {
+            Owner.Binder.VisibleVal.Value = false;
+            foreach (var w in Owner.Binder.ChildWindow)
+            {
+                w.HideWindow();
             }
         }
     }

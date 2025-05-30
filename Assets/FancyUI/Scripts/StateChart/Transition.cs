@@ -17,10 +17,11 @@ namespace STC
             Condition = new Condition(nameof(Transition),true);
             Condition.Dirty += ConditionDirty;
         }
-        public void AddCondition(ICondition condition)
+        public Transition AddCondition(ICondition condition)
         {
             condition.Dirty += ConditionDirty;
             Condition.AddCondition(condition);
+            return this;
         }
         void ConditionDirty()
         {

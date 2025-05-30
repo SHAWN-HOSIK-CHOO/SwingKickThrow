@@ -1,4 +1,5 @@
 using MVVM.ViewModel.Window;
+using MVVM.ViewModel.Window.Trigger;
 using System;
 
 namespace MVVM.View.Window
@@ -6,7 +7,7 @@ namespace MVVM.View.Window
     public class WindowViewBinder
     {
         public IWindowViewBinding ViewBinding;
-
+        public IWindowTrigger ViewTrigger;
         Action Visible;
         Action Interactable;
         Action Transition;
@@ -21,11 +22,8 @@ namespace MVVM.View.Window
         }
         public void BindViewModel(string name, bool visible, bool interact, bool modal, bool transition)
         {
-            var model = new WindowViewModel(name);
-            model.Binder.VisibleVal.Value = visible;
-            model.Binder.InteractableVal.Value = interact;
-            model.Binder.ModalVal.Value = modal;
-            model.Binder.TransitionVal.Value = transition;
+            var model = new WindowViewModel(name, visible, interact, modal, transition);
+            ViewTrigger = model;
             ViewBinding = model.Binder ;
         }
         public void BindVisibleAction(Action visible)

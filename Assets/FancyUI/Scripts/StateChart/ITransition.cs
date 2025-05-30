@@ -9,7 +9,7 @@ namespace STC
         string Dst { get; }
         ICondition Condition { get; }
         event Action<ITransition> Dirty;
-        void AddCondition(ICondition condition);
+        Transition AddCondition(ICondition condition);
         bool CheckCondition();
 
     }

@@ -84,7 +84,7 @@ namespace STC
         private StateChart(string name) : base(name,StateType.Parallel)
         {
             EventList = new List<StateChartEvent>();
-            IsActive = true;
+            Active = true;
         }
         public void PublishEvent(StateChartEvent e)
         {

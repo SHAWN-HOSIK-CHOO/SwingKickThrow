@@ -1,38 +1,63 @@
 using MVVM.Property;
 using MVVM.ViewModel.Window.Event;
+using MVVM.ViewModel.Window.State;
+using MVVM.ViewModel.Window.Trigger;
 using STC;
-using UnityEngine.InputSystem.HID;
 namespace MVVM.ViewModel.Window
 {
-    public class WindowViewModel : STC.State , IWindowState
+    public class WindowViewModel : STC.State , IWindowState , IWindowTrigger
     {
         public STC.IState InteractiveState { get; private set; }
         public STC.IState NonInteractableState { get; private set; }
         public STC.IState IDLEState { get; private set; }
         public STC.IState TransitionState { get; private set; }
-        //public BoolProperty TransitionTrigger { get; private set; }
-        //public BoolProperty InteractableTrigger { get; private set; }
-        //public BoolProperty ModalTrigger { get; private set; }
-        //public BoolProperty VisibleTrigger { get; private set; }
         public STC.IState ModalState { get; private set; }
         public STC.IState VisibleState { get; private set; }
         public STC.IState HiddenState { get; private set; }
         public IWindowViewBinding Binder { get; private set; }
-        public WindowViewModel(string name) : base(name, StateType.FSM)
+
+        public BoolProperty VisibleTrigger { get; protected set; }
+        public BoolProperty InteractableTrigger { get; protected set; }
+        public BoolProperty ModalTrigger { get; protected set; }
+        public BoolProperty TransitionTrigger { get; protected set; }
+
+        public WindowViewModel(string name, bool visible, bool interact, bool modal, bool transition) : base(name, StateType.FSM)
         {
-            Binder = new WindowViewBinder(this);
-            //ModalTrigger = new BoolProperty();
-            //VisibleTrigger = new BoolProperty();
-            //TransitionTrigger = new BoolProperty();
-            //InteractableTrigger = new BoolProperty();
-            //ModalTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
-            //TransitionTrigger.Subscribe(() => { InteractableTrigger.Value = !(ModalTrigger.Value || TransitionTrigger.Value) && InteractableTrigger.Value;});
+            Binder = new WindowViewBinder(this, visible,interact,modal,transition);
+            VisibleTrigger = new BoolProperty();
+            VisibleTrigger.Value = Binder.Visible.Get();
+            InteractableTrigger = new BoolProperty();
+            InteractableTrigger.Value = Binder.Interactable.Get();
+            InteractableTrigger.Subscribe(() =>
+            {
+                if(InteractableTrigger.Value)
+                {
+                    ModalTrigger.Value = false;
+                    TransitionTrigger.Value = false;
+                }
+            });
+
+            ModalTrigger = new BoolProperty();
+            ModalTrigger.Value = Binder.Modal.Get();
+            ModalTrigger.Subscribe(() =>
+            {
+                InteractableTrigger.Value = InteractableTrigger.Value && !ModalTrigger.Get() && !TransitionTrigger.Get();
+            });
+
+            TransitionTrigger = new BoolProperty();
+            TransitionTrigger.Value = Binder.Transition.Get();
+            TransitionTrigger.Subscribe(() =>
+            {
+                InteractableTrigger.Value = InteractableTrigger.Value && !ModalTrigger.Get() && !TransitionTrigger.Get();
+            });
+
+
             VisibleState = new State.VisibleState(this);
             HiddenState = new State.HiddenState(this); 
             InteractiveState = new State.InteractableState(this);
             NonInteractableState = new State.NonInteractableState(this);
             IDLEState = new State.IDLEState(this);
-            TransitionState = new State.TransitionState(this);
+            TransitionState = new TransitionState(this);
             ModalState = new State.ModalState(this);
 
             PublishAddChildState(this, VisibleState);
@@ -59,7 +84,7 @@ namespace MVVM.ViewModel.Window
             if (e is Event.VisibleWindowEvent visibleEvent)
             {
                 visibleEvent.Consumed.isConsumed = true;
-                Binder.VisibleVal.Value = visibleEvent.Visible;   
+                VisibleTrigger.Value = visibleEvent.Visible;
             }
         }
     }
