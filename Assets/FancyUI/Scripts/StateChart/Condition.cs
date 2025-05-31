@@ -1,5 +1,4 @@
 using MVVM.Property;
-using MVVM.ViewModel.Window;
 using System;
 using System.Collections.Generic;
 using static UnityEngine.Rendering.DebugUI;
@@ -9,8 +8,6 @@ namespace STC
     public class Condition : ICondition
     {
         public string Name { get; private set; }
-       
-        public BoolProperty IsActive { get; }
         public BoolProperty IsValid { get; }
 
         List<ICondition> _ConditionList;
@@ -20,39 +17,43 @@ namespace STC
         {
             Name = name;
             _ConditionList = new List<ICondition>();
-            IsActive = new BoolProperty();
             IsValid = new BoolProperty();
             IsValid.Value = false;
-            IsActive.Value = isActive;
-            IsActive.Subscribe(()=>CheckValid(null));
         }
-
-        public void CheckValid(ICondition except)
+        public bool CheckValid()
         {
             bool valid = true;
-            if (IsActive.Value)
+            foreach (var condition in _ConditionList)
             {
-                foreach (var condition in _ConditionList)
+                if (!condition.CheckValid())
                 {
-                    if (!Equals(condition, except))
-                    {
-                        condition.CheckValid(except);
-                    }
-                    if (!condition.IsValid.Value)
-                    {
-                        valid = false;
-                        break;
-                    }
+                    valid = false;
+                    break;
                 }
-                valid &= OnCheck();
             }
-            IsValid.Value = valid;
+            valid &= OnCheck();
+            return valid;
         }
+
+
         public ICondition AddCondition(ICondition condition)
         {
             _ConditionList.Add(condition);
-            condition.IsValid.Subscribe(()=>CheckValid(condition));
+            condition.IsValid.Subscribe(OnSignal);
             return this;
+        }
+
+        public virtual void OnSignal(bool val)
+        {
+            if(val)
+            {
+                bool isvalid = CheckValid();
+                IsValid.SetSilently(isvalid);
+                if(isvalid)
+                {
+                   IsValid?.Invoke();
+                }
+            }
         }
 
         public virtual bool OnCheck()
@@ -60,22 +61,6 @@ namespace STC
             return true;
         }
     }
-
-    public class ActionCondition : Condition
-    {
-        Func<bool> CheckFunc;
-        bool Compare;
-        public ActionCondition(Func<bool> func, bool compare ,string name = nameof(BoolBarrier)) : base(name, true)
-        {
-            CheckFunc = func;
-            Compare = compare;
-        }
-        public override bool OnCheck()
-        {
-            return CheckFunc() == Compare;
-        }
-    }
-
 
     public class BoolBarrier : Condition
     {
@@ -85,8 +70,19 @@ namespace STC
         {
             Property = property;
             Compare = compare;
-            Property.Subscribe(()=> CheckValid(null));
+            Property.Subscribe(OnSignal);
         }
+
+        public override void OnSignal(bool val)
+        {
+            bool isvalid = CheckValid();
+            IsValid.SetSilently(isvalid);
+            if (isvalid)
+            {
+                IsValid?.Invoke();
+            }
+        }
+
         public override bool OnCheck()
         {
             return Property.Get() != Compare;

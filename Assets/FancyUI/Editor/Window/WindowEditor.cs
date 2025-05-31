@@ -36,7 +36,7 @@ namespace MVVM.ViewModel.Window
             }
             else
             {
-                foreach (var kvp in  window.Binder?.WindowHierachyState.GetAllChild())
+                foreach (var kvp in  window.Binder?.WindowHierachyState.GetAllChildState())
                 {
                     if(Equals(window.Binder?.WindowHierachyState?.ModalHierachy, kvp.Value))
                     {
@@ -46,7 +46,6 @@ namespace MVVM.ViewModel.Window
                     {
                         EditorGUILayout.LabelField("Child Window : " + kvp.Key, EditorStyles.boldLabel);
                     }
-
                 }
             }
 

@@ -1,11 +1,6 @@
 using MVVM.Property;
-using MVVM.ViewModel.Window.Event;
 using MVVM.ViewModel.Window.State;
 using MVVM.ViewModel.Window.Trigger;
-using STC;
-using System.Reflection;
-using Unity.VisualScripting;
-using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window
 {
     public class WindowViewModel : STC.State , IWindowState , IWindowTrigger
@@ -24,14 +19,17 @@ namespace MVVM.ViewModel.Window
         public BoolProperty ModalTrigger { get; protected set; }
         public BoolProperty TransitionTrigger { get; protected set; }
 
+        
+        
+        
         public WindowViewModel(string name, bool visible, bool interact, bool modal, bool transition) : base(name, StateType.FSM)
         {
             Binder = new WindowViewBinder(this);
             VisibleTrigger = new BoolProperty();
             InteractableTrigger = new BoolProperty();
-            InteractableTrigger.Subscribe(() =>
+            InteractableTrigger.Subscribe((val) =>
             {
-                if(InteractableTrigger.Value)
+                if(val)
                 {
                     ModalTrigger.SetSilently(false);
                     TransitionTrigger.SetSilently(false);
@@ -39,14 +37,14 @@ namespace MVVM.ViewModel.Window
             });
 
             ModalTrigger = new BoolProperty();
-            ModalTrigger.Subscribe(() =>
+            ModalTrigger.Subscribe((val) =>
              {
-                 InteractableTrigger.SetSilently(!ModalTrigger.Value && !TransitionTrigger.Value);
+                 InteractableTrigger.SetSilently(!(ModalTrigger.Value || TransitionTrigger.Value));
              });
             TransitionTrigger = new BoolProperty();
-            TransitionTrigger.Subscribe(() =>
+            TransitionTrigger.Subscribe((val) =>
             {
-                 InteractableTrigger.SetSilently(!ModalTrigger.Value && !TransitionTrigger.Value);
+                 InteractableTrigger.SetSilently(!(ModalTrigger.Value || TransitionTrigger.Value));
             });
 
             VisibleTrigger.Value = visible;

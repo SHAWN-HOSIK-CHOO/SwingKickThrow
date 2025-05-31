@@ -32,7 +32,6 @@ namespace MVVM.ViewModel.Window.State
             {
                 transitionEvent.Consumed.isConsumed = true;
                 Owner.TransitionTrigger.Value = transitionEvent.State;
-                Owner.InteractableTrigger.Value = Owner.InteractableTrigger.Value && !Owner.ModalTrigger.Get() && !Owner.TransitionTrigger.Get();
             }
         }
 
@@ -44,13 +43,17 @@ namespace MVVM.ViewModel.Window.State
         {
 
         }
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
-            TransitionStateBarrier.SetSilently(!Owner.TransitionTrigger.Value);
+            TransitionStateBarrier.SetSilently(true);
+            if (Owner.TransitionTrigger.Value)
+            {
+                TransitionStateBarrier.SetSilently(false);
+            }
         }
         public override void OnExit()
         {
-
+            TransitionStateBarrier.SetSilently (true);
         }
 
         public override void OnInActivate()

@@ -40,7 +40,7 @@ namespace MVVM.ViewModel.Window.State
         public override void OnActivate()
         {
             Owner.Binder.VisibleVal.Value = true;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChild())
+            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
             {
                 if (kvp.Value is WindowHierachyState child)
                 {
@@ -51,7 +51,7 @@ namespace MVVM.ViewModel.Window.State
         public override void OnInActivate()
         {
             Owner.Binder.VisibleVal.Value = false;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChild())
+            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
             {
                 if (kvp.Value is WindowHierachyState child)
                 {
@@ -60,7 +60,7 @@ namespace MVVM.ViewModel.Window.State
             }
         }
 
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
             VisibleStateBarrier.SetSilently(true);
             var window = Owner.Binder;

@@ -42,20 +42,20 @@ namespace STC
             bool isTask = false;
             if (state.ParentState != null)
             {
-                if (state.ParentState.CheckTask(state.Name))
+                if (state.ParentState.IsTask(state.Name))
                 {
                     isTask = true;
                 }
             }
             string branch = isLast ? "└── " : "├── ";
             builder.AppendLine($"{indent}{branch}{state.Name}{(GetStatusMark(state.Active, isTask))}");
-            var children = state.GetAllChild();
+            var children = state.GetAllChildState();
             int i = 0;
             foreach (var child in children)
             {
                 bool lastChild = (i == children.Count - 1);
                 string newIndent = indent + (isLast ? "    " : "│   ");
-                DumpStateRecursive(state.GetState(child.Key), builder, newIndent, lastChild);
+                DumpStateRecursive(state.GetChildState(child.Key), builder, newIndent, lastChild);
                 i++;
             }
         }

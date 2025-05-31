@@ -31,7 +31,7 @@ namespace MVVM.ViewModel.Window.State
 
 
 
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
             HiddenStateBarrier.SetSilently(true);
 
@@ -46,7 +46,12 @@ namespace MVVM.ViewModel.Window.State
 
             if (!isParentVisible)
             {
-                if(!hasParent)
+                if(hasParent)
+                {
+                    HiddenStateBarrier.SetSilently(false);
+                    
+                }
+                else
                 {
                     if (!Owner.VisibleTrigger.Value)
                     {
@@ -77,7 +82,7 @@ namespace MVVM.ViewModel.Window.State
         public override void OnActivate()
         {
             Owner.Binder.VisibleVal.Value = false;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChild())
+            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
             {
                 if (kvp.Value is WindowHierachyState child)
                 {

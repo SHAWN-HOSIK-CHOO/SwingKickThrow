@@ -55,17 +55,28 @@ namespace MVVM.ViewModel.Window.State
         {
             Owner.Binder.InteractableVal.Value = false;
         }
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
-            NonInteractableStateBarrier.SetSilently(Owner.InteractableTrigger.Value);
+            NonInteractableStateBarrier.SetSilently(true);
+            NonModalStateBarrier.SetSilently(true);
+            NonTransitionStateBarrier.SetSilently(true);
 
-            if(!Owner.InteractableTrigger.Value)
+            if (!Owner.InteractableTrigger.Value)
             {
-                NonModalStateBarrier.SetSilently(Owner.ModalTrigger.Value);
-                NonTransitionStateBarrier.SetSilently(Owner.TransitionTrigger.Value);
+                NonInteractableStateBarrier.SetSilently(false);
             }
+            if(!Owner.Binder.Interactable.Get())
+            {
+                if(!Owner.ModalTrigger.Value)
+                {
+                    NonModalStateBarrier.SetSilently(false);
+                }
 
-
+                if (!Owner.TransitionTrigger.Value)
+                {
+                    NonTransitionStateBarrier.SetSilently(false);
+                }
+            }
         }
         public override void OnEnter()
         {
@@ -74,6 +85,9 @@ namespace MVVM.ViewModel.Window.State
         public override void OnExit()
         {
             NonInteractableStateBarrier.SetSilently(true);
+            NonModalStateBarrier.SetSilently(true);
+            NonTransitionStateBarrier.SetSilently(true);
+
         }
         public override void OnInActivate()
         {

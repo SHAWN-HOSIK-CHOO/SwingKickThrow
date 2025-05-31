@@ -31,7 +31,7 @@ namespace STC
             bool isTask = false;
             if (state.ParentState != null)
             {
-                if (state.ParentState.CheckTask(state.Name))
+                if (state.ParentState.IsTask(state.Name))
                 {
                     isTask = true;
                 }
@@ -42,17 +42,17 @@ namespace STC
             {
                 string newIndent = indent + (isLast ? "    " : "│   ");
                 string vmBranch = "├── "; 
-                builder.AppendLine($"{newIndent}{vmBranch}ViewModel");
+                builder.AppendLine($"{newIndent}{vmBranch}-ViewModel-");
                 string vmIndent = newIndent + "│   ";
                 STCDebugger.DumpStateRecursive(windowHierachy.ViewModel, builder, vmIndent, true);
             }
-            var children = state.GetAllChild();
+            var children = state.GetAllChildState();
             int i = 0;
             foreach (var child in children)
             {
                 bool lastChild = (i == children.Count - 1);
                 string newIndent = indent + (isLast ? "    " : "│   ");
-                DumpStateRecursive(state.GetState(child.Key), builder, newIndent, lastChild);
+                DumpStateRecursive(state.GetChildState(child.Key), builder, newIndent, lastChild);
                 i++;
             }
         }

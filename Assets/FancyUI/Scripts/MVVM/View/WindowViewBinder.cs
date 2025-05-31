@@ -11,10 +11,10 @@ namespace MVVM.View.Window
         public IWindowViewBinding ViewBinding;
         public IWindowTrigger ViewTrigger;
         public WindowHierachyState WindowHierachyState;
-        Action Visible;
-        Action Interactable;
-        Action Transition;
-        Action Modal;
+        Action<bool> Visible;
+        Action<bool> Interactable;
+        Action<bool> Transition;
+        Action<bool> Modal;
 
 
         public void BindViewModel(string name, bool visible, bool interact, bool modal, bool transition)
@@ -24,22 +24,22 @@ namespace MVVM.View.Window
             ViewTrigger = model;
             ViewBinding = model.Binder;
         }
-        public void BindVisibleAction(Action visible)
+        public void BindVisibleAction(Action<bool> visible)
         {
             Visible = visible;
             ViewBinding.Visible.Subscribe(Visible);
         }
-        public void BindModalAction(Action modal)
+        public void BindModalAction(Action<bool> modal)
         {
             Modal = modal;
             ViewBinding.Modal.Subscribe(Modal);
         }
-        public void BindInteractiveAction(Action interactable)
+        public void BindInteractiveAction(Action<bool> interactable)
         {
             Interactable = interactable;
             ViewBinding.Interactable.Subscribe(Interactable);
         }
-        public void BindTransitionAction(Action transition)
+        public void BindTransitionAction(Action<bool> transition)
         {
             Transition = transition;
             ViewBinding.Transition.Subscribe(transition);

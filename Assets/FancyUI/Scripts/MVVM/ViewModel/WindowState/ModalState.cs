@@ -32,18 +32,24 @@ namespace MVVM.ViewModel.Window.State
                 modalEvent.Consumed.isConsumed = true;
 
                 Owner.ModalTrigger.Value = modalEvent.Modal;
-                Owner.InteractableTrigger.Value = Owner.InteractableTrigger.Value && !Owner.ModalTrigger.Get() && !Owner.TransitionTrigger.Get();
             }
         }
 
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
-            ModalStateBarrier.SetSilently(!Owner.ModalTrigger.Value);
+            ModalStateBarrier.SetSilently(true);
+
+            if(Owner.ModalTrigger.Value)
+            {
+                ModalStateBarrier.SetSilently(false);
+            }
         }
 
         public override void OnActivate()
         {
             Owner.Binder.ModalVal.Value = true;
+            Owner.ModalTrigger.Value = true;
+
             if (Owner.Binder.WindowHierachy.Get() is WindowHierachyState Hierarchy)
             {
                 Hierarchy.ModalHierachy.ViewModel.Binder.ShowWindow();
@@ -55,11 +61,13 @@ namespace MVVM.ViewModel.Window.State
         }
         public override void OnExit()
         {
+            ModalStateBarrier.SetSilently(true);
         }
 
         public override void OnInActivate()
         {
             Owner.Binder.ModalVal.Value = false;
+            Owner.ModalTrigger.Value = false;
             if (Owner.Binder.WindowHierachy.Get() is WindowHierachyState Hierarchy)
             {
                 Hierarchy.ModalHierachy.ViewModel.Binder.HideWindow();

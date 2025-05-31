@@ -5,7 +5,7 @@ namespace MVVM.Property
 {
     public interface IPropertyNofier<T> 
     {
-        void Subscribe(Action callback);
+        void Subscribe(Action<T> callback);
         void Invoke();
         T Get();
     }
@@ -56,9 +56,9 @@ namespace MVVM.Property
             _value = val;
         }
 
-        public void Subscribe(Action callback)
+        public void Subscribe(Action<T> callback)
         {
-            OnValueChanged += (value) => callback?.Invoke();
+            OnValueChanged += callback;
         }
 
     }

@@ -62,7 +62,7 @@ namespace STC
             }
             public void Do()
             {
-                State.DoAllTransition();
+                State.DoTransition();
             }
         }
         private static StateChart _instance;

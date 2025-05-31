@@ -48,7 +48,9 @@ namespace MVVM.View.Window
             {
                 Initialized = true;
                 Binder = new WindowViewBinder();
-                Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString(), __visible, __Interact, __Modal, __Transition);
+                string WindowName = gameObject.name + gameObject.GetInstanceID().ToString();
+                gameObject.name = WindowName;
+                Binder.BindViewModel(WindowName, __visible, __Interact, __Modal, __Transition);
                 Binder.BindVisibleAction(OnVisible);
                 Binder.BindTransitionAction(OnTransition);
                 Binder.BindModalAction(OnModal);
@@ -70,22 +72,22 @@ namespace MVVM.View.Window
 
 
         // Update View
-        protected virtual void OnVisible()
+        protected virtual void OnVisible(bool val)
         {
             var visible = Binder.ViewBinding.Visible.Get();
             canvasGroup.alpha = visible ? 1 : 0;
         }
-        protected virtual void OnInteractable()
+        protected virtual void OnInteractable(bool val)
         {
             var Interactable = Binder.ViewBinding.Interactable.Get();
             canvasGroup.blocksRaycasts = !Interactable;
         }
-        protected virtual void OnModal()
+        protected virtual void OnModal(bool val)
         {
             var modal = Binder.ViewBinding.Modal.Get();
             canvasGroup.blocksRaycasts = modal;
         }
-        protected virtual void OnTransition()
+        protected virtual void OnTransition(bool val)
         {
             var transition = Binder.ViewBinding.Transition.Get();
         }

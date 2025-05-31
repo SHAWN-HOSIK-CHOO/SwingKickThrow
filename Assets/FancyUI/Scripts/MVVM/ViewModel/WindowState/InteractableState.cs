@@ -32,7 +32,7 @@ namespace MVVM.ViewModel.Window.State
             transition.Condition.AddCondition(barrier);
             visibleState.AddTransition(transition);
         }
-        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        public override void OnCheckTransitionBarrier(string src)
         {
             InteractableStateBarrier.SetSilently(!Owner.InteractableTrigger.Value);
         }

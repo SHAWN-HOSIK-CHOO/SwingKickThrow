@@ -17,13 +17,16 @@ namespace STC
             Condition = new Condition(nameof(Transition),true);
             Condition.IsValid.Subscribe(Signal);
         }
-        void Signal()
+        void Signal(bool val)
         {
-            ConditionValidSignal?.Invoke(this);
+            if (val)
+            {
+                ConditionValidSignal?.Invoke(this);            
+            }
         }
         public bool CheckCondition()
         {
-            Condition.CheckValid(null);
+            Condition.IsValid.SetSilently(Condition.CheckValid());
             return Condition.IsValid.Value;
         }
     }

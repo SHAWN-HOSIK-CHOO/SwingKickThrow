@@ -7,9 +7,8 @@ namespace STC
     public interface ICondition
     {
         string Name { get; }
-        BoolProperty IsActive { get; }
         BoolProperty IsValid { get; }
-        void CheckValid(ICondition except);
+        bool CheckValid();
         ICondition AddCondition(ICondition condition);
     }
 }
