@@ -104,6 +104,18 @@ namespace MVVM.ViewModel.Window
             }
             return false;
         }
+
+        public bool IsParentInteractable()
+        {
+            var window = Binder;
+            var parentState = window.WindowHierachy.Get().ParentState;
+            if (parentState != null && parentState is WindowHierachyState ParentHierarchy)
+            {
+                return ParentHierarchy.ViewModel.Binder.Interactable.Get();
+            }
+            return false;
+        }
+
         public bool IsModalWindow()
         {
             var window = Binder;

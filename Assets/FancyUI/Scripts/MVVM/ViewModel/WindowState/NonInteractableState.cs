@@ -61,13 +61,36 @@ namespace MVVM.ViewModel.Window.State
             NonModalStateBarrier.SetSilently(true);
             NonTransitionStateBarrier.SetSilently(true);
 
-            if (!Owner.InteractableTrigger.Value)
+            var window = Owner.Binder;
+            bool isParentInteractable = Owner.IsParentInteractable();
+            bool hasParent = Owner.HasParentWindow();
+            bool isParentModal = Owner.IsParentModal();
+            bool isParentVisible = Owner.IsParentVisible();
+            bool isModalWindow = Owner.IsModalWindow();
+
+
+            if(hasParent && isParentModal && isModalWindow)
             {
-                NonInteractableStateBarrier.SetSilently(false);
+                if (!Owner.InteractableTrigger.Value)
+                {
+                    NonInteractableStateBarrier.SetSilently(false);
+                }
             }
-            if(!Owner.Binder.Interactable.Get())
+            else if (hasParent && !isParentInteractable)
             {
-                if(!Owner.ModalTrigger.Value)
+                    NonInteractableStateBarrier.SetSilently(false);
+            }
+            else
+            {
+                if (!Owner.InteractableTrigger.Value)
+                {
+                    NonInteractableStateBarrier.SetSilently(false);
+                }
+            }
+
+            if (!Owner.Binder.Interactable.Get())
+            {
+                if (!Owner.ModalTrigger.Value)
                 {
                     NonModalStateBarrier.SetSilently(false);
                 }

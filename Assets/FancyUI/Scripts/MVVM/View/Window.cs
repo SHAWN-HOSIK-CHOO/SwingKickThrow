@@ -78,16 +78,15 @@ namespace MVVM.View.Window
 
         public void SetInteractable(bool b)
         {
-            canvasGroup.blocksRaycasts = b;
             canvasGroup.interactable = b;
             eventTrigger.enabled = b;
         }
-
 
         protected virtual void OnVisible(bool val)
         {
             var visible = Binder.ViewBinding.Visible.Get();
             canvasGroup.alpha = visible ? 1 : 0;
+            canvasGroup.blocksRaycasts = visible;
             SetInteractable(visible);
 
         }

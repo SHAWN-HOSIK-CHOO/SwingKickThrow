@@ -34,7 +34,23 @@ namespace MVVM.ViewModel.Window.State
         }
         public override void OnCheckTransitionBarrier(string src)
         {
-            InteractableStateBarrier.SetSilently(!Owner.InteractableTrigger.Value);
+            InteractableStateBarrier.SetSilently(true);
+
+            var window = Owner.Binder;
+            bool isParentInteractable = Owner.IsParentInteractable();
+            bool hasParent = Owner.HasParentWindow();
+
+            if (hasParent && !isParentInteractable)
+            {
+                InteractableStateBarrier.SetSilently(true);
+            }
+            else
+            {
+                if (Owner.InteractableTrigger.Value)
+                {
+                    InteractableStateBarrier.SetSilently(false);
+                }
+            }
         }
 
         public override void OnActivate()
@@ -48,7 +64,7 @@ namespace MVVM.ViewModel.Window.State
 
         public override void OnExit()
         {
-            InteractableStateBarrier.SetSilently(false); 
+            InteractableStateBarrier.SetSilently(true); 
         }
 
         public override void OnInActivate()

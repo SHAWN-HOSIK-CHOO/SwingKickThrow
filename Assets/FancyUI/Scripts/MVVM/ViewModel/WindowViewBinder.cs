@@ -118,7 +118,7 @@ namespace MVVM.ViewModel.Window
 
         public void OnClick(Vector2 pos)
         {
-            Debug.Log("Click: "+ OwnerWindow.Name);
+            Debug.Log($"Click: {pos}"+ OwnerWindow.Name);
         }
     }
 }
