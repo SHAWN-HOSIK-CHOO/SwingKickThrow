@@ -8,28 +8,23 @@ namespace STC
         public string Src { get; private set; }
         public string Dst { get; private set; }
 
-        public event Action<ITransition> Dirty;
+        public event Action<ITransition> ConditionValidSignal;
         public ICondition Condition { get; private set; }
         public Transition(string src, string dst)
         {
             Src = src;
             Dst = dst;
             Condition = new Condition(nameof(Transition),true);
-            Condition.Dirty += ConditionDirty;
+            Condition.IsValid.Subscribe(Signal);
         }
-        public Transition AddCondition(ICondition condition)
+        void Signal()
         {
-            condition.Dirty += ConditionDirty;
-            Condition.AddCondition(condition);
-            return this;
-        }
-        void ConditionDirty()
-        {
-            Dirty?.Invoke(this);
+            ConditionValidSignal?.Invoke(this);
         }
         public bool CheckCondition()
         {
-            return Condition.CheckCondition();
+            Condition.CheckValid(null);
+            return Condition.IsValid.Value;
         }
     }
 }

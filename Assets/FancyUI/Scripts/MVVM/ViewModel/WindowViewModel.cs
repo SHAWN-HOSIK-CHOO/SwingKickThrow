@@ -3,6 +3,9 @@ using MVVM.ViewModel.Window.Event;
 using MVVM.ViewModel.Window.State;
 using MVVM.ViewModel.Window.Trigger;
 using STC;
+using System.Reflection;
+using Unity.VisualScripting;
+using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window
 {
     public class WindowViewModel : STC.State , IWindowState , IWindowTrigger
@@ -23,34 +26,33 @@ namespace MVVM.ViewModel.Window
 
         public WindowViewModel(string name, bool visible, bool interact, bool modal, bool transition) : base(name, StateType.FSM)
         {
-            Binder = new WindowViewBinder(this, visible,interact,modal,transition);
+            Binder = new WindowViewBinder(this);
             VisibleTrigger = new BoolProperty();
-            VisibleTrigger.Value = Binder.Visible.Get();
             InteractableTrigger = new BoolProperty();
-            InteractableTrigger.Value = Binder.Interactable.Get();
             InteractableTrigger.Subscribe(() =>
             {
                 if(InteractableTrigger.Value)
                 {
-                    ModalTrigger.Value = false;
-                    TransitionTrigger.Value = false;
+                    ModalTrigger.SetSilently(false);
+                    TransitionTrigger.SetSilently(false);
                 }
             });
 
             ModalTrigger = new BoolProperty();
-            ModalTrigger.Value = Binder.Modal.Get();
             ModalTrigger.Subscribe(() =>
-            {
-                InteractableTrigger.Value = InteractableTrigger.Value && !ModalTrigger.Get() && !TransitionTrigger.Get();
-            });
-
+             {
+                 InteractableTrigger.SetSilently(!ModalTrigger.Value && !TransitionTrigger.Value);
+             });
             TransitionTrigger = new BoolProperty();
-            TransitionTrigger.Value = Binder.Transition.Get();
             TransitionTrigger.Subscribe(() =>
             {
-                InteractableTrigger.Value = InteractableTrigger.Value && !ModalTrigger.Get() && !TransitionTrigger.Get();
+                 InteractableTrigger.SetSilently(!ModalTrigger.Value && !TransitionTrigger.Value);
             });
 
+            VisibleTrigger.Value = visible;
+            InteractableTrigger.Value = interact;
+            ModalTrigger.Value = modal;
+            TransitionTrigger.Value = transition;
 
             VisibleState = new State.VisibleState(this);
             HiddenState = new State.HiddenState(this); 
@@ -67,10 +69,9 @@ namespace MVVM.ViewModel.Window
             PublishAddChildState(InteractiveState, IDLEState);
             PublishAddChildState(NonInteractableState, TransitionState);
             PublishAddChildState(NonInteractableState, ModalState);
-
-            STC.StateChart.Instance.AddTransition(new Transition(STC.StateChart.Instance.Name, Name));
-            PublishAddChildState(STC.StateChart.Instance, this);
         }
+
+
         private void PublishAddChildState(STC.IState parent, STC.IState chlid)
         {
             STC.StateChart.Instance.PublishEvent(new STC.StateChart.AddChildEvent()
@@ -86,6 +87,45 @@ namespace MVVM.ViewModel.Window
                 visibleEvent.Consumed.isConsumed = true;
                 VisibleTrigger.Value = visibleEvent.Visible;
             }
+        }
+
+        public bool HasParentWindow()
+        {
+            var window = Binder;
+            var parentState = window.WindowHierachy.Get().ParentState;
+            return parentState != null;
+        }
+
+        public bool IsParentVisible()
+        {
+            var window = Binder;
+            var parentState = window.WindowHierachy.Get().ParentState;
+            if (parentState != null && parentState is WindowHierachyState ParentHierarchy)
+            {
+                return ParentHierarchy.ViewModel.Binder.Visible.Get();
+            }
+            return false;
+        }
+        public bool IsModalWindow()
+        {
+            var window = Binder;
+            var parentState = window.WindowHierachy.Get().ParentState;
+            if (parentState != null && parentState is WindowHierachyState ParentHierarchy)
+            {
+                return Equals(ParentHierarchy.ModalHierachy, window.WindowHierachy.Get());
+            }
+            return false;
+        }
+
+        public bool IsParentModal()
+        {
+            var window = Binder;
+            var parentState = window.WindowHierachy.Get().ParentState;
+            if (parentState != null && parentState is WindowHierachyState ParentHierarchy)
+            {
+                return ParentHierarchy.ViewModel.Binder.Modal.Get();
+            }
+            return false;
         }
     }
 }

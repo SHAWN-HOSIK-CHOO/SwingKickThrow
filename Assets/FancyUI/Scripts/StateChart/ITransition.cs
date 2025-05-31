@@ -8,8 +8,7 @@ namespace STC
         string Src { get; } 
         string Dst { get; }
         ICondition Condition { get; }
-        event Action<ITransition> Dirty;
-        Transition AddCondition(ICondition condition);
+        event Action<ITransition> ConditionValidSignal;
         bool CheckCondition();
 
     }

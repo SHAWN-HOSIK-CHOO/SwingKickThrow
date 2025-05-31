@@ -11,6 +11,7 @@ namespace MVVM.Property
     }
     public interface IPropertySetter<T>
     {
+        string Name { get; }
         T Value { get; set; }
         void SetSilently(T val);
     }
@@ -18,6 +19,15 @@ namespace MVVM.Property
     {
         bool initalized;
         private T _value;
+        public string Name { get; private set; }
+        
+
+        
+        public Property(string name = nameof(Property))
+        {
+            Name = name;
+        }
+
         public T Value
         {
             get => _value;
@@ -54,7 +64,7 @@ namespace MVVM.Property
     }
      public class IntProperty : Property<int> 
     { 
-        public IntProperty() : base()
+        public IntProperty(string name = nameof(IntProperty)) : base(name)
         {
 
         }
@@ -62,7 +72,7 @@ namespace MVVM.Property
 
     public class BoolProperty : Property<bool>
     {
-        public BoolProperty() : base()
+        public BoolProperty(string name = nameof(BoolProperty)) : base(name)
         {
 
         }
@@ -70,7 +80,7 @@ namespace MVVM.Property
 
     public class FloatProperty : Property<bool>
     {
-        public FloatProperty() : base()
+        public FloatProperty(string name = nameof(FloatProperty)) : base(name)
         {
 
         }

@@ -1,4 +1,5 @@
 using MVVM.Property;
+using MVVM.ViewModel.Window.State;
 using UnityEditor;
 using UnityEngine;
 
@@ -12,6 +13,8 @@ namespace MVVM.ViewModel.Window
         SerializedProperty interactProp;
         SerializedProperty transitionProp;
         SerializedProperty modalProp;
+        SerializedProperty modalWindowProp;
+        SerializedProperty childWindowListProp;
         private void OnEnable()
         {
             window = (MVVM.View.Window.Window)target;
@@ -19,11 +22,34 @@ namespace MVVM.ViewModel.Window
             interactProp = serializedObject.FindProperty("__Interact");
             transitionProp = serializedObject.FindProperty("__Transition");
             modalProp = serializedObject.FindProperty("__Modal");
+            childWindowListProp = serializedObject.FindProperty("__ChildWindowList");
+            modalWindowProp = serializedObject.FindProperty("__ModalWindow");
         }
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
             DrawDefaultInspector();
+            if (!Application.isPlaying)
+            {
+                EditorGUILayout.PropertyField(modalWindowProp);
+                EditorGUILayout.PropertyField(childWindowListProp);
+            }
+            else
+            {
+                foreach (var kvp in  window.Binder?.WindowHierachyState.GetAllChild())
+                {
+                    if(Equals(window.Binder?.WindowHierachyState?.ModalHierachy, kvp.Value))
+                    {
+                        EditorGUILayout.LabelField("Modal Window : " + kvp.Key, EditorStyles.boldLabel);
+                    }
+                    else
+                    {
+                        EditorGUILayout.LabelField("Child Window : " + kvp.Key, EditorStyles.boldLabel);
+                    }
+
+                }
+            }
+
             var trigger = window.Binder?.ViewTrigger;
             var binder = window.Binder?.ViewBinding;
 

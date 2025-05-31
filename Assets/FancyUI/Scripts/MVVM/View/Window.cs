@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using static STC.StateChart;
 
 namespace MVVM.View.Window
 {
     [RequireComponent(typeof(RectTransform))]
     public class Window : MonoBehaviour
     {
-        public List<Window> ChildWindowList;
-        public ModalWindow ModalWindow;
         public GameObject RenderObj;
-
-        [HideInInspector] public Window ParentWindow;
+        [HideInInspector] public ModalWindow __ModalWindow;
+        [HideInInspector] public List<Window> __ChildWindowList;
         [HideInInspector] public bool __visible;
         [HideInInspector] public bool __Interact;
         [HideInInspector] public bool __Modal;
@@ -24,48 +23,52 @@ namespace MVVM.View.Window
         protected EventTrigger eventTrigger;
         protected CanvasGroup canvasGroup;
 
+        private bool Initialized;
 
         protected virtual void Awake()
         {
-            Binder = new WindowViewBinder();
-            Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString(), __visible, __Interact, __Modal, __Transition);
-            Binder.BindVisibleAction(OnVisible);
-            Binder.BindTransitionAction(OnTransition);
-            Binder.BindModalAction(OnModal);
-            Binder.BindInteractiveAction(OnInteractable);
             eventTrigger = RenderObj.GetComponent<EventTrigger>();
             canvasGroup = RenderObj.GetComponent<CanvasGroup>();  
             EventTriggerHelper.AddTriggerEvent(eventTrigger, EventTriggerType.PointerClick, OnClick);
-
-            foreach (var w in ChildWindowList)
-            {
-                w.ParentWindow = this;
-            }
-            if(ModalWindow != null)
-            {
-                ModalWindow.ParentWindow = this;
-            }
-            StateChart.Instance.FlushEventList();
+            Initialize();
+            
         }
         protected virtual void Start()
         {
-            InitializeViewModel();
-        }
-        void InitializeViewModel()
-        {
-            if(ModalWindow != null)
+            if (Binder.WindowHierachyState.ParentState == null)
             {
-                Binder.ViewBinding.BindModalWindow(ModalWindow.Binder.ViewBinding);
-                Binder.ViewBinding.AddChildWindow(ModalWindow.Binder.ViewBinding);
-                Binder.ViewBinding.ModalVal.Value = __Modal;
-            }
-
-            foreach (var w in ChildWindowList)
-            {
-                Binder.ViewBinding.AddChildWindow(w.Binder.ViewBinding);
+                StateChart.Instance.AddChild(Binder.WindowHierachyState);
+                STC.StateChart.Instance.AddTransition(new Transition(STC.StateChart.Instance.Name, Binder.WindowHierachyState.Name));
             }
         }
         
+        public void Initialize()
+        {
+            if (Initialized == false)
+            {
+                Initialized = true;
+                Binder = new WindowViewBinder();
+                Binder.BindViewModel(gameObject.name + gameObject.GetInstanceID().ToString(), __visible, __Interact, __Modal, __Transition);
+                Binder.BindVisibleAction(OnVisible);
+                Binder.BindTransitionAction(OnTransition);
+                Binder.BindModalAction(OnModal);
+                Binder.BindInteractiveAction(OnInteractable);
+                foreach (var w in __ChildWindowList)
+                {
+                    w.Initialize();
+                    Binder.ViewBinding.AddChildWindow(w.Binder.ViewBinding);
+                }
+                if (__ModalWindow != null)
+                {
+                    __ModalWindow.Initialize();
+                    Binder.ViewBinding.AddChildWindow(__ModalWindow.Binder.ViewBinding);
+                    Binder.ViewBinding.BindModalWindow(__ModalWindow.Binder.ViewBinding);
+                }
+                StateChart.Instance.FlushEventList();
+            }
+        }
+
+
         // Update View
         protected virtual void OnVisible()
         {

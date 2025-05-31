@@ -7,14 +7,10 @@ using UnityEditor;
 
 namespace STC
 {
-    public class STC : MonoBehaviour
+    public class STCDebugger : MonoBehaviour
     {
         [HideInInspector]
         public string treeState = "";
-        void Update()
-        {
-            StateChart.Instance.Update();
-        }
 
         private void FixedUpdate()
         {
@@ -27,7 +23,7 @@ namespace STC
             treeState =  builder.ToString();
         }
 
-        public string GetStatusMark(bool IsActive,bool IsTask)
+        public static string GetStatusMark(bool IsActive,bool IsTask)
         {
             string status = "❌";
             if (IsActive == true)
@@ -41,7 +37,7 @@ namespace STC
             return status;
         }
 
-        private void DumpStateRecursive(IState state, System.Text.StringBuilder builder, string indent, bool isLast)
+        public static void DumpStateRecursive(IState state, System.Text.StringBuilder builder, string indent, bool isLast)
         {
             bool isTask = false;
             if (state.ParentState != null)
@@ -53,7 +49,6 @@ namespace STC
             }
             string branch = isLast ? "└── " : "├── ";
             builder.AppendLine($"{indent}{branch}{state.Name}{(GetStatusMark(state.Active, isTask))}");
-
             var children = state.GetAllChild();
             int i = 0;
             foreach (var child in children)

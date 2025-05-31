@@ -19,13 +19,15 @@ namespace STC
         event Action<IState> OnStateInActivate;
         void Handle(Event.IStateEvent e);
 
+
+
         void Activate();
+        void BeforeCheckTranstion(ITransition transition);
         void Enter();
         void Update();
         void Exit();
 
         void InActivate();
-
         // Utils
         Dictionary<string, IState> GetAllChild();
         string GetFSMTask();
@@ -39,7 +41,7 @@ namespace STC
         void DoTransitionTo(string dsc);
 
         bool DoAllTransition();
-        bool CheckTransitionCondition(string src, string dst);
+        bool CheckTransitionValid(string src, string dst);
         void SetParent(IState state);
         void AddChild(IState state);
         void AddTransition(ITransition condition);

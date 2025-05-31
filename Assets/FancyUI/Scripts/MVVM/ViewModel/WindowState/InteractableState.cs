@@ -1,3 +1,4 @@
+using MVVM.Property;
 using STC;
 using UnityEngine;
 using static MVVM.ViewModel.Window.State.ModalState;
@@ -9,24 +10,32 @@ namespace MVVM.ViewModel.Window.State
     {
         public const string StateName = "Interactable";
         WindowViewModel Owner;
+        BoolProperty InteractableStateBarrier;
 
         public InteractableState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
             STC.IState visibleState = (Owner as IWindowState).VisibleState;
-            var barrier = new STC.BoolBarrier(Owner.InteractableTrigger, false, VisibleState.StateName + InteractableState.StateName);
+
+            InteractableStateBarrier = new BoolProperty(nameof(InteractableStateBarrier));
+            InteractableStateBarrier.Value = true;
             
             //Visible -> Visible.Interactiveon
             var transition = new STC.Transition(VisibleState.StateName, InteractableState.StateName);
-            transition.AddCondition(barrier);
+            var barrier = new STC.BoolBarrier(InteractableStateBarrier, true, VisibleState.StateName + InteractableState.StateName);
+            transition.Condition.AddCondition(barrier);
             visibleState.AddTransition(transition);
 
             //Visible.NonInteractive -> Visible.Interactive
             transition = new STC.Transition(NonInteractableState.StateName,InteractableState.StateName);
-            transition.AddCondition(barrier);
+            barrier = new STC.BoolBarrier(InteractableStateBarrier, true, NonInteractableState.StateName + InteractableState.StateName);
+            transition.Condition.AddCondition(barrier);
             visibleState.AddTransition(transition);
         }
-
+        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        {
+            InteractableStateBarrier.SetSilently(!Owner.InteractableTrigger.Value);
+        }
 
         public override void OnActivate()
         {
@@ -34,12 +43,12 @@ namespace MVVM.ViewModel.Window.State
         }
         public override void OnEnter()
         {
-            Owner.InteractableTrigger.Value = true;
+
         }
 
         public override void OnExit()
         {
-            Owner.InteractableTrigger.Value = false; 
+            InteractableStateBarrier.SetSilently(false); 
         }
 
         public override void OnInActivate()

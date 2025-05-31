@@ -2,49 +2,59 @@ using MVVM.Property;
 using MVVM.ViewModel.Window;
 using System;
 using System.Collections.Generic;
+using static UnityEngine.Rendering.DebugUI;
 
 namespace STC
 {
     public class Condition : ICondition
     {
         public string Name { get; private set; }
-        public Property<bool> IsActive { get; }
-        List<ICondition> _conditionList;
-        public event Action Dirty;
+       
+        public BoolProperty IsActive { get; }
+        public BoolProperty IsValid { get; }
+
+        List<ICondition> _ConditionList;
+
+
         public Condition(string name, bool isActive)
         {
             Name = name;
-            _conditionList = new List<ICondition>();
-            IsActive = new Property<bool>();
+            _ConditionList = new List<ICondition>();
+            IsActive = new BoolProperty();
+            IsValid = new BoolProperty();
+            IsValid.Value = false;
             IsActive.Value = isActive;
-            IsActive.Subscribe(CheckDirty);
+            IsActive.Subscribe(()=>CheckValid(null));
         }
 
-        public void CheckDirty()
+        public void CheckValid(ICondition except)
         {
-            if (CheckCondition())
+            bool valid = true;
+            if (IsActive.Value)
             {
-                Dirty?.Invoke();
+                foreach (var condition in _ConditionList)
+                {
+                    if (!Equals(condition, except))
+                    {
+                        condition.CheckValid(except);
+                    }
+                    if (!condition.IsValid.Value)
+                    {
+                        valid = false;
+                        break;
+                    }
+                }
+                valid &= OnCheck();
             }
+            IsValid.Value = valid;
         }
-        public void AddCondition(ICondition condition)
+        public ICondition AddCondition(ICondition condition)
         {
-            _conditionList.Add(condition);
+            _ConditionList.Add(condition);
+            condition.IsValid.Subscribe(()=>CheckValid(condition));
+            return this;
         }
-        public void RemoveCondition(ICondition condition)
-        {
-            _conditionList.Remove(condition);
-        }
-        public bool CheckCondition()
-        {
-            if (IsActive.Value == false) return true;
-            foreach (var condition in _conditionList)
-            {
-                if (!condition.CheckCondition())
-                    return false;
-            }
-            return OnCheck();
-        }
+
         public virtual bool OnCheck()
         {
             return true;
@@ -75,7 +85,7 @@ namespace STC
         {
             Property = property;
             Compare = compare;
-            Property.Subscribe(CheckDirty);
+            Property.Subscribe(()=> CheckValid(null));
         }
         public override bool OnCheck()
         {

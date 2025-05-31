@@ -3,17 +3,34 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using UnityEngine.Rendering;
 using static STC.StateChart;
 namespace STC
 {
     public class State : IState
     {
         /*
-        * 상태는 계층 구조(부모-자식)와 수평 구조(동등 레벨 상태)로 구성될 수 있다.
-        * 상태는 FSM, Parallel 두가지 타입으로 구분되며 
-        * 각각 단일 혹은 병렬 상태를 하위 상태로 나타냄을 의미한다.
-        * 
-        */
+            상태 구조는 계층, 병렬, 수평적으로 쌓을 수 있습니다.
+            Transition을 통해 상태 전이에 대한 조건과 정의를 해야하며 
+
+
+
+            상태는 매 Update 호출 마다 하위 Transition 으로의 전이를 수행합니다. 
+            전이 이전에 BeforeCheckTransition 메서드가 호출되며,
+
+
+
+
+
+
+
+
+
+            Transition 은 
+
+         */
+
+
 
         public enum StateType
         {
@@ -27,6 +44,7 @@ namespace STC
         public StateType Type { get; protected set; }
         public string Name { get; protected set; }
         public IState ParentState { get; protected set; }
+
         //Fsm
         protected IState FSMTask;
         protected Dictionary<string, IState> FSMState;
@@ -99,23 +117,50 @@ namespace STC
             }
             return null;
         }
-        public bool CheckTransitionCondition(string src, string dst)
+        public bool CheckTransitionValid(string src, string dst)
         {
-            if (Type == StateType.FSM)
-            {
-                if (FSMTransition.TryGetValue(src, dst, out var transition))
+            if (CheckTask(src) )
+            { 
+                if (Type == StateType.FSM)
                 {
-                    return transition.CheckCondition();
+                    if (FSMTransition.TryGetValue(src, dst, out var transition))
+                    {
+                        var dstState = GetState(dst);
+                        if (dstState == null)
+                        {
+                            BeforeCheckTranstion(transition);
+                        }
+                        else
+                        {
+                            dstState.BeforeCheckTranstion(transition);
+                        }
+
+                        return transition.CheckCondition();
+
+                    }
                 }
+                else
+                {
+                    if (ParallelTransition.TryGetValue(src, dst, out var transition))
+                    {
+                        var dstState = GetState(dst);
+                        if(dstState == null)
+                        {
+                            BeforeCheckTranstion(transition);
+                        }
+                        else
+                        {
+                            dstState.BeforeCheckTranstion(transition);
+                        }
+                        return transition.CheckCondition();
+                    }
+                } 
+                return false;
             }
             else
             {
-                if (ParallelTransition.TryGetValue(src, dst, out var transition))
-                {
-                    return transition.CheckCondition();
-                }
+                return false;
             }
-            return false;
         }
         public void DoTransitionTo(string dsc)
         {
@@ -169,11 +214,12 @@ namespace STC
                 }
             }
         }
+       
         public bool DoTransition(string src, string dst)
         {
             if (Type == StateType.FSM)
             {
-                if (CheckTransitionCondition(src, dst))
+                if (CheckTransitionValid(src, dst))
                 {
                     if (src == Name)
                     {
@@ -231,7 +277,7 @@ namespace STC
             }
             else
             {
-                if (CheckTransitionCondition(src, dst))
+                if (CheckTransitionValid(src, dst))
                 {
                     if (src == Name)
                     {
@@ -240,7 +286,7 @@ namespace STC
                             state = GetParallelState(dst);
                             ParallelTask.Add(dst, state);
                             state.Enter();
-                            if (Active)
+                            if (Active) 
                             {
                                 state.Activate();
                             }
@@ -271,12 +317,9 @@ namespace STC
             {
                 foreach (var (key1, key2, transition) in FSMTransition.GetEnumerator())
                 {
-                    if (transition.CheckCondition())
+                    if (DoTransition(transition.Src, transition.Dst))
                     {
-                        if(DoTransition(transition.Src, transition.Dst))
-                        {
-                            return true;
-                        }
+                        return true;
                     }
                 }
             }
@@ -284,16 +327,18 @@ namespace STC
             {
                 foreach (var (key1, key2, transition) in ParallelTransition.GetEnumerator())
                 {
-                    if (transition.CheckCondition())
+                    if (DoTransition(transition.Src, transition.Dst))
                     {
-                        if(DoTransition(transition.Src, transition.Dst))
-                        {
-                            trans = true;
-                        }
+                        trans = true;
                     }
                 }
             }
             return trans;
+        }
+       
+        public void BeforeCheckTranstion(ITransition transition)
+        {
+            OnBeforeCheckTranstion(transition);
         }
         public void Activate()
         {
@@ -309,6 +354,7 @@ namespace STC
                     {
                         var state = FSMTask;
                         state.Activate();
+                        
                     }
                 }
                 else
@@ -410,6 +456,10 @@ namespace STC
             }
             else
             {
+                if (name == Name)
+                {
+                    return true;
+                }
                 if (ParallelTask.TryGetValue(name, out var _))
                 {
                     return true;
@@ -434,7 +484,11 @@ namespace STC
                     checkValid = true;
                 }
             }
-            if(e.Active && !Active)
+            else
+            {
+                checkValid = true;
+            }
+            if (e.ShouldActive && !Active)
             {
                 checkValid = false;
             }
@@ -501,6 +555,24 @@ namespace STC
         {
 
         }
+
+        public virtual void OnSetParent(IState state)
+        {
+
+        }
+        public virtual void OnAddChlid(IState state)
+        {
+
+        }
+        public virtual void OnRemoveChlid(IState state)
+        {
+
+        }
+        public virtual void OnBeforeCheckTranstion(ITransition transition)
+        {
+
+        }
+
         public virtual void OnActivate()
         {
 
@@ -550,16 +622,20 @@ namespace STC
         public void SetParent(IState state)
         {
             ParentState = state;
+            OnSetParent(state);
+
         }
         public void AddChild(IState state)
         {
             if (Type == StateType.FSM)
             {
                 FSMState.Add(state.Name, state);
+                OnAddChlid(state);
             }
             else
             {
                 ParallelState.Add(state.Name, state);
+                OnAddChlid(state);
             }
         }
         public void RemoveChild(IState state)
@@ -567,10 +643,12 @@ namespace STC
             if (state.Type == StateType.FSM)
             {
                 FSMState.Remove(state.Name);
+                OnRemoveChlid(state);
             }
             else
             {
                 ParallelState.Remove(state.Name);
+                OnRemoveChlid(state);
             }
         }
         public ITransition GetTransition(string src, string dst)
@@ -612,12 +690,15 @@ namespace STC
             {
                 ParallelTransition.TryAdd(transition.Src, transition.Dst, transition);
             }
-            transition.Dirty += TransitionDirty;
+            transition.ConditionValidSignal += TransitionDirty;
         }
         void TransitionDirty(ITransition transition)
         {
             StateChart.Instance.PublishEvent(new TansitionEvent(this));
         }
+
+
+
         public Dictionary<string, IState> GetAllChild()
         {
             if (Type == StateType.FSM)

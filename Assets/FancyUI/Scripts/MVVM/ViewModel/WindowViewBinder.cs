@@ -1,16 +1,21 @@
 using MVVM.Property;
 using MVVM.View.Window;
 using MVVM.ViewModel.Window.Event;
+using MVVM.ViewModel.Window.State;
 using STC;
 using System.Collections.Generic;
 using UnityEngine;
+using static STC.StateChart;
 namespace MVVM.ViewModel.Window
 { 
     public class WindowViewBinder : IWindowViewBinding
     {
-        public Window.IWindowViewBinding ModalWindow { get; private set; }
-        public Window.IWindowViewBinding ParentWindow { get; private set; }
-        public List<Window.IWindowViewBinding> ChildWindow { get; private set; }
+        public class WindowHierachyProperty : Property<WindowHierachyState>
+        {
+
+        }
+
+        IPropertySetter<WindowHierachyState> IWindowViewBinding.WindowHierachyVal => WindowHierachy;
 
         IPropertySetter<bool> IWindowViewBinding.VisibleVal => Visible;
 
@@ -20,6 +25,8 @@ namespace MVVM.ViewModel.Window
 
         IPropertySetter<bool> IWindowViewBinding.TransitionVal => Transition;
 
+        IPropertyNofier<WindowHierachyState> IWindowViewBinding.WindowHierachy => WindowHierachy;
+
         IPropertyNofier<bool> IWindowViewBinding.Visible => Visible;
 
         IPropertyNofier<bool> IWindowViewBinding.Interactable => Interactable;
@@ -28,6 +35,7 @@ namespace MVVM.ViewModel.Window
 
         IPropertyNofier<bool> IWindowViewBinding.Transition => Transition;
 
+        public WindowHierachyProperty WindowHierachy { get; protected set; }
         public BoolProperty Visible { get; protected set; }
         public BoolProperty Interactable { get; protected set; }
         public BoolProperty Modal { get; protected set; }
@@ -35,31 +43,28 @@ namespace MVVM.ViewModel.Window
 
         IState OwnerWindow;
 
-        public WindowViewBinder(IState owner, bool visible, bool interact, bool modal, bool transition)
+        public WindowViewBinder(IState owner)
         {
             OwnerWindow = owner;
+            WindowHierachy = new WindowHierachyProperty();
             Visible = new BoolProperty();
-            Visible.Value = visible;
             Modal = new BoolProperty();
-            Modal.Value = modal;
             Transition = new BoolProperty();
-            Transition.Value = transition;
             Interactable = new BoolProperty();
-            Interactable.Value = interact;
-            ChildWindow = new List<IWindowViewBinding>();
         }
 
         void IWindowViewBinding.BindModalWindow(IWindowViewBinding modal)
         {
-            ModalWindow = modal;
+            WindowHierachy.Value.Handle(new ModalWindowEvent(modal, false, true));
         }
+
         void IWindowViewBinding.ShowWindow()
         {
-            OwnerWindow.Handle(new VisibleWindowEvent(true, true , true));
+            OwnerWindow.Handle(new VisibleWindowEvent(true, false, true));
         }
         void IWindowViewBinding.HideWindow()
         {
-            OwnerWindow.Handle(new VisibleWindowEvent(false, true, true));
+            OwnerWindow.Handle(new VisibleWindowEvent(false, false, true));
         }
         void IWindowViewBinding.OpenModal()
         {
@@ -89,32 +94,28 @@ namespace MVVM.ViewModel.Window
 
         void IWindowViewBinding.SetParentWindow(IWindowViewBinding parent)
         {
-            if (ParentWindow == parent) return;
-            if (ParentWindow != null)
+            StateChart.Instance.PublishEvent(new SetParentEvent()
             {
-                var w = ParentWindow ;
-                w.RemoveChildWindow(this);
-            }
-            ParentWindow = parent;
-            if (ParentWindow != null)
-            {
-                var w = ParentWindow;
-                w.AddChildWindow(this);
-            }
+                state = WindowHierachy.Get(),
+                parent = parent.WindowHierachy.Get()
+            });
         }
         void IWindowViewBinding.RemoveChildWindow(IWindowViewBinding child)
         {
-            if (!ChildWindow.Contains(child )) return;
-            ChildWindow.Remove(child );
-            var w = child as IWindowViewBinding;
-            w.SetParentWindow(null);
+            StateChart.Instance.PublishEvent(new RemoveChildEvent()
+            {
+                child = child.WindowHierachy.Get()
+            });
         }
+
+
         void IWindowViewBinding.AddChildWindow(IWindowViewBinding child)
         {
-            if (ChildWindow.Contains(child )) return;
-            ChildWindow.Add(child );
-            var w = child as IWindowViewBinding;
-            w.SetParentWindow(this);
+            StateChart.Instance.PublishEvent(new AddChildEvent()
+            {
+                state = WindowHierachy.Get(),
+                child = child.WindowHierachy.Get()
+            });
         }
 
         public void OnClick(Vector2 pos)

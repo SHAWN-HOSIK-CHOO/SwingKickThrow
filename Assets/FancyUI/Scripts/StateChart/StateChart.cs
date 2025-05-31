@@ -18,14 +18,12 @@ namespace STC
             {
                 if (state.ParentState != null)
                 {
-                    state.ParentState.DoTransitionFrom(state.Name);
                     state.ParentState.RemoveChild(state);
                 }
                 state.SetParent(parent);
                 if (parent != null)
                 {
                     parent.AddChild(state);
-                    parent.DoTransitionTo(state.Name);
                 }
             }
         }
@@ -37,22 +35,21 @@ namespace STC
             {
                 if (child.ParentState != null)
                 {
-                    child.ParentState.DoTransition(child.Name,child.ParentState.Name);
                     child.ParentState.RemoveChild(child);
                 }
                 child.SetParent(state);
                 state.AddChild(child);
-                state.DoTransitionTo(child.Name);
             }
         }
         public struct RemoveChildEvent : StateChartEvent
         {
-            public IState state;
             public IState child;
             public void Do()
             {
-                state.DoTransitionFrom(child.Name);
-                state.RemoveChild(child);
+                if (child.ParentState != null)
+                {
+                    child.ParentState.RemoveChild(child);
+                }
                 child.SetParent(null);
             }
         }

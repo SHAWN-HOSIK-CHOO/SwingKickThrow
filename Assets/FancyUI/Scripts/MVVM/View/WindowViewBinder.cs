@@ -1,6 +1,8 @@
 using MVVM.ViewModel.Window;
+using MVVM.ViewModel.Window.State;
 using MVVM.ViewModel.Window.Trigger;
 using System;
+using Unity.Hierarchy;
 
 namespace MVVM.View.Window
 { 
@@ -8,23 +10,19 @@ namespace MVVM.View.Window
     {
         public IWindowViewBinding ViewBinding;
         public IWindowTrigger ViewTrigger;
+        public WindowHierachyState WindowHierachyState;
         Action Visible;
         Action Interactable;
         Action Transition;
         Action Modal;
 
-        public void ForceNotify()
-        {
-            ViewBinding.Visible.Invoke();
-            ViewBinding.Modal.Invoke();
-            ViewBinding.Interactable.Invoke();
-            ViewBinding.Transition.Invoke();
-        }
+
         public void BindViewModel(string name, bool visible, bool interact, bool modal, bool transition)
         {
-            var model = new WindowViewModel(name, visible, interact, modal, transition);
+            var model = new WindowViewModel(name + "-ViewModel", visible, interact, modal, transition);
+            WindowHierachyState = new WindowHierachyState(model,model.Name + "-Hierarchy");
             ViewTrigger = model;
-            ViewBinding = model.Binder ;
+            ViewBinding = model.Binder;
         }
         public void BindVisibleAction(Action visible)
         {

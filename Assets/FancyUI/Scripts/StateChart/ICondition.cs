@@ -7,13 +7,9 @@ namespace STC
     public interface ICondition
     {
         string Name { get; }
-        Property<bool> IsActive { get; }
-
-        event Action Dirty;
-
-        bool CheckCondition();
-        void CheckDirty();
-        void AddCondition(ICondition condition);
-        void RemoveCondition(ICondition condition);
+        BoolProperty IsActive { get; }
+        BoolProperty IsValid { get; }
+        void CheckValid(ICondition except);
+        ICondition AddCondition(ICondition condition);
     }
 }

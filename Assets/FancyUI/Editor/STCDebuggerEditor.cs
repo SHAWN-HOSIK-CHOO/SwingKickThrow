@@ -2,15 +2,15 @@ using STC;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
-[CustomEditor(typeof(STC.STC))]
-public class STCEditor : Editor
+[CustomEditor(typeof(STC.STCDebugger))]
+public class STCDebuggerEditor : Editor
 {
-    STC.STC stc;
+    STC.STCDebugger stc;
     private Vector2 scrollPos;
 
     private void OnEnable()
     {
-        stc = (STC.STC)target;
+        stc = (STC.STCDebugger)target;
     }
     public override void OnInspectorGUI()
     {

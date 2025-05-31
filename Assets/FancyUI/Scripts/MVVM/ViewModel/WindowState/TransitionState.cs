@@ -1,3 +1,4 @@
+using MVVM.Property;
 using STC;
 using UnityEngine;
 using static MVVM.ViewModel.Window.State.InteractableState;
@@ -9,15 +10,19 @@ namespace MVVM.ViewModel.Window.State
     {
         public const string StateName = "Transition";
         WindowViewModel Owner;
+        BoolProperty TransitionStateBarrier;
         public TransitionState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;
             STC.IState nonInteractiveState = (Owner as IWindowState).NonInteractableState;
-            var barrier = new STC.BoolBarrier(Owner.TransitionTrigger, false, NonInteractableState.StateName + TransitionState.StateName);
-            
+            TransitionStateBarrier = new BoolProperty();
+            TransitionStateBarrier.Value = true;
+
+
             //NonInteractable -> NonInteractableState.Transition
             var transition = new STC.Transition(NonInteractableState.StateName, TransitionState.StateName);
-            transition.AddCondition(barrier);
+            var barrier = new STC.BoolBarrier(TransitionStateBarrier, true, NonInteractableState.StateName + TransitionState.StateName);
+            transition.Condition.AddCondition(barrier);
             nonInteractiveState.AddTransition(transition);
         }
 
@@ -27,6 +32,7 @@ namespace MVVM.ViewModel.Window.State
             {
                 transitionEvent.Consumed.isConsumed = true;
                 Owner.TransitionTrigger.Value = transitionEvent.State;
+                Owner.InteractableTrigger.Value = Owner.InteractableTrigger.Value && !Owner.ModalTrigger.Get() && !Owner.TransitionTrigger.Get();
             }
         }
 
@@ -36,12 +42,15 @@ namespace MVVM.ViewModel.Window.State
         }
         public override void OnEnter()
         {
-            Owner.TransitionTrigger.Value = true;
-        }
 
+        }
+        public override void OnBeforeCheckTranstion(STC.ITransition transition)
+        {
+            TransitionStateBarrier.SetSilently(!Owner.TransitionTrigger.Value);
+        }
         public override void OnExit()
         {
-            Owner.TransitionTrigger.Value = false;
+
         }
 
         public override void OnInActivate()

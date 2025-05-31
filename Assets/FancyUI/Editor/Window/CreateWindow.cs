@@ -42,8 +42,7 @@ public class CreateWindowView
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
-        w.ModalWindow = CreateModalWindowObj(windowGO).GetComponent<ModalWindow>();
-
+        w.__ModalWindow = CreateModalWindowObj(windowGO).GetComponent<ModalWindow>();
         // 선택 항목을 새로 생성한 Window로 지정
         Selection.activeGameObject = windowGO;
     }
@@ -94,7 +93,6 @@ public class CreateWindowView
         w.__Interact = true;
         w.RenderObj = renderObj;
         w.closeButton = button.GetComponent<Button>();
-
         return windowGO;
     }
 }
