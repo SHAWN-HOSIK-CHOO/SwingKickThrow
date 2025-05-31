@@ -1,9 +1,7 @@
 using MVVM.Property;
-using MVVM.View.Window;
 using MVVM.ViewModel.Window.Event;
 using MVVM.ViewModel.Window.State;
 using STC;
-using System.Collections.Generic;
 using UnityEngine;
 using static STC.StateChart;
 namespace MVVM.ViewModel.Window
@@ -120,7 +118,7 @@ namespace MVVM.ViewModel.Window
 
         public void OnClick(Vector2 pos)
         {
-
+            Debug.Log("Click: "+ OwnerWindow.Name);
         }
     }
 }

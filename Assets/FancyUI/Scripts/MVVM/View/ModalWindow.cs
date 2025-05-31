@@ -17,7 +17,7 @@ namespace MVVM.View.Window
 
         void OnClose()
         {
-            Binder.ViewBinding.HideWindow();
+            __ParentWindow.Binder.ViewBinding.CloseModal();
         }
     }
 }

@@ -12,6 +12,7 @@ namespace MVVM.View.Window
     public class Window : MonoBehaviour
     {
         public GameObject RenderObj;
+        [HideInInspector] protected Window __ParentWindow;
         [HideInInspector] public ModalWindow __ModalWindow;
         [HideInInspector] public List<Window> __ChildWindowList;
         [HideInInspector] public bool __visible;
@@ -57,11 +58,13 @@ namespace MVVM.View.Window
                 Binder.BindInteractiveAction(OnInteractable);
                 foreach (var w in __ChildWindowList)
                 {
+                    w.__ParentWindow = this;
                     w.Initialize();
                     Binder.ViewBinding.AddChildWindow(w.Binder.ViewBinding);
                 }
                 if (__ModalWindow != null)
                 {
+                    __ModalWindow.__ParentWindow = this;
                     __ModalWindow.Initialize();
                     Binder.ViewBinding.AddChildWindow(__ModalWindow.Binder.ViewBinding);
                     Binder.ViewBinding.BindModalWindow(__ModalWindow.Binder.ViewBinding);
@@ -72,24 +75,36 @@ namespace MVVM.View.Window
 
 
         // Update View
+
+        public void SetInteractable(bool b)
+        {
+            canvasGroup.blocksRaycasts = b;
+            canvasGroup.interactable = b;
+            eventTrigger.enabled = b;
+        }
+
+
         protected virtual void OnVisible(bool val)
         {
             var visible = Binder.ViewBinding.Visible.Get();
             canvasGroup.alpha = visible ? 1 : 0;
+            SetInteractable(visible);
+
         }
         protected virtual void OnInteractable(bool val)
         {
             var Interactable = Binder.ViewBinding.Interactable.Get();
-            canvasGroup.blocksRaycasts = !Interactable;
+            SetInteractable(Interactable);
         }
         protected virtual void OnModal(bool val)
         {
             var modal = Binder.ViewBinding.Modal.Get();
-            canvasGroup.blocksRaycasts = modal;
+            SetInteractable(!modal);
         }
         protected virtual void OnTransition(bool val)
         {
             var transition = Binder.ViewBinding.Transition.Get();
+            SetInteractable(!transition);
         }
         protected virtual void OnClick(BaseEventData data)
         {

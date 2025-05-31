@@ -38,11 +38,14 @@ public class CreateWindowView
 
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
+        StretchToParent(renderObj.GetComponent<RectTransform>());
         Window w = windowGO.GetComponent<Window>();
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
         w.__ModalWindow = CreateModalWindowObj(windowGO).GetComponent<ModalWindow>();
+        StretchToParent(w.__ModalWindow.GetComponent<RectTransform>());
+
         // 선택 항목을 새로 생성한 Window로 지정
         Selection.activeGameObject = windowGO;
     }
@@ -80,19 +83,30 @@ public class CreateWindowView
         pannel.AddComponent<Image>();
         pannel.gameObject.transform.SetParent(renderObj.transform, false);
 
-        GameObject button = new GameObject("CloseButton", typeof(RectTransform));
-        button.AddComponent<Image>();   
-        button.AddComponent<Button>();
-        button.transform.SetParent(renderObj.transform, false);
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
+        StretchToParent(renderObj.GetComponent<RectTransform>());
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
+
+        GameObject button = new GameObject("CloseButton", typeof(RectTransform));
+        button.AddComponent<Image>();
+        button.AddComponent<Button>();
+        button.transform.SetParent(renderObj.transform, false);
+
         ModalWindow w = windowGO.GetComponent<ModalWindow>();
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
         w.closeButton = button.GetComponent<Button>();
         return windowGO;
+    }
+
+    public static void StretchToParent(RectTransform rect)
+    {
+        rect.anchorMin = Vector2.zero;
+        rect.anchorMax = Vector2.one;
+        rect.offsetMin = Vector2.zero;
+        rect.offsetMax = Vector2.zero;
     }
 }

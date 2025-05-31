@@ -1,5 +1,4 @@
 using MVVM.Property;
-using MVVM.ViewModel.Window.State;
 using UnityEditor;
 using UnityEngine;
 
@@ -34,17 +33,21 @@ namespace MVVM.ViewModel.Window
                 EditorGUILayout.PropertyField(modalWindowProp);
                 EditorGUILayout.PropertyField(childWindowListProp);
             }
-            else
+            else 
             {
-                foreach (var kvp in  window.Binder?.WindowHierachyState.GetAllChildState())
+                if (window.Binder != null && window.Binder.WindowHierachyState != null)
                 {
-                    if(Equals(window.Binder?.WindowHierachyState?.ModalHierachy, kvp.Value))
+
+                    foreach (var kvp in window.Binder?.WindowHierachyState?.GetAllChildState())
                     {
-                        EditorGUILayout.LabelField("Modal Window : " + kvp.Key, EditorStyles.boldLabel);
-                    }
-                    else
-                    {
-                        EditorGUILayout.LabelField("Child Window : " + kvp.Key, EditorStyles.boldLabel);
+                        if (Equals(window.Binder?.WindowHierachyState?.ModalHierachy, kvp.Value))
+                        {
+                            EditorGUILayout.LabelField("Modal Window : " + kvp.Key, EditorStyles.boldLabel);
+                        }
+                        else
+                        {
+                            EditorGUILayout.LabelField("Child Window : " + kvp.Key, EditorStyles.boldLabel);
+                        }
                     }
                 }
             }
