@@ -87,7 +87,7 @@ namespace MVVM.ViewModel.Window
 
         public void TransitionEnd()
         {
-            OwnerWindow.Handle(new TransitionEvent(false, true, true));
+            OwnerWindow.Handle(new TransitionEvent(false, false, true));
         }
 
         void IWindowViewBinding.SetParentWindow(IWindowViewBinding parent)

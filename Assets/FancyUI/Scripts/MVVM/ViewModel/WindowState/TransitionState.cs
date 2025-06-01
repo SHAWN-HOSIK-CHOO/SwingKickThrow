@@ -1,5 +1,6 @@
 using MVVM.Property;
 using STC;
+using System.Collections.Generic;
 using UnityEngine;
 using static MVVM.ViewModel.Window.State.InteractableState;
 using static MVVM.ViewModel.Window.State.ModalState;
@@ -11,6 +12,7 @@ namespace MVVM.ViewModel.Window.State
         public const string StateName = "Transition";
         WindowViewModel Owner;
         BoolProperty TransitionStateBarrier;
+
         public TransitionState(WindowViewModel owner) : base(StateName, StateType.FSM)
         {
             Owner = owner;

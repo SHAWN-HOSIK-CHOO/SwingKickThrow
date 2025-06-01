@@ -1,7 +1,5 @@
-using MVVM.Property;
 using STC;
 using System.Collections.Generic;
-using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using static STC.StateChart;
@@ -23,7 +21,6 @@ namespace MVVM.View.Window
         public WindowViewBinder Binder;
         protected EventTrigger eventTrigger;
         protected CanvasGroup canvasGroup;
-
         private bool Initialized;
 
         protected virtual void Awake()
@@ -39,7 +36,7 @@ namespace MVVM.View.Window
             if (Binder.WindowHierachyState.ParentState == null)
             {
                 StateChart.Instance.AddChild(Binder.WindowHierachyState);
-                STC.StateChart.Instance.AddTransition(new Transition(STC.StateChart.Instance.Name, Binder.WindowHierachyState.Name));
+                STC.StateChart.Instance.AddTransition(new STC.Transition(STC.StateChart.Instance.Name, Binder.WindowHierachyState.Name));
             }
         }
         
@@ -104,6 +101,15 @@ namespace MVVM.View.Window
         {
             var transition = Binder.ViewBinding.Transition.Get();
             SetInteractable(!transition);
+
+            if(transition)
+            {
+                RenderObj.GetComponent<RenderTransition>().OnTransitionStart();
+            }
+            else
+            {
+                RenderObj.GetComponent<RenderTransition>().OnTransitionEnd();
+            }
         }
         protected virtual void OnClick(BaseEventData data)
         {

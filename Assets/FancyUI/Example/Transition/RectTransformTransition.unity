@@ -303,11 +303,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e7c6c71c947f4d64dadfd130cd248c7f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _duration: 2
   from: {fileID: 990002234}
   to: {fileID: 1765554012}
   obj: {fileID: 918160177}
-  easeCurveAsset: {fileID: 11400000, guid: 2f9af535f697f1143854a528a5e3eb25, type: 2}
-  duration: 3
+  easeCurveAsset: {fileID: 11400000, guid: 76079c2a1f55aca4c8f678a7fe3a00a6, type: 2}
   usePosition: 1
   useRotation: 1
   useScale: 1
@@ -336,7 +336,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 918160176}
-  m_LocalRotation: {x: -0, y: -0, z: -0.4201524, w: 0.9074536}
+  m_LocalRotation: {x: -0, y: -0, z: -0.35831264, w: 0.9336017}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -346,8 +346,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 7.296}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 177.01422, y: 1.2833862}
-  m_SizeDelta: {x: 160.08139, y: 142.3622}
+  m_AnchoredPosition: {x: 119.86535, y: -1.8578739}
+  m_SizeDelta: {x: 141.44383, y: 135.04492}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &918160178
 MonoBehaviour:

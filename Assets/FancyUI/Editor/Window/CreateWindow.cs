@@ -17,6 +17,7 @@ public class CreateWindowView
         Undo.RegisterCreatedObjectUndo(windowGO, "Create Window");
         // 컴포넌트 추가
         windowGO.AddComponent<Window>();
+        Window w = windowGO.GetComponent<Window>();
 
         // RectTransform 초기값 설정
         RectTransform rect = windowGO.GetComponent<RectTransform>();
@@ -32,14 +33,11 @@ public class CreateWindowView
         GameObject renderObj = new GameObject("RenderObj", typeof(RectTransform));
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
-        GameObject pannel = new GameObject("Pannel", typeof(RectTransform));
-        pannel.AddComponent<Image>();
-        pannel.gameObject.transform.SetParent(renderObj.transform, false);
+        renderObj.AddComponent<RenderTransition>().Owner = w;
 
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         StretchToParent(renderObj.GetComponent<RectTransform>());
-        Window w = windowGO.GetComponent<Window>();
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
@@ -67,6 +65,7 @@ public class CreateWindowView
 
         // 컴포넌트 추가
         windowGO.AddComponent<ModalWindow>();
+        ModalWindow w = windowGO.GetComponent<ModalWindow>();
         // RectTransform 초기값 설정
         RectTransform rect = windowGO.GetComponent<RectTransform>();
         rect.sizeDelta = new Vector2(300, 200);
@@ -79,22 +78,19 @@ public class CreateWindowView
 
         // 자식인 RenderObj 생성
         GameObject renderObj = new GameObject("RenderObj", typeof(RectTransform));
-        GameObject pannel = new GameObject("Pannel", typeof(RectTransform));
-        pannel.AddComponent<Image>();
-        pannel.gameObject.transform.SetParent(renderObj.transform, false);
-
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         StretchToParent(renderObj.GetComponent<RectTransform>());
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
-
+        renderObj.AddComponent<RenderTransition>().Owner = w;
+            
+            
         GameObject button = new GameObject("CloseButton", typeof(RectTransform));
         button.AddComponent<Image>();
         button.AddComponent<Button>();
         button.transform.SetParent(renderObj.transform, false);
 
-        ModalWindow w = windowGO.GetComponent<ModalWindow>();
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
