@@ -1,4 +1,5 @@
 using GameEvents;
+using GameFlow;
 using GameProps.SO;
 using Unity.Netcode;
 using UnityEngine;
@@ -24,8 +25,9 @@ namespace CharacterAttributes
         public NetworkVariable<int> scoreBalls = new NetworkVariable<int>();
         
         private ulong lastAttackerId = ulong.MaxValue;
+
         [Header("스피드 * 질량 : 데미지 ")]
-        public  float crashFactor;
+        public float crashFactor;
 
         [FormerlySerializedAs("_speed")]
         public float speed = 10f;
@@ -33,15 +35,14 @@ namespace CharacterAttributes
         public float GetCrashFactor()
         {
             crashFactor = speed * mass.Value * 0.05f;
-
             return crashFactor;
         }
-        
-        public void Initialize(float initSpeed,float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
+
+        public void Initialize(float initSpeed, float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
         {
             maxHealth = Mathf.Max(initHealth, 1f);
-            speed     = Mathf.Max(initSpeed, 1f);
-            
+            speed = Mathf.Max(initSpeed, 1f);
+
             if (!IsOwner)
                 return;
 
@@ -51,15 +52,15 @@ namespace CharacterAttributes
         [ServerRpc(RequireOwnership = false)]
         private void InitializeServerRPC(float initHealth, float initDefense, float pTime, float pSpeed, int tags, float _mass)
         {
-            maxHealth           = Mathf.Max(initHealth,  1f);
-            currentHealth.Value = Mathf.Max(initHealth,  1f);
-            defense.Value       = Mathf.Max(initDefense, 0f);
-            pushedTime.Value    = pTime;
-            pushedSpeed.Value   = pSpeed;
-            tagBalls.Value      = tags;
-            mass.Value          = _mass;
-            scoreBalls.Value    = 0;
-            
+            maxHealth = Mathf.Max(initHealth, 1f);
+            currentHealth.Value = Mathf.Max(initHealth, 1f);
+            defense.Value = Mathf.Max(initDefense, 0f);
+            pushedTime.Value = pTime;
+            pushedSpeed.Value = pSpeed;
+            tagBalls.Value = tags;
+            mass.Value = _mass;
+            scoreBalls.Value = 0;
+
             if (IsServer)
             {
                 currentHealth.OnValueChanged += OnHealthChanged;
@@ -68,15 +69,16 @@ namespace CharacterAttributes
 
         public void MakeCurrentHealthZero()
         {
+            GameSceneManager.Instance.currentPlayerCrashedUI = GameSceneManager.Instance.splashedScreenUI;
             MakeCurrentHealthZeroServerRPC();
         }
-        
+
         [ServerRpc]
         private void MakeCurrentHealthZeroServerRPC()
         {
             currentHealth.Value = 0f;
         }
-        
+
         private void OnHealthChanged(float previousValue, float newValue)
         {
             if (!IsServer) return;
@@ -89,18 +91,18 @@ namespace CharacterAttributes
                 // 2인용이므로 공격자는 나 아닌 한 명뿐
                 foreach (var client in NetworkManager.Singleton.ConnectedClients)
                 {
-                    if (client.Key != OwnerClientId) // 나 아닌 상대
+                    if (client.Key != OwnerClientId)
                     {
                         var attacker = client.Value.PlayerObject.GetComponent<CharacterStatusNetwork>();
                         if (attacker != null)
                         {
-                            attacker.scoreBalls.Value += attacker.tagBalls.Value; //현재 가진 공은 모두 적립하고
-                            attacker.tagBalls.Value   =  lostBalls;               //상대 공을 뺏어온다.
+                            attacker.scoreBalls.Value += attacker.tagBalls.Value;
+                            attacker.tagBalls.Value = lostBalls;
                         }
                         break;
                     }
                 }
-                
+
                 InformDeathClientRPC(OwnerClientId);
             }
         }
@@ -117,6 +119,7 @@ namespace CharacterAttributes
             {
                 Debug.Log("You are dead");
                 GameEvents.GameEvents.Publish(GameEventType.PLAYER_DEATH);
+                
             }
         }
 
@@ -133,9 +136,9 @@ namespace CharacterAttributes
         {
             float damageTaken = Mathf.Max(damage - defense.Value, 1f);
             currentHealth.Value = Mathf.Max(currentHealth.Value - damageTaken, 0f);
-            lastAttackerId = rpcParams.Receive.SenderClientId; 
+            lastAttackerId = rpcParams.Receive.SenderClientId;
         }
-        
+
         public void AddOrMinusTagBalls(int count)
         {
             AddOrMinusTagBallsServerRPC(count);
@@ -155,16 +158,9 @@ namespace CharacterAttributes
         [ServerRpc(RequireOwnership = false)]
         private void AddOrMinusDefenseServerRPC(float amount)
         {
-            if (defense.Value + amount <= 0f)
-            {
-                defense.Value = 0f;
-            }
-            else
-            {
-                defense.Value += amount;
-            }
+            defense.Value = Mathf.Max(defense.Value + amount, 0f);
         }
-        
+
         public void AddOrMinusMass(float amount)
         {
             AddOrMinusMassServerRPC(amount);
@@ -173,16 +169,9 @@ namespace CharacterAttributes
         [ServerRpc(RequireOwnership = false)]
         private void AddOrMinusMassServerRPC(float amount)
         {
-            if (mass.Value + amount <= 30f)
-            {
-                mass.Value = 30f;
-            }
-            else
-            {
-                mass.Value += amount;
-            }
+            mass.Value = Mathf.Max(mass.Value + amount, 30f);
         }
-        
+
         public float GetHealth()
         {
             return currentHealth.Value;
@@ -202,41 +191,25 @@ namespace CharacterAttributes
         [ClientRpc]
         public void IncreaseScaleClientRPC(float factor)
         {
-            //Debug.Log($"client {OwnerClientId} got this message");
-            
-            if (!IsOwner) 
+            if (!IsOwner)
                 return;
-            
-            if(transform.localScale.magnitude >= new Vector3(2.5f,2.5f,2.5f).magnitude)
+
+            if (transform.localScale.magnitude >= new Vector3(2.5f, 2.5f, 2.5f).magnitude)
                 return;
-            
+
             transform.localScale *= factor;
         }
 
         [ClientRpc]
         public void AddOrMinusSpeedClientRPC(float delta)
         {
-            if (speed + delta <= 3f)
-            {
-                speed = 3f;
-            }
-            else
-            {
-                speed += delta;
-            }
+            speed = Mathf.Max(speed + delta, 3f);
         }
 
         [ClientRpc]
         public void AddOrMinusMaxHealthClientRPC(float delta)
         {
-            if (maxHealth + delta <= 50f)
-            {
-                maxHealth = 50f;
-            }
-            else
-            {
-                maxHealth += delta;
-            }
+            maxHealth = Mathf.Max(maxHealth + delta, 50f);
         }
     }
 }
