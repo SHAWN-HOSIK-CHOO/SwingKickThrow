@@ -1,13 +1,28 @@
+using MVVM.View.Transition;
+using System.Collections;
+using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
+using Utils.Math;
 
 namespace FancyUI
 {
-    public class TransitionEditor<T> : Editor where T : MonoBehaviour, ITransition
+    public class TransitionEditor : Editor 
     {
-        private bool isPlayingInEditor = false;
-        private float editorElapsed = 0f;
-        private double lastTime = 0f;
+        double StartTime;
+        double CurrentTime;
+        bool Transitioning;
+
+        EditorCoroutine Coroutine;
+
+
+        private void OnDisable()
+        {
+            if (Coroutine != null)
+            {
+                EditorCoroutineUtility.StopCoroutine(Coroutine);
+            }
+        }
 
         public override void OnInspectorGUI()
         {
@@ -15,42 +30,44 @@ namespace FancyUI
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Editor Test", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Playing in Editor", isPlayingInEditor ? "Yes" : "No");
+            EditorGUILayout.LabelField("Playing in Editor", Transitioning ? "Yes" : "No");
             if (GUILayout.Button("Play (Editor)"))
             {
-                StartPlayInEditor((T)target);
+                StartPlayInEditor();
             }
         }
 
-        private void StartPlayInEditor(ITransition transition)
+         void StartPlayInEditor()
         {
-            isPlayingInEditor = true;
-            editorElapsed = 0f;
-            lastTime = EditorApplication.timeSinceStartup;
-            if (Application.isPlaying)
+            ITransition transition = (ITransition)target;
+            if (Coroutine != null)
             {
-                transition.Initialize();
-                transition.Play(); // Coroutine 실행 (Play 모드)
+                EditorCoroutineUtility.StopCoroutine(Coroutine);
             }
-            else
-            {
-                transition.Initialize();
-                EditorApplication.update += EditorUpdate; // Edit 모드 보간용
-            }
+
+            Transitioning = true;
+            StartTime = EditorApplication.timeSinceStartup;
+            CurrentTime = EditorApplication.timeSinceStartup;
+            transition.Initialize();
+            Coroutine = EditorCoroutineUtility.StartCoroutine(UpdateTime(), this);
         }
 
-        private void EditorUpdate()
+        private IEnumerator UpdateTime()
         {
-            double currentTime = EditorApplication.timeSinceStartup;
-            editorElapsed = (float)(currentTime - lastTime);
-            ITransition transition = (T)target;
-            if (!transition.Apply(transition.duration, editorElapsed))
+            while (Transitioning)
             {
-                isPlayingInEditor = false;
-                EditorApplication.update -= EditorUpdate;
+                ITransition transition = (ITransition)target;
+                CurrentTime = EditorApplication.timeSinceStartup;
+                var elapsed = CurrentTime - StartTime;
+                transition.Apply(Utils.Math.Math.Normalize(transition.duration, elapsed));
+                if (elapsed >= transition.duration)
+                {
+                    Transitioning = false;
+                }
+                SceneView.RepaintAll();
+                Repaint();
+                yield return null;
             }
-            SceneView.RepaintAll();
-            Repaint();
         }
     }
 }

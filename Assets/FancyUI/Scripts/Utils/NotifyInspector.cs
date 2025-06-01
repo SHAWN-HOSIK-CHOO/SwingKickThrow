@@ -1,0 +1,9 @@
+using MVVM.Property;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class NotifyInspector : MonoBehaviour
+{
+    // ∞·∑–¿˚¿∏∑Œ »Ï... ¿©µµøÏ »Ï... »Ï§æ...
+
+}
