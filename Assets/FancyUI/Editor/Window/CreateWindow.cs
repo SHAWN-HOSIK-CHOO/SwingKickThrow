@@ -33,6 +33,9 @@ public class CreateWindowView
         GameObject renderObj = new GameObject("RenderObj", typeof(RectTransform));
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
+        var image = renderObj.AddComponent<Image>();
+        image.color = new Color(1, 1, 1, 0);
+        image.raycastTarget = true; 
         renderObj.AddComponent<RenderTransition>().Owner = w;
 
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
@@ -83,18 +86,14 @@ public class CreateWindowView
         StretchToParent(renderObj.GetComponent<RectTransform>());
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
+        var image = renderObj.AddComponent<Image>();
+        image.color = new Color(1, 1, 1, 0);
+        image.raycastTarget = true;
         renderObj.AddComponent<RenderTransition>().Owner = w;
-            
-            
-        GameObject button = new GameObject("CloseButton", typeof(RectTransform));
-        button.AddComponent<Image>();
-        button.AddComponent<Button>();
-        button.transform.SetParent(renderObj.transform, false);
 
         w.__visible = true;
         w.__Interact = true;
         w.RenderObj = renderObj;
-        w.closeButton = button.GetComponent<Button>();
         return windowGO;
     }
 

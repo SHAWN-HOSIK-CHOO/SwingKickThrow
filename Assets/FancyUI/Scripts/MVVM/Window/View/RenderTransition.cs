@@ -11,27 +11,22 @@ public class RenderTransition : MonoBehaviour
     double CurrentTime;
     bool Transitioning;
     public MonoTransition transition;
-
-
-    public void Awake()
-    {
-        if(transition != null)
-        {
-            transition.TransitionEndCallback += EndTransition;
-        }
-    }
-    public void StartTransition() => Owner.Binder.ViewBinding.TransitionStart();
-    public void EndTransition() => Owner.Binder.ViewBinding.TransitionEnd();
+    public void TransitionStart() => Owner.TransitionStart();
+    public void EndTransition() => Owner.TransitionEnd();
     public void OnTransitionStart()
     {
-        if(transition == null)
-        {
-            EndTransition();
-        }
         StartTime = Time.realtimeSinceStartupAsDouble;
         CurrentTime = StartTime;
         Transitioning = true;
-        transition.Initialize();
+        if(transition != null)
+        {
+            transition.Initialize();
+        }
+        else
+        {
+            EndTransition();
+        }
+
     }
     public void OnTransitionEnd()
     {
@@ -39,7 +34,6 @@ public class RenderTransition : MonoBehaviour
         CurrentTime = StartTime;
         Transitioning = false;
     }
-
     public void LateUpdate()
     {
         if(Transitioning)

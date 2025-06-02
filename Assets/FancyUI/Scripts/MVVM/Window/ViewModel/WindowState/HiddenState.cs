@@ -65,7 +65,6 @@ namespace MVVM.ViewModel.Window.State
                 {
                     if (!isParentModal)
                     {
-                        Owner.VisibleTrigger.Value = false;
                         HiddenStateBarrier.SetSilently(false);
                     }
                 }
@@ -82,13 +81,6 @@ namespace MVVM.ViewModel.Window.State
         public override void OnActivate()
         {
             Owner.Binder.VisibleVal.Value = false;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
-            {
-                if (kvp.Value is WindowHierachyState child)
-                {
-                    child.ViewModel.Binder.HideWindow();
-                }
-            }
         }
 
         public override void OnEnter()

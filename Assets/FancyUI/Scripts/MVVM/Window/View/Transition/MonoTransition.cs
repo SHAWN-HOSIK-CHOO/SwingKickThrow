@@ -13,8 +13,6 @@ namespace FancyUI
             set => _duration = value;
         }
 
-        public event Action TransitionEndCallback;
-
         public virtual void Apply(double t)
         {
 

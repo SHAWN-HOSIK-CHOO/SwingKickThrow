@@ -1,6 +1,7 @@
 using MVVM.Property;
 using MVVM.ViewModel.Window.State;
 using MVVM.ViewModel.Window.Trigger;
+using static UnityEngine.UI.GridLayoutGroup;
 namespace MVVM.ViewModel.Window
 {
     public class WindowViewModel : STC.State , IWindowState , IWindowTrigger
@@ -19,9 +20,6 @@ namespace MVVM.ViewModel.Window
         public BoolProperty ModalTrigger { get; protected set; }
         public BoolProperty TransitionTrigger { get; protected set; }
 
-        
-        
-        
         public WindowViewModel(string name, bool visible, bool interact, bool modal, bool transition) : base(name, StateType.FSM)
         {
             Binder = new WindowViewBinder(this);
@@ -82,7 +80,6 @@ namespace MVVM.ViewModel.Window
         {
             if (e is Event.VisibleWindowEvent visibleEvent)
             {
-                visibleEvent.Consumed.isConsumed = true;
                 VisibleTrigger.Value = visibleEvent.Visible;
             }
         }

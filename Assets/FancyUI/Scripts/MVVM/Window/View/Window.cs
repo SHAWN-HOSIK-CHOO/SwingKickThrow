@@ -18,7 +18,7 @@ namespace MVVM.View.Window
         [HideInInspector] public bool __Modal;
         [HideInInspector] public bool __Transition;
         
-        public WindowViewBinder Binder;
+        public  WindowViewBinder Binder;
         protected EventTrigger eventTrigger;
         protected CanvasGroup canvasGroup;
         private bool Initialized;
@@ -27,9 +27,7 @@ namespace MVVM.View.Window
         {
             eventTrigger = RenderObj.GetComponent<EventTrigger>();
             canvasGroup = RenderObj.GetComponent<CanvasGroup>();  
-            EventTriggerHelper.AddTriggerEvent(eventTrigger, EventTriggerType.PointerClick, OnClick);
             Initialize();
-            
         }
         protected virtual void Start()
         {
@@ -38,8 +36,7 @@ namespace MVVM.View.Window
                 StateChart.Instance.AddChild(Binder.WindowHierachyState);
                 STC.StateChart.Instance.AddTransition(new STC.Transition(STC.StateChart.Instance.Name, Binder.WindowHierachyState.Name));
             }
-        }
-        
+        }  
         public void Initialize()
         {
             if (Initialized == false)
@@ -69,17 +66,12 @@ namespace MVVM.View.Window
                 StateChart.Instance.FlushEventList();
             }
         }
-
-
-        // Update View
-
         public void SetInteractable(bool b)
         {
             canvasGroup.interactable = b;
             eventTrigger.enabled = b;
         }
-
-        protected virtual void OnVisible(bool val)
+        protected void OnVisible(bool val)
         {
             var visible = Binder.ViewBinding.Visible.Get();
             canvasGroup.alpha = visible ? 1 : 0;
@@ -87,17 +79,17 @@ namespace MVVM.View.Window
             SetInteractable(visible);
 
         }
-        protected virtual void OnInteractable(bool val)
+        protected void OnInteractable(bool val)
         {
             var Interactable = Binder.ViewBinding.Interactable.Get();
             SetInteractable(Interactable);
         }
-        protected virtual void OnModal(bool val)
+        protected void OnModal(bool val)
         {
             var modal = Binder.ViewBinding.Modal.Get();
             SetInteractable(!modal);
         }
-        protected virtual void OnTransition(bool val)
+        protected void OnTransition(bool val)
         {
             var transition = Binder.ViewBinding.Transition.Get();
             SetInteractable(!transition);
@@ -111,10 +103,33 @@ namespace MVVM.View.Window
                 RenderObj.GetComponent<RenderTransition>().OnTransitionEnd();
             }
         }
-        protected virtual void OnClick(BaseEventData data)
+    
+    
+        public void TransitionStart()
         {
-            PointerEventData pointerData = data as PointerEventData;
-            Binder.ViewBinding.OnClick(pointerData.position);
+            Binder.ViewBinding.TransitionStart();
+        }
+
+        public void TransitionEnd()
+        {
+            Binder.ViewBinding.TransitionEnd();
+        }
+        public virtual void CloseModal()
+        {
+            Binder.ViewBinding.CloseModal();
+        }
+        public void OpenModal()
+        {
+            Binder.ViewBinding.OpenModal();
+        }
+        public void ShowWindow()
+        {
+            Binder.ViewBinding.ShowWindow();
+        }
+
+        public void HideWindow()
+        {
+            Binder.ViewBinding.HideWindow();
         }
     }
 }

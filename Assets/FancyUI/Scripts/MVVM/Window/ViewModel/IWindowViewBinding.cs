@@ -12,7 +12,6 @@ namespace MVVM.ViewModel.Window
         IPropertySetter<bool> InteractableVal { get; }
         IPropertySetter<bool> ModalVal { get; }
         IPropertySetter<bool> TransitionVal { get; }
-
         IPropertyNofier<WindowHierachyState> WindowHierachy { get; }
         IPropertyNofier<bool> Visible { get; }
         IPropertyNofier<bool> Interactable { get; }
@@ -27,7 +26,6 @@ namespace MVVM.ViewModel.Window
         void OpenModal();
         void CloseModal();
         void BindModalWindow(IWindowViewBinding modal);
-        void OnClick(Vector2 pos);
         void SetParentWindow(IWindowViewBinding parent);
         void AddChildWindow(IWindowViewBinding child);
         void RemoveChildWindow(IWindowViewBinding child);

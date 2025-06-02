@@ -48,14 +48,6 @@ namespace MVVM.ViewModel.Window.State
         public override void OnActivate()
         {
             Owner.Binder.ModalVal.Value = true;
-
-            if (Owner.Binder.WindowHierachy.Get() is WindowHierachyState Hierarchy)
-            {
-                if (Hierarchy.ModalHierachy != null)
-                {
-                    Hierarchy.ModalHierachy.ViewModel.Binder.ShowWindow();
-                }
-            }
         }
         public override void OnEnter()
         {
@@ -69,14 +61,6 @@ namespace MVVM.ViewModel.Window.State
         public override void OnInActivate()
         {
             Owner.Binder.ModalVal.Value = false;
-            if (Owner.Binder.WindowHierachy.Get() is WindowHierachyState Hierarchy)
-            {
-                if(Hierarchy.ModalHierachy != null)
-                {
-                    Hierarchy.ModalHierachy.ViewModel.Binder.HideWindow();
-                }
-
-            }
         }
     }
 }

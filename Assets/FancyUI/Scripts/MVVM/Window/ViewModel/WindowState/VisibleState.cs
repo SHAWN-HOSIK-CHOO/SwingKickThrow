@@ -40,24 +40,10 @@ namespace MVVM.ViewModel.Window.State
         public override void OnActivate()
         {
             Owner.Binder.VisibleVal.Value = true;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
-            {
-                if (kvp.Value is WindowHierachyState child)
-                {
-                    child.ViewModel.Binder.ShowWindow();
-                }
-            }
         }
         public override void OnInActivate()
         {
             Owner.Binder.VisibleVal.Value = false;
-            foreach (var kvp in Owner.Binder.WindowHierachy.Get().GetAllChildState())
-            {
-                if (kvp.Value is WindowHierachyState child)
-                {
-                    child.ViewModel.Binder.HideWindow();
-                }
-            }
         }
 
         public override void OnCheckTransitionBarrier(string src)
@@ -65,7 +51,6 @@ namespace MVVM.ViewModel.Window.State
             VisibleStateBarrier.SetSilently(true);
             var window = Owner.Binder;
             var parentState = window.WindowHierachy.Get().ParentState;
-
             bool isParentModal = Owner.IsParentModal();
             bool isParentVisible = Owner.IsParentVisible();
             bool isModalWindow = Owner.IsModalWindow();
@@ -76,7 +61,6 @@ namespace MVVM.ViewModel.Window.State
                 {
                     if (isParentModal)
                     {
-                        Owner.VisibleTrigger.Value = true;
                         VisibleStateBarrier.SetSilently(false);
                     }
                 }

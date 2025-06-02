@@ -8,14 +8,7 @@ namespace MVVM.View.Window
 {
     public class ModalWindow : Window
     {
-        public Button closeButton;
-        protected override void Start()
-        {
-            base.Start();
-            closeButton.onClick.AddListener(OnClose);
-        }
-
-        void OnClose()
+        public override void CloseModal()
         {
             __ParentWindow.Binder.ViewBinding.CloseModal();
         }
