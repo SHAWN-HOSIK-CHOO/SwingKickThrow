@@ -1,5 +1,6 @@
 using CharacterAttributes;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
@@ -18,8 +19,6 @@ namespace GameFlow
         {
 
         }
-
-
         void OnExitGame()
         {
             GameSceneManager.Instance.gameTimer = null;
@@ -27,21 +26,17 @@ namespace GameFlow
             GameSceneManager.Instance.playerReady = null;
             GameSceneManager.Instance.UI.joinText.text = null;
             Finish(GameStateType.GAME_END);
-
-            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = false;
             if (NetworkManager.Singleton.IsHost)
             {
-                foreach (var obj in NetworkManager.Singleton.SpawnManager.SpawnedObjectsList)
+                var spawnedObjects = NetworkManager.Singleton.SpawnManager.SpawnedObjectsList.ToList();
+
+                foreach (var obj in spawnedObjects)
                 {
                     if (obj != null && obj.IsSpawned)
                         obj.Despawn(true);
                 }
+                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
             }
-            else
-            {
-                // WAIT HOST Despawn Complete RPC            
-            }
-                SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
         }
 
         void UpdateResultUI()
