@@ -354,7 +354,7 @@ public class LobbyManager : MonoBehaviour
         }
     }
 
-    public async Task ToggleReadyState()
+    public async Task UpdateReadyState(bool b)
     {
         try
         {
@@ -364,13 +364,10 @@ public class LobbyManager : MonoBehaviour
                 return;
             }
 
-            m_IsPlayerReady = !m_IsPlayerReady;
-
             var lobbyId = activeLobby.Id;
-
+            m_IsPlayerReady = b;
             var options = new UpdatePlayerOptions();
             options.Data = CreatePlayerDictionary();
-
             var updatedLobby = await LobbyService.Instance.UpdatePlayerAsync(lobbyId, playerId, options);
             if (this == null) return;
 

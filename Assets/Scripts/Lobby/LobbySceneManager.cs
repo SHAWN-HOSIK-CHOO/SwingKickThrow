@@ -1,34 +1,27 @@
-using UnityEditor;
+using System;
+using System.Threading.Tasks;
 using UnityEngine;
-
+using UnityEngine.SceneManagement;
+using Unity.Services.Lobbies.Models;
 public class LobbySceneManager : MonoBehaviour
 {
-    HostSetUpStackView HostSetUp;
-
-    public int MaxPlayers;
-    public bool PrivateFlag;
-    public string LobbyName;
-    public string HostName;
-
-    public void OnHostSetMaxPlayers(int maxPlayers)
+    public async Task LeaveLobby()
     {
-        if (maxPlayers != 2)
+        try
         {
-            Debug.Log("현재 2인 플레이까지 지원합니다...");
+            if (LobbyManager.instance.isHost)
+            {
+                await LobbyManager.instance.DeleteAnyActiveLobbyWithNotify();
+            }
+            else
+            {
+                await LobbyManager.instance.LeaveJoinedLobby();
+            }
+            if (this == null) return;
         }
-        MaxPlayers = maxPlayers;
-    }
-    public void OnHostSetLobbyName(string name)
-    {
-        LobbyName = name;
-    }
-    public void OnHostSetHostName(string name)
-    {
-        HostName = name;
-    }
-
-    public void OnHostSetPrivateFlag(bool flag)
-    {
-        PrivateFlag = flag;
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
     }
 }

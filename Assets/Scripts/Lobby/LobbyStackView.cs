@@ -1,48 +1,112 @@
-using MVVM.Utils;
-using MVVM.View.Window;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using TMPro;
+using Unity.Netcode;
+using Unity.Services.Authentication;
+using Unity.Services.Lobbies.Models;
+using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyStackView : MVVM.Utils.StackView
 {
-    public Button backButton;
+    public LobbySceneManager LobbySceneManager;
+    public MVVM.View.Window.Window MainWindow;
+    public PlayerInfoContainer PlayerInfoContainer;
+    public Button LeaveButton;
+    public Toggle ReadyToggle;
+    public Text ReadyToggleLabel;
 
-    public Window HostJoinWindow;
-    public Button hostButton;
-    public Button joinButton;
-
-    public StackView HostSetup;
-
-    private void Start()
+    void Start()
     {
-        hostButton.onClick.AddListener(OnHostButton);
-        backButton.onClick.AddListener(OnBackButton);
-        StackViewManager.Instance.Push(this);
+        LeaveButton.onClick.AddListener(OnLeaveButton);
+        ReadyToggle.onValueChanged.AddListener(OnReadyToggle);
+        PlayerInfoContainer.KickEvent += async (id) => await OnKickEvent(id); ;
+
+        OnReadyToggle(ReadyToggle.isOn);
+        OnLobbyChanged(LobbyManager.instance.activeLobby, false);
+        LobbyManager.OnLobbyChanged += OnLobbyChanged;
+        LobbyManager.OnPlayerNotInLobbyEvent += ReturnToMenu;
     }
 
-    private void OnBackButton()
+    void ReturnToMenu()
     {
-        StackViewManager.Instance.Pop();
+        SceneManager.LoadScene("LobbyMenu");
     }
-
-    private void OnHostButton()
+    public void OnLobbyChanged(Lobby updatedLobby, bool isGameReady)
     {
-        StackViewManager.Instance.Push(HostSetup);
-    }
-
-    public override void OnViewStackPushRequest(Stack<MVVM.Utils.StackView> stack)
-    {
-        stack.Push(this);
-        HostJoinWindow.ShowWindow();
-    }
-
-    public override void OnViewStackPopRequest(Stack<MVVM.Utils.StackView> stack)
-    {
-        bool Keep = StackViewManager.Instance.StackCount == 1 && StackViewManager.Instance.IsSame(this);
-        if(!Keep)
+        PlayerInfoContainer.SetPlayers(updatedLobby.Players);
+        if (isGameReady && LobbyManager.instance.isHost)
         {
-            stack.Pop();
-            HostJoinWindow.HideWindow();
+            NetworkManager.Singleton.SceneManager.LoadScene("Game_Flow_", LoadSceneMode.Single);
         }
+    }
+
+
+    async Task OnKickEvent(string id)
+    {
+        try
+        {
+            MainWindow.SetInteractable(false);
+            await LobbyManager.instance.RemovePlayer(id);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+        finally
+        {
+            if (this != null)
+            {
+                MainWindow.SetInteractable(true);
+            }
+        }
+    }
+    
+
+    public async void OnReadyToggle(bool b)
+    {
+        try
+        {
+            ReadyToggleLabel.text = b ? "Cancle" : "Ready";
+            MainWindow.SetInteractable(false);
+            PlayerInfoContainer.SetPlayerReady(AuthenticationService.Instance.PlayerId, b);
+            await LobbyManager.instance.UpdateReadyState(b);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+        finally
+        {
+
+            MainWindow.SetInteractable(true);
+        }
+    }
+
+    public async void OnLeaveButton()
+    {
+        try
+        {        
+            MainWindow.SetInteractable(false);
+            await LobbySceneManager.LeaveLobby();
+            ReturnToMenu();
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+        finally
+        {
+
+            MainWindow.SetInteractable(true);
+        }
+    }
+
+    void OnDestroy()
+    {
+        LobbyManager.OnLobbyChanged -= OnLobbyChanged;
+        LobbyManager.OnPlayerNotInLobbyEvent -= ReturnToMenu;
     }
 }

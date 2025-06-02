@@ -9,7 +9,7 @@ using UnityEngine.UI;
 
 public class HostSetUpStackView : StackView
 {
-    public LobbySceneManager LobbySceneManager;
+    public LobbyMenuManager LobbySceneManager;
     public Window HostSetupWindow;
     public Window HostJoinWindow;
     public Button ConfirmButton;
@@ -34,8 +34,8 @@ public class HostSetUpStackView : StackView
         HostSetupWindow.ShowWindow();
         HostJoinWindow.HideWindow();
 
-        LobbySceneManager.HostName = HostName.name;
-        LobbySceneManager.LobbyName = LobbyName.name;
+        LobbySceneManager.HostName = HostName.text;
+        LobbySceneManager.LobbyName = LobbyName.text;
         LobbySceneManager.PrivateFlag = Private.isOn;
 
         if (TwoPlayer.isOn)
@@ -52,7 +52,6 @@ public class HostSetUpStackView : StackView
         {
             LobbySceneManager.MaxPlayers = 4;
         }
-
     }
 
     public async void OnConfirmButton()
