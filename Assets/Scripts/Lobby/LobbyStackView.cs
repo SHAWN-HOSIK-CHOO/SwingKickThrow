@@ -39,6 +39,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         PlayerInfoContainer.SetPlayers(updatedLobby.Players);
         if (isGameReady && LobbyManager.instance.isHost)
         {
+            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Flow_", LoadSceneMode.Single);
         }
     }
@@ -48,7 +49,7 @@ public class LobbyStackView : MVVM.Utils.StackView
     {
         try
         {
-            MainWindow.SetInteractable(false);
+            MainWindow.NonInteractable();
             await LobbyManager.instance.RemovePlayer(id);
         }
         catch (Exception e)
@@ -59,7 +60,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         {
             if (this != null)
             {
-                MainWindow.SetInteractable(true);
+                MainWindow.Interactable();
             }
         }
     }
@@ -70,7 +71,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         try
         {
             ReadyToggleLabel.text = b ? "Cancle" : "Ready";
-            MainWindow.SetInteractable(false);
+            MainWindow.NonInteractable();
             PlayerInfoContainer.SetPlayerReady(AuthenticationService.Instance.PlayerId, b);
             await LobbyManager.instance.UpdateReadyState(b);
         }
@@ -81,7 +82,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         finally
         {
 
-            MainWindow.SetInteractable(true);
+            MainWindow.Interactable();
         }
     }
 
@@ -89,7 +90,7 @@ public class LobbyStackView : MVVM.Utils.StackView
     {
         try
         {        
-            MainWindow.SetInteractable(false);
+            MainWindow.NonInteractable();
             await LobbySceneManager.LeaveLobby();
             ReturnToMenu();
         }
@@ -100,7 +101,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         finally
         {
 
-            MainWindow.SetInteractable(true);
+            MainWindow.Interactable();
         }
     }
 

@@ -66,8 +66,9 @@ namespace MVVM.View.Window
                 StateChart.Instance.FlushEventList();
             }
         }
-        public void SetInteractable(bool b)
+        void SetInteractable(bool b)
         {
+            if (this == null) return;
             canvasGroup.interactable = b;
             eventTrigger.enabled = b;
         }
@@ -126,7 +127,14 @@ namespace MVVM.View.Window
         {
             Binder.ViewBinding.ShowWindow();
         }
-
+        public void Interactable()
+        {
+            Binder.ViewBinding.InteractableWindow();
+        }
+        public void NonInteractable()
+        {
+            Binder.ViewBinding.NonInteractableWindow();
+        }
         public void HideWindow()
         {
             Binder.ViewBinding.HideWindow();

@@ -58,7 +58,7 @@ public class HostSetUpStackView : StackView
     {
         try
         {
-            HostSetupWindow.SetInteractable(false);
+            HostSetupWindow.NonInteractable();
             var relayJoinCode = await NetworkServiceManager.instance.InitializeHost(LobbySceneManager.MaxPlayers);
             if (this == null) return;
 

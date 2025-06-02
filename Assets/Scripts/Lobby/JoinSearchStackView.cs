@@ -66,7 +66,7 @@ public class JoinSearchStackView : StackView
         {
             if (this != null)
             {
-                JoinWindow.SetInteractable(true);
+                JoinWindow.Interactable();
             }
         }
     }
@@ -191,7 +191,7 @@ public class JoinSearchStackView : StackView
     public void ClearLobbySelection()
     {
         m_LobbyIndexSelected = -1;
-        JoinWindow.SetInteractable(false);
+        JoinWindow.NonInteractable();
     }
     public void OnHideFullFilterChanged(int dropdownSelectionIndex)
     {
@@ -201,7 +201,7 @@ public class JoinSearchStackView : StackView
     void RefreshLobbies()
     {
         RemoveAllLobbies();
-        JoinWindow.SetInteractable(false);
+        JoinWindow.NonInteractable();
         int lobbyIndex = 0;
         foreach (var lobby in LobbyList)
         {
@@ -235,8 +235,17 @@ public class JoinSearchStackView : StackView
     }
     void UpdateJoinButtonInteractability()
     {
-        JoinWindow.SetInteractable(m_LobbyIndexSelected >= 0 &&
-            m_LobbyIndexSelected < LobbyInfoList.Count);
+        bool b = m_LobbyIndexSelected >= 0 &&
+            m_LobbyIndexSelected < LobbyInfoList.Count;
+
+        if (b)
+        {
+            JoinWindow.Interactable();
+        }
+        else
+        {
+            JoinWindow.NonInteractable();
+        }
     }
     void AddLobby(Lobby lobby, int lobbyIndex)
     {
@@ -302,7 +311,7 @@ public class JoinSearchStackView : StackView
     {
         try
         {
-            JoinSearchWindow.SetInteractable(false);
+            JoinSearchWindow.NonInteractable();
 
             var lobbiesList = LobbyManager.instance.lobbiesList;
             if (m_LobbyIndexSelected >= 0 && m_LobbyIndexSelected <= lobbiesList.Count)
@@ -342,7 +351,7 @@ public class JoinSearchStackView : StackView
         {
             if (this != null)
             {
-                JoinSearchWindow.SetInteractable(true);
+                JoinSearchWindow.Interactable();
             }
         }
     }
