@@ -109,16 +109,11 @@ namespace GameFlow
 
         private void Awake()
         {
-            if (_instance == null)
+            if (_instance != null)
             {
-                _instance = this;
-                DontDestroyOnLoad(this.gameObject);
+                Destroy(_instance);
             }
-            else
-            {
-                Destroy(this.gameObject);
-            }
-
+            _instance = this;
             UI = GetComponent<GameUI>();
             gameSceneFlowContext = new GameSceneFlowContext();
             gameSceneFlowContext.Initialize();

@@ -22,10 +22,7 @@ public class LobbyStackView : MVVM.Utils.StackView
     {
         LeaveButton.onClick.AddListener(OnLeaveButton);
         ReadyToggle.onValueChanged.AddListener(OnReadyToggle);
-        PlayerInfoContainer.KickEvent += async (id) => await OnKickEvent(id); ;
-
-        OnReadyToggle(ReadyToggle.isOn);
-        OnLobbyChanged(LobbyManager.instance.activeLobby, false);
+        PlayerInfoContainer.KickEvent += async (id) => await OnKickEvent(id);
         LobbyManager.OnLobbyChanged += OnLobbyChanged;
         LobbyManager.OnPlayerNotInLobbyEvent += ReturnToMenu;
     }
@@ -39,11 +36,9 @@ public class LobbyStackView : MVVM.Utils.StackView
         PlayerInfoContainer.SetPlayers(updatedLobby.Players);
         if (isGameReady && LobbyManager.instance.isHost)
         {
-            NetworkManager.Singleton.SceneManager.ActiveSceneSynchronizationEnabled = true;
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Flow_", LoadSceneMode.Single);
         }
     }
-
 
     async Task OnKickEvent(string id)
     {
@@ -81,7 +76,6 @@ public class LobbyStackView : MVVM.Utils.StackView
         }
         finally
         {
-
             MainWindow.Interactable();
         }
     }
