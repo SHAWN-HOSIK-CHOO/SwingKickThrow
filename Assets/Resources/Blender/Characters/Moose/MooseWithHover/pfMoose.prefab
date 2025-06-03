@@ -1799,8 +1799,8 @@ MonoBehaviour:
   tagBalls: 5
   mass: 60
   speed: 10
-  dashDuration: 2
-  dashFactor: 6
+  dashDuration: 1
+  dashFactor: 4
   bounceBackForce: 1
   dashCurve:
     serializedVersion: 2
@@ -2024,10 +2024,10 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 4818333914527509577, guid: a8caeb27eeca65946a5179f165e6c3b0, type: 2}
-  m_audioClip: {fileID: 8300000, guid: 2e91f0d0ad64e7549b7358712c7e0816, type: 3}
-  m_Resource: {fileID: 8300000, guid: 2e91f0d0ad64e7549b7358712c7e0816, type: 3}
+  m_audioClip: {fileID: 8300000, guid: 16b6658ed4403a048bed7cecb4a034cd, type: 3}
+  m_Resource: {fileID: 8300000, guid: 16b6658ed4403a048bed7cecb4a034cd, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 0.1
+  m_Volume: 1
   m_Pitch: 1
   Loop: 1
   Mute: 0
@@ -2071,7 +2071,7 @@ AudioSource:
     m_Curve:
     - serializedVersion: 3
       time: 0
-      value: 0
+      value: 1
       inSlope: 0
       outSlope: 0
       tangentMode: 0

@@ -18,6 +18,7 @@ namespace GameProps.SO
       //현재 network transform은 각자 관리하므로 clientRPC로 클라이언트 본인이 스케일을 키워야함
       public override void Visit(CharacterStatusNetwork stats)
       {
+         stats.PlayGotItemAudioClientRPC();
          stats.IncreaseScaleClientRPC(volumeUpScale);
          stats.AddOrMinusTagBalls(tagBalls); 
          stats.AddOrMinusMass(massIncrement);
