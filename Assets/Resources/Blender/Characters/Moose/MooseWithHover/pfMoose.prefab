@@ -1826,7 +1826,7 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  health: 500
+  health: 200
   timeUntilRespawn: 5
   playerInput: {fileID: 3216707243182190217}
   serverCharacter: {fileID: 0}
@@ -1834,7 +1834,7 @@ MonoBehaviour:
   impulseSource: {fileID: 0}
   animator: {fileID: 7318235746921636461}
   dashTimer: {fileID: 0}
-  maxChargeAmount: 10
+  maxChargeAmount: 5
   myCurrentDamage: 0
   damageIGot: 0
 --- !u!65 &7699289980036974714

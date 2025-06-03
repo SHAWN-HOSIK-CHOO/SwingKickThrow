@@ -23,6 +23,7 @@ namespace CharacterAttributes
          _elapsedTime                 = 0f;
          _respawned                   = false;
          Owner.serverCharacter.SetPlayerVisibleServerRPC(false);
+         Owner.dashTimer.InitDashChargedFlag();
          //GameSceneManager.Instance.RespawnMe(Owner.OwnerClientId, Owner);
          //Owner.ResetHealth();
       }

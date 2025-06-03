@@ -66,7 +66,7 @@ namespace CharacterAttributes
             {
                 Owner.playerInput.enabled = true;
             }
-        }
+      }
       
       public override void OnUpdate()
       {
