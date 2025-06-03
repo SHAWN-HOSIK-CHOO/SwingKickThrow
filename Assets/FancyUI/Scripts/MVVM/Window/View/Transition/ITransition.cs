@@ -2,11 +2,11 @@ using FancyUI;
 using System;
 using UnityEngine;
 
-namespace MVVM.View.Transition
+namespace FancyUI.MVVM.View.Transition
 {
     public interface ITransition
     {
-        double duration { get; }
+        double duration { get; set; }
         void Initialize();
         void Apply(double t);
     }

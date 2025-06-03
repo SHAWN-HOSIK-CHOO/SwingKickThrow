@@ -1,11 +1,11 @@
-using MVVM.View.Transition;
+using FancyUI.MVVM.View.Transition;
 using System.Collections;
 using Unity.EditorCoroutines.Editor;
 using UnityEditor;
 using UnityEngine;
 using Utils.Math;
 
-namespace FancyUI
+namespace FancyUI.Scripts.MVVM.View.Transition
 {
     public class TransitionEditor : Editor 
     {
