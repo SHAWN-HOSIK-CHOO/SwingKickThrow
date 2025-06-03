@@ -1,8 +1,7 @@
 using GameFlow;
 using System;
-using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
-using UnityEngine;
 
 public class PlayerReady : NetworkBehaviour
 {
@@ -56,10 +55,10 @@ public class PlayerReady : NetworkBehaviour
     }
     public struct PlayerReadyState : INetworkSerializable, IEquatable<PlayerReadyState>
     {
-        public ulong ClientId;
+        public FixedString64Bytes ClientId;
         public bool IsReady;
 
-        public bool Equals(PlayerReadyState other) => ClientId == other.ClientId && IsReady == other.IsReady;
+        public bool Equals(PlayerReadyState other) => ClientId.Equals(other.ClientId) && IsReady == other.IsReady;
 
         public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
         {
@@ -67,23 +66,31 @@ public class PlayerReady : NetworkBehaviour
             serializer.SerializeValue(ref IsReady);
         }
     }
-    public NetworkList<PlayerReadyState> ReadyList = new NetworkList<PlayerReadyState>();
 
+    public NetworkList<PlayerReadyState> ReadyList = new NetworkList<PlayerReadyState>();
     public override void OnNetworkSpawn()
     {
         GameSceneManager.Instance.playerReady = this;
+        if (IsHost)
+        {
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            foreach (var player in LobbyManager.activeLobby.Players)
+            {
+                var ready = new PlayerReadyState { ClientId = player.Id, IsReady = false };
+                ReadyList.Add(ready);
+            }
+
+        }
         SetReady();
     }
-
-    [Rpc(SendTo.Server,RequireOwnership = false)]
-    private void SetReadyServerRpc(bool ready, RpcParams rpcParams = default)
+    [Rpc(SendTo.Server, RequireOwnership = false)]
+    private void SetReadyServerRpc(bool ready, string id, RpcParams rpcParams = default)
     {
-        ulong clientId = rpcParams.Receive.SenderClientId;
-        var newState = new PlayerReadyState { ClientId = clientId, IsReady = ready };
+        var newState = new PlayerReadyState { ClientId = id, IsReady = ready };
         int index = -1;
         for (int i = 0; i < ReadyList.Count; i++)
         {
-            if (ReadyList[i].ClientId == clientId)
+            if (ReadyList[i].ClientId == id)
             {
                 index = i;
                 break;
@@ -96,7 +103,9 @@ public class PlayerReady : NetworkBehaviour
     }
     public void SetReady()
     {
-        bool isReady = SpawnedTimer & SpawnedPlayerSelect & SpawnedBoxSpawner &_spawnedCharacter;
-        SetReadyServerRpc(isReady);
+        bool isReady = SpawnedTimer & SpawnedPlayerSelect & SpawnedBoxSpawner & _spawnedCharacter;
+        var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+
+        SetReadyServerRpc(isReady, LobbyManager.playerId);
     }
 }

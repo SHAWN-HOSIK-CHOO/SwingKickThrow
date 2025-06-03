@@ -13,16 +13,17 @@ namespace GameFlow
         }
         private IEnumerator CheckState()
         {
-            yield return new WaitUntil(() => GameSceneManager.Instance.playerReady                 != null);
+            yield return new WaitUntil(() => GameSceneManager.Instance.playerReady != null);
             yield return new WaitUntil(() => GameSceneManager.Instance.playerReady.ReadyList.Count == GameSceneManager.Instance.NumPlayer);
-            yield return new WaitUntil(() => {
-                                           bool allReady = true;
-                                           for (int i = 0; i < GameSceneManager.Instance.playerReady.ReadyList.Count; i++)
-                                           {
-                                               allReady &= GameSceneManager.Instance.playerReady.ReadyList[i].IsReady;
-                                           }
-                                           return allReady;
-                                       });
+            yield return new WaitUntil(() =>
+            {
+                bool allReady = true;
+                for (int i = 0; i < GameSceneManager.Instance.playerReady.ReadyList.Count; i++)
+                {
+                    allReady &= GameSceneManager.Instance.playerReady.ReadyList[i].IsReady;
+                }
+                return allReady;
+            });
             GameSceneManager.Instance.UI.MainCanvas.gameObject.SetActive(false);
             Finish(GameStateType.Game_WAIT);
             Context.EnterState(GameStateType.GAME_START);
