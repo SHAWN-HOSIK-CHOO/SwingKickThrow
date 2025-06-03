@@ -1,5 +1,6 @@
 using CharacterAttributes;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TMPro;
 using Unity.Netcode;
@@ -20,23 +21,22 @@ namespace GameFlow
         }
         void OnExitGame()
         {
-            if (NetworkManager.Singleton != null)
-            {
-                NetworkManager.Singleton.Shutdown();
-            }
-            Scene scene = SceneManager.GetSceneByName("Game_Main_Flow_Additive");
-            if (scene.isLoaded)
-            {
-                SceneManager.UnloadSceneAsync(scene);
-            }
-
             GameSceneManager.Instance.gameTimer = null;
             GameSceneManager.Instance._playerSelectionAndSpawnHandler = null;
             GameSceneManager.Instance.playerReady = null;
-
             GameSceneManager.Instance.UI.joinText.text = null;
             Finish(GameStateType.GAME_END);
-            Context.EnterState(GameStateType.NONE);
+            if (NetworkManager.Singleton.IsHost)
+            {
+                var spawnedObjects = NetworkManager.Singleton.SpawnManager.SpawnedObjectsList.ToList();
+
+                foreach (var obj in spawnedObjects)
+                {
+                    if (obj != null && obj.IsSpawned)
+                        obj.Despawn(true);
+                }
+                NetworkManager.Singleton.SceneManager.LoadScene("Lobby", LoadSceneMode.Single);
+            }
         }
 
         void UpdateResultUI()
@@ -62,16 +62,13 @@ namespace GameFlow
                     Debug.LogWarning($"Client {kvp.Key} has no CharacterStatusNetwork.");
                 }
             }
-            // ���� �������� �������� ����
             rankingList.Sort((a, b) => b.score.CompareTo(a.score));
-            // �ؽ�Ʈ ����
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < rankingList.Count; i++)
             {
                 var entry = rankingList[i];
                 sb.AppendLine($"{i + 1}: Player {entry.clientId} - {entry.score}");
             }
-            // ���
             GameSceneManager.Instance.UI.winnerUI.GetComponentInChildren<TMP_Text>().text = sb.ToString();
         }
         public override void Handle()
