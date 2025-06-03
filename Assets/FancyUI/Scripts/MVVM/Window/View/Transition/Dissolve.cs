@@ -9,7 +9,6 @@ namespace FancyUI.Transition.Effect
         {
             base.Initialize();
             obj.material.SetFloat("_NoiseScale", noiseScale);
-
         }
     }
 }

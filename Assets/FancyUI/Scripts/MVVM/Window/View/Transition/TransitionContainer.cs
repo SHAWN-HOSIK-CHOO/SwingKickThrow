@@ -9,10 +9,10 @@ namespace FancyUI.Transition
         public bool Override;
         public double OverrideDuration;
         public List<MonoBehaviour> TransitionList;
-        private double _simulDuration;
+        private double _simulDuration; // Not Used
         public override double duration
         {
-            get => Override ? _simulDuration : CalMaxDuration();
+            get => Override ? OverrideDuration : CalMaxDuration();
             set => _simulDuration = value;
         }
         public override void Apply(double t)
