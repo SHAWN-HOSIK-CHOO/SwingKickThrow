@@ -82,7 +82,7 @@ namespace CharacterAttributes
         public float speed = 10f;
         
         [Header("Player Dash(Skill)")] 
-        public float dashDuration = 3f;
+        public float dashDuration = 1f;
         [FormerlySerializedAs("dashSpeed")]
         public float          dashFactor       = 5f;
         public float          bounceBackForce = 2f;
@@ -145,6 +145,7 @@ namespace CharacterAttributes
             if(!dashTimer.IsDashReady())
                 return;
             
+            dashTimer.InitDashChargedFlag();
             _fsm.FinishAllStates();
             _fsm.SetState(FSMType.SKILL);
         }

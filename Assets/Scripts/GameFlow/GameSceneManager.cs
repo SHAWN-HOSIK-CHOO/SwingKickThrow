@@ -10,6 +10,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using UnityEngine.Audio;
+using UnityEngine.Serialization;
 
 namespace GameFlow
 {
@@ -92,8 +93,10 @@ namespace GameFlow
 
         #region Audio
 
-        public  AudioClip[] gameBgMsAudioClips;
-        private AudioSource _audioSource;
+        public AudioClip[] gameBgMsAudioClips;
+        public AudioClip[] sfxAudioClips;
+        [FormerlySerializedAs("_audioSource")]
+        public AudioSource[] audioSources;
 
         public void SetVolume(float value)
         {
@@ -156,7 +159,6 @@ namespace GameFlow
 
         private void Start()
         {
-            _audioSource           = this.GetComponent<AudioSource>();
             currentPlayerCrashedUI = playerCrashedScreenUI;
             playerCrashedScreenUI.SetActive(false);
             splashedScreenUI.SetActive(false);
@@ -182,7 +184,7 @@ namespace GameFlow
             {
                 bgmVolumeSlider.onValueChanged.RemoveListener(SetBGMVolume);
                 bgmVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
-                bgmVolumeSlider.value = 0.5f; 
+                bgmVolumeSlider.value = 0.2f; 
                 SetBGMVolume(bgmVolumeSlider.value);
                 Debug.Log("[UI Init] BGM volume slider listener added in Start()");
             }
@@ -207,19 +209,42 @@ namespace GameFlow
             escPanel.gameObject.SetActive(false);
         }
 
-        public void PlayAudio(int index)
+        public void PlayAudio(int type, int index)
         {
             if (index == 99)
             {
-                _audioSource.Stop();
+                for (int i = 0; i < 2; i++)
+                {
+                    if(audioSources[i].isPlaying)
+                        audioSources[i].Stop();
+                }
                 return;
             }
             
-            if(_audioSource.isPlaying)
-                _audioSource.Stop();
+            if(audioSources[type].isPlaying)
+                audioSources[type].Stop();
             
-            _audioSource.clip = gameBgMsAudioClips[index];
-            _audioSource.Play();
+            if(type == 0)
+                audioSources[type].clip = gameBgMsAudioClips[index];
+            else if (type == 1)
+                audioSources[type].clip = sfxAudioClips[index];
+            
+            audioSources[type].Play();
+        }
+
+        private void OnAudioPlayerCrashed()
+        {
+            PlayAudio(1,0);
+        }
+
+        private void OnAudioPlayerDashed()
+        {
+            PlayAudio(1,3);
+        }
+
+        private void OnAudioPlayerDashCharged()
+        {
+            PlayAudio(1,2);
         }
         
         public void LateInitialize()
@@ -231,12 +256,18 @@ namespace GameFlow
         {
             GameEvents.GameEvents.Subscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
             GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DEATH, DisplayPlayerCrashedScreenUI);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_CRASH,OnAudioPlayerCrashed);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH,OnAudioPlayerDashed);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_CAHRGED,OnAudioPlayerDashCharged);
         }
 
         private void OnDisable()
         {
             GameEvents.GameEvents.Unsubscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DEATH, DisplayPlayerCrashedScreenUI);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH,OnAudioPlayerCrashed);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH,OnAudioPlayerDashed);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_CAHRGED,OnAudioPlayerDashCharged);
             volumeSlider.onValueChanged.RemoveListener(SetVolume);
         }
 

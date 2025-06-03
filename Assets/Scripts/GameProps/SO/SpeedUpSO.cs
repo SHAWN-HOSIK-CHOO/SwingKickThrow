@@ -16,6 +16,7 @@ namespace GameProps.SO
 
       public override void Visit(CharacterStatusNetwork stats)
       {
+         stats.PlayGotItemAudioClientRPC();
          stats.AddOrMinusTagBalls(tagBalls);
          stats.AddOrMinusSpeedClientRPC(speedIncrement);
          stats.AddOrMinusDefense(defenseDecrease);

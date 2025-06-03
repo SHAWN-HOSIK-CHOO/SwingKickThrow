@@ -55,7 +55,7 @@ namespace GameProps
 
             int rand = Random.Range(0, visitors.Length);
             _visitorIndex = rand;
-            Debug.Log($"Visitor index : {_visitorIndex}");
+            //Debug.Log($"Visitor index : {_visitorIndex}");
 
             SetVisitorClientRpc(_visitorIndex);
             

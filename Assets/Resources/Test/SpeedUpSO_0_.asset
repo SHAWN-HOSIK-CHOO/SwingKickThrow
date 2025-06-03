@@ -15,4 +15,4 @@ MonoBehaviour:
   speedIncrement: 2
   tagBalls: 1
   defenseDecrease: -0.5
-  massDecrease: -10
+  massDecrease: -5

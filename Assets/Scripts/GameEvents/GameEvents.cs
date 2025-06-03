@@ -12,6 +12,7 @@ namespace GameEvents
       PLAYER_DASH,
       PLAYER_DASH_END,
       PLAYER_RESPAWN,
+      PLAYER_DASH_CAHRGED,
       Count,
       GameEnd,
       GameUpdate,

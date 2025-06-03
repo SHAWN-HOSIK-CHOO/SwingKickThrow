@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using GameEvents;
+using GameFlow;
 using UnityEngine;
 
 namespace CharacterAttributes
@@ -56,7 +57,8 @@ namespace CharacterAttributes
 
          _isCharging = true;
          _isPaused   = false;
-         _coroutine  = StartCoroutine(CoCharging());
+         if(!_isFullyCharged)
+            _coroutine  = StartCoroutine(CoCharging());
       }
 
       public void StopCharging()
@@ -67,6 +69,18 @@ namespace CharacterAttributes
          // Coroutine continues to run but charging pauses
       }
 
+      private bool _isFullyCharged = false;
+
+      public bool IsDashCharged()
+      {
+         return _isFullyCharged;
+      }
+
+      public void InitDashChargedFlag()
+      {
+         _isFullyCharged = false;
+      }
+      
       private IEnumerator CoCharging()
       {
          while (_currentCharge < _maxCharge)
@@ -82,6 +96,8 @@ namespace CharacterAttributes
             yield return null;
          }
 
+         _isFullyCharged = false;
+         GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_CAHRGED);
          _chargedRatio = 1f;
          
          _isCharging = false;
