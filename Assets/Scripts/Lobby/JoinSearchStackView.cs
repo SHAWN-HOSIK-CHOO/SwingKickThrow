@@ -314,6 +314,7 @@ public class JoinSearchStackView : StackView
     }
     public async void OnJoinLobbyButton()
     {
+        UISoundManager._instance.OK.Play();
         try
         {
             JoinSearchWindow.NonInteractable();

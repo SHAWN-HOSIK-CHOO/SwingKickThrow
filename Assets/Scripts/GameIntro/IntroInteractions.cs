@@ -25,22 +25,26 @@ namespace GameIntro
 
         private void OnMultiButtonClicked()
         {
+            UISoundManager._instance.Click.Play();
             SceneManager.LoadScene("LobbyMenu");
         }
 
         private void OnCreditsButtonClicked()
         {
             bgGameObject.gameObject.SetActive(false);
+            UISoundManager._instance.Click.Play();
         }
 
         private void OnReturnToBgButtonClicked()
         {
             bgGameObject.gameObject.SetActive(true);
+            UISoundManager._instance.Back.Play();
         }
 
         private void OnGameExit()
         {
-            #if UNITY_EDITOR
+            UISoundManager._instance.Notify.Play();
+#if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
             #endif
             Application.Quit();
