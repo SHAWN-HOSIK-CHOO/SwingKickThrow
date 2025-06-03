@@ -1,73 +1,36 @@
-using MVVM.View.Transition;
-using System.Collections;
-using Unity.EditorCoroutines.Editor;
+using FancyUI.MVVM.View.Transition;
+using FancyUI.Transition;
 using UnityEditor;
 using UnityEngine;
-using Utils.Math;
 
-namespace FancyUI
+namespace FancyUI.Scripts.MVVM.View.Transition
 {
-    public class TransitionEditor : Editor 
+    [CustomEditor(typeof(ITransition), true)]
+    public class TransitionEditor : Editor
     {
-        double StartTime;
-        double CurrentTime;
-        bool Transitioning;
-
-        EditorCoroutine Coroutine;
-
-
-        private void OnDisable()
-        {
-            if (Coroutine != null)
-            {
-                EditorCoroutineUtility.StopCoroutine(Coroutine);
-            }
-        }
-
         public override void OnInspectorGUI()
         {
             DrawDefaultInspector();
 
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Editor Test", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("Playing in Editor", Transitioning ? "Yes" : "No");
+            EditorGUILayout.LabelField("Playing in Editor", TransitionEditorRunner.Transitioning ? "Yes" : "No");
+
             if (GUILayout.Button("Play (Editor)"))
             {
-                StartPlayInEditor();
+                TransitionEditorRunner.Play((ITransition)target);
+            }
+
+            if (GUILayout.Button("Reset (Editor)"))
+            {
+                TransitionEditorRunner.Reset((ITransition)target);
             }
         }
 
-         void StartPlayInEditor()
+        private void OnDisable()
         {
-            ITransition transition = (ITransition)target;
-            if (Coroutine != null)
-            {
-                EditorCoroutineUtility.StopCoroutine(Coroutine);
-            }
-
-            Transitioning = true;
-            StartTime = EditorApplication.timeSinceStartup;
-            CurrentTime = EditorApplication.timeSinceStartup;
-            transition.Initialize();
-            Coroutine = EditorCoroutineUtility.StartCoroutine(UpdateTime(), this);
-        }
-
-        private IEnumerator UpdateTime()
-        {
-            while (Transitioning)
-            {
-                ITransition transition = (ITransition)target;
-                CurrentTime = EditorApplication.timeSinceStartup;
-                var elapsed = CurrentTime - StartTime;
-                transition.Apply(Utils.Math.Math.Normalize(transition.duration, elapsed));
-                if (elapsed >= transition.duration)
-                {
-                    Transitioning = false;
-                }
-                SceneView.RepaintAll();
-                Repaint();
-                yield return null;
-            }
+            // 코루틴은 TransitionEditorRunner에서 관리하므로 이쪽에서는 Stop하지 않음
+            // 만약 다른 리소스를 관리한다면 여기에 추가
         }
     }
 }

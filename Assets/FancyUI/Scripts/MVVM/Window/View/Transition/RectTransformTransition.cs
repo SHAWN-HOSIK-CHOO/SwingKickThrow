@@ -1,8 +1,7 @@
 using FancyUI;
-using MVVM.View.Transition;
+using FancyUI.MVVM.View.Transition;
 using System;
 using System.Collections;
-using FancyUI.Scripts.MVVM.View.Transition;
 using UnityEngine;
 namespace FancyUI
 {

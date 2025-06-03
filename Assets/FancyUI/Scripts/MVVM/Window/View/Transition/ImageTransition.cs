@@ -1,29 +1,26 @@
-using MVVM.View.Transition;
+
+using FancyUI.MVVM.View.Transition;
 using System;
 using System.Collections;
-using FancyUI.Scripts.MVVM.View.Transition;
 using UnityEngine;
 using UnityEngine.UI;
-namespace FancyUI
+namespace FancyUI.Transition.Effect
 {
     public class ImageTransition : MonoTransition
     {
-        [SerializeField] Sprite from;
-        [SerializeField] Sprite to;
-        [SerializeField] Image obj;
-        [SerializeField] EaseCurveAsset easeCurveAsset;
+        [SerializeField] protected Sprite from;
+        [SerializeField] protected Sprite to;
+        [SerializeField] protected Image obj;
+        [SerializeField] protected EaseCurveAsset easeCurveAsset;
 
         [Header("Sprite Lerp")]
-        [SerializeField] Material blendMaterial;
-        [SerializeField] float noiseScale;
-        private MaterialPropertyBlock _propBlock;
+        [SerializeField] protected Material blendMaterial;
 
         public override void Initialize()
         {
             obj.material = Instantiate(blendMaterial);
             obj.material.SetTexture("_FromTex", from.texture);
             obj.material.SetTexture("_ToTex", to.texture);
-            obj.material.SetFloat("_NoiseScale", noiseScale);
             obj.material.SetFloat("_Blend", 0f);
         }
 

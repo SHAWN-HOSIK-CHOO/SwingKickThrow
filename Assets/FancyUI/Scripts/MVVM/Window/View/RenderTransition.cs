@@ -1,13 +1,11 @@
 using FancyUI;
-using FancyUI.Scripts.MVVM.View.Transition;
-using MVVM.View.Transition;
+using FancyUI.MVVM.View.Transition;
 using MVVM.View.Window;
 using UnityEngine;
 
 public class RenderTransition : MonoBehaviour
 {
     public Window Owner;
-
     double StartTime;
     double CurrentTime;
     bool Transitioning;
@@ -21,7 +19,7 @@ public class RenderTransition : MonoBehaviour
         Transitioning = true;
         if(transition != null)
         {
-            transition.Initialize();
+            ResetTransition();
         }
         else
         {
@@ -29,6 +27,13 @@ public class RenderTransition : MonoBehaviour
         }
 
     }
+
+    public void ResetTransition()
+    {
+        transition.Initialize();
+        transition.Apply(0);
+    }
+
     public void OnTransitionEnd()
     {
         StartTime = Time.realtimeSinceStartupAsDouble;

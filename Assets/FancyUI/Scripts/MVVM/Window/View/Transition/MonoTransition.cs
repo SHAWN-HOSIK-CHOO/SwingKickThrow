@@ -1,8 +1,7 @@
 using System;
-using MVVM.View.Transition;
 using UnityEngine;
 
-namespace FancyUI.Scripts.MVVM.View.Transition
+namespace FancyUI.MVVM.View.Transition
 {
     public class MonoTransition : MonoBehaviour, ITransition
     {

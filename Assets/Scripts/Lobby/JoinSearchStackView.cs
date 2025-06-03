@@ -41,9 +41,8 @@ public class JoinSearchStackView : StackView
     public override void OnViewStackPushRequest(Stack<StackView> stack)
     {
         stack.Push(this);
-
-        HostJoinWindow.HideWindow();
         JoinSearchWindow.ShowWindow();
+        HostJoinWindow.HideWindow();
         OnJoinSearch();
     }
 

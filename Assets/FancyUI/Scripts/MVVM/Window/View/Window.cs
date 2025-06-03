@@ -103,12 +103,17 @@ namespace MVVM.View.Window
             {
                 RenderObj.GetComponent<RenderTransition>().OnTransitionEnd();
             }
-        }
-    
+        }    
     
         public void TransitionStart()
         {
             Binder.ViewBinding.TransitionStart();
+        }
+
+        public void ResetTransition()
+        {
+            var rt = RenderObj.GetComponent<RenderTransition>();
+            rt.ResetTransition();
         }
 
         public void TransitionEnd()
