@@ -96,7 +96,7 @@ namespace CharacterAttributes
             yield return null;
          }
 
-         _isFullyCharged = false;
+         _isFullyCharged = true;
          GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_CAHRGED);
          _chargedRatio = 1f;
          
