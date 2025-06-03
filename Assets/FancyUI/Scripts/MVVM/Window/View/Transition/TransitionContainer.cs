@@ -8,7 +8,7 @@ namespace FancyUI.Transition
     {
         public bool Override;
         public double OverrideDuration;
-        public List<MonoBehaviour> TransitionList;
+        public List<MonoTransition> TransitionList;
         private double _simulDuration; // Not Used
         public override double duration
         {

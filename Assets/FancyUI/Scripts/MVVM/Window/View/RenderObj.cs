@@ -1,15 +1,30 @@
-using FancyUI;
 using FancyUI.MVVM.View.Transition;
 using MVVM.View.Window;
 using UnityEngine;
 
-public class RenderTransition : MonoBehaviour
+public class RenderObj : MonoBehaviour
 {
     public Window Owner;
     double StartTime;
     double CurrentTime;
     bool Transitioning;
     public MonoTransition transition;
+    void Start()
+    {
+        Owner.OnTransitionCB += OnTransitionCB;
+    }
+
+    void OnTransitionCB(bool b)
+    {
+        if (b)
+        {
+            OnTransitionStart();
+        }
+        else
+        {
+            OnTransitionEnd();
+        }
+    }
     public void TransitionStart() => Owner.TransitionStart();
     public void EndTransition() => Owner.TransitionEnd();
     public void OnTransitionStart()
@@ -17,7 +32,7 @@ public class RenderTransition : MonoBehaviour
         StartTime = Time.realtimeSinceStartupAsDouble;
         CurrentTime = StartTime;
         Transitioning = true;
-        if(transition != null)
+        if (transition != null)
         {
             ResetTransition();
         }
@@ -27,13 +42,12 @@ public class RenderTransition : MonoBehaviour
         }
 
     }
-
     public void ResetTransition()
     {
+        if (transition == null) return;
         transition.Initialize();
         transition.Apply(0);
     }
-
     public void OnTransitionEnd()
     {
         StartTime = Time.realtimeSinceStartupAsDouble;
@@ -42,10 +56,10 @@ public class RenderTransition : MonoBehaviour
     }
     public void LateUpdate()
     {
-        if(Transitioning)
+        if (Transitioning)
         {
             CurrentTime = Time.realtimeSinceStartupAsDouble;
-            if(transition != null)
+            if (transition != null)
             {
                 var elapsed = CurrentTime - StartTime;
                 transition.Apply(Utils.Math.Math.Normalize(transition.duration, elapsed));

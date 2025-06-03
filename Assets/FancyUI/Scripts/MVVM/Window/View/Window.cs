@@ -1,4 +1,5 @@
 using STC;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,7 +10,7 @@ namespace MVVM.View.Window
     [RequireComponent(typeof(RectTransform))]
     public class Window : MonoBehaviour
     {
-        public GameObject RenderObj;
+        public RenderObj RenderObj;
         [HideInInspector] protected Window __ParentWindow;
         [HideInInspector] public ModalWindow __ModalWindow;
         [HideInInspector] public List<Window> __ChildWindowList;
@@ -22,6 +23,11 @@ namespace MVVM.View.Window
         protected EventTrigger eventTrigger;
         protected CanvasGroup canvasGroup;
         private bool Initialized;
+
+        public event Action<bool> OnVisibleCB;
+        public event Action<bool> OnInteractableCB;
+        public event Action<bool> OnModalCB;
+        public event Action<bool> OnTransitionCB;
 
         protected virtual void Awake()
         {
@@ -78,44 +84,35 @@ namespace MVVM.View.Window
             canvasGroup.alpha = visible ? 1 : 0;
             canvasGroup.blocksRaycasts = visible;
             SetInteractable(visible);
+            OnVisibleCB?.Invoke(val);
 
         }
         protected void OnInteractable(bool val)
         {
             var Interactable = Binder.ViewBinding.Interactable.Get();
             SetInteractable(Interactable);
+            OnInteractableCB?.Invoke(val);
         }
         protected void OnModal(bool val)
         {
             var modal = Binder.ViewBinding.Modal.Get();
             SetInteractable(!modal);
+            OnModalCB?.Invoke(val);
         }
         protected void OnTransition(bool val)
         {
             var transition = Binder.ViewBinding.Transition.Get();
             SetInteractable(!transition);
-
-            if(transition)
-            {
-                RenderObj.GetComponent<RenderTransition>().OnTransitionStart();
-            }
-            else
-            {
-                RenderObj.GetComponent<RenderTransition>().OnTransitionEnd();
-            }
+            OnTransitionCB?.Invoke(val);
         }    
-    
         public void TransitionStart()
         {
             Binder.ViewBinding.TransitionStart();
         }
-
         public void ResetTransition()
         {
-            var rt = RenderObj.GetComponent<RenderTransition>();
-            rt.ResetTransition();
+            RenderObj.ResetTransition();
         }
-
         public void TransitionEnd()
         {
             Binder.ViewBinding.TransitionEnd();

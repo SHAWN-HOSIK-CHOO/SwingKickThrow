@@ -168,7 +168,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a7647f96b6bb5444852751c84060f4c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RenderObj: {fileID: 204193650}
+  RenderObj: {fileID: 204193656}
   __ModalWindow: {fileID: 0}
   __ChildWindowList: []
   __visible: 1
@@ -186,8 +186,8 @@ GameObject:
   - component: {fileID: 204193651}
   - component: {fileID: 204193653}
   - component: {fileID: 204193652}
-  - component: {fileID: 204193654}
   - component: {fileID: 204193655}
+  - component: {fileID: 204193656}
   m_Layer: 0
   m_Name: RenderObj
   m_TagString: Untagged
@@ -241,20 +241,6 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
---- !u!114 &204193654
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 204193650}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39f278318d3faaf4e924204ed7b5af2f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Owner: {fileID: 200123060}
-  transition: {fileID: 0}
 --- !u!222 &204193655
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -263,6 +249,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 204193650}
   m_CullTransparentMesh: 1
+--- !u!114 &204193656
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 204193650}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aaf0fd31c81b6e44a1d57d21da928ab, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Owner: {fileID: 200123060}
+  transition: {fileID: 0}
 --- !u!1 &296288609
 GameObject:
   m_ObjectHideFlags: 0
@@ -314,7 +314,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 554fd943ef2d6424e9f9fdb951766545, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RenderObj: {fileID: 1084814889}
+  RenderObj: {fileID: 1084814895}
   __ModalWindow: {fileID: 200123060}
   __ChildWindowList:
   - {fileID: 879788521}
@@ -716,7 +716,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 554fd943ef2d6424e9f9fdb951766545, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  RenderObj: {fileID: 1033369347}
+  RenderObj: {fileID: 1033369351}
   __ModalWindow: {fileID: 0}
   __ChildWindowList: []
   __visible: 1
@@ -871,7 +871,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1033369347}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39f278318d3faaf4e924204ed7b5af2f, type: 3}
+  m_Script: {fileID: 11500000, guid: 9aaf0fd31c81b6e44a1d57d21da928ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Owner: {fileID: 879788521}
@@ -990,7 +990,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1084814889}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 39f278318d3faaf4e924204ed7b5af2f, type: 3}
+  m_Script: {fileID: 11500000, guid: 9aaf0fd31c81b6e44a1d57d21da928ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Owner: {fileID: 296288611}
