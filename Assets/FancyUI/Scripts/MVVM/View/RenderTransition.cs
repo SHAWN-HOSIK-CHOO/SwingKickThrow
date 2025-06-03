@@ -1,4 +1,5 @@
 using FancyUI;
+using FancyUI.Scripts.MVVM.View.Transition;
 using MVVM.View.Transition;
 using MVVM.View.Window;
 using UnityEngine;

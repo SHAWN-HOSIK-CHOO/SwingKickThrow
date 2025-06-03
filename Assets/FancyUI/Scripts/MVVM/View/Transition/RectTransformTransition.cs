@@ -2,6 +2,7 @@ using FancyUI;
 using MVVM.View.Transition;
 using System;
 using System.Collections;
+using FancyUI.Scripts.MVVM.View.Transition;
 using UnityEngine;
 namespace FancyUI
 {
@@ -20,7 +21,7 @@ namespace FancyUI
 
         public override void Initialize()
         {
-            // ∫Œ∏∞° ∞∞¿∫ ∞ÊøÏ, ∑Œƒ√ ¡¬«• ±‚¡ÿ¿∏∑Œ √ ±‚»≠
+            // Î∂ÄÎ™®Í∞Ä Í∞ôÏùÄ Í≤ΩÏö∞, Î°úÏª¨ Ï¢åÌëú Í∏∞Ï§ÄÏúºÎ°ú Ï¥àÍ∏∞Ìôî
             obj.anchoredPosition = from.anchoredPosition;
             obj.localRotation = from.localRotation;
             obj.sizeDelta = from.sizeDelta;
@@ -56,17 +57,17 @@ namespace FancyUI
 
             if (useScale)
             {
-                // sizeDelta ∫∏∞£
+                // sizeDelta Î≥¥Í∞Ñ
                 Vector2 fromSize = from.sizeDelta;
                 Vector2 toSize = to.sizeDelta;
                 obj.sizeDelta = Vector2.Lerp(fromSize, toSize, curvedT);
 
-                // pivot ∫∏∞£ (« ø‰«œ∏È)
+                // pivot Î≥¥Í∞Ñ (ÌïÑÏöîÌïòÎ©¥)
                 Vector2 fromPivot = from.pivot;
                 Vector2 toPivot = to.pivot;
                 obj.pivot = Vector2.Lerp(fromPivot, toPivot, curvedT);
 
-                // anchor ∫∏∞£ (« ø‰«œ∏È)
+                // anchor Î≥¥Í∞Ñ (ÌïÑÏöîÌïòÎ©¥)
                 Vector2 fromAnchorMin = from.anchorMin;
                 Vector2 toAnchorMin = to.anchorMin;
                 obj.anchorMin = Vector2.Lerp(fromAnchorMin, toAnchorMin, curvedT);

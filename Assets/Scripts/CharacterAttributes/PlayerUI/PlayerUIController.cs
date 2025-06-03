@@ -74,44 +74,10 @@ namespace CharacterAttributes.PlayerUI
         public Image healthFill;
 
         #endregion
-
-        #region ESCPanel
-
-        public GameObject escPanel;
-        public Slider volumeSlider;
-
-        #endregion
-
-        private void Start()
-        {
-            if (volumeSlider != null)
-            {
-                volumeSlider.onValueChanged.RemoveListener(SetVolume);
-                volumeSlider.onValueChanged.AddListener(SetVolume);
-                Debug.Log("[UI Init] Volume slider listener added in Start()");
-            }
-            else
-            {
-                Debug.LogWarning("[UI Init] VolumeSlider is NULL in Start()");
-            }
-        }
+        
 
         public void Initialize(CharacterControllerNetwork characterControllerNetwork)
         {
-            escPanel = GameSceneManager.Instance.escPanel;
-            volumeSlider = GameSceneManager.Instance.volumeSlider;
-
-            if (volumeSlider != null)
-            {
-                Debug.Log("[UI Init] volumeSlider found in Initialize()");
-                volumeSlider.onValueChanged.RemoveListener(SetVolume);
-                volumeSlider.onValueChanged.AddListener(SetVolume);
-                volumeSlider.value = AudioListener.volume;
-            }
-            else
-            {
-                Debug.LogError("[UI Init] volumeSlider is NULL in Initialize()");
-            }
 
             _isOwner = characterControllerNetwork.IsOwner;
             if (_isOwner)
@@ -145,8 +111,6 @@ namespace CharacterAttributes.PlayerUI
                 chargeImage = _chargeUI.transform.Find("DashChargeFill").GetComponent<Image>();
 
                 StartCoroutine(SubscribeToEnemyScore());
-
-                escPanel.SetActive(false);
             }
 
             foreach (var feature in rendererData.rendererFeatures)
@@ -194,31 +158,10 @@ namespace CharacterAttributes.PlayerUI
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.Escape))
-            {
-                TogglePauseMenu();
-            }
-
             if (!IsSpawned) return;
             if (chargeImage == null) return;
 
             chargeImage.fillAmount = _dashChargeTimer.GetChargedRatio();
-        }
-
-        private bool _isPaused = false;
-
-        private void TogglePauseMenu()
-        {
-            _isPaused = !_isPaused;
-            escPanel.SetActive(_isPaused);
-            Cursor.visible = _isPaused;
-            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
-        }
-
-        public void SetVolume(float value)
-        {
-            Debug.Log("[Audio Slider] SetVolume called with value = " + value);
-            AudioListener.volume = value;
         }
 
         private void OnEnable()
@@ -258,10 +201,7 @@ namespace CharacterAttributes.PlayerUI
             {
                 _enemyStatus.scoreBalls.OnValueChanged -= SetEnemyScore;
             }
-
-            if (volumeSlider != null)
-                volumeSlider.onValueChanged.RemoveListener(SetVolume);
-
+            
             UnsubscribeHealth();
         }
 

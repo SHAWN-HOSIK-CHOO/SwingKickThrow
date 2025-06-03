@@ -1879,8 +1879,6 @@ MonoBehaviour:
   chargeImage: {fileID: 0}
   damageText: {fileID: 0}
   healthFill: {fileID: 0}
-  escPanel: {fileID: 0}
-  volumeSlider: {fileID: 0}
 --- !u!65 &4922471091929167252
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -2025,7 +2023,7 @@ AudioSource:
   m_GameObject: {fileID: 3727563251447250789}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 4818333914527509577, guid: a8caeb27eeca65946a5179f165e6c3b0, type: 2}
   m_audioClip: {fileID: 8300000, guid: 2e91f0d0ad64e7549b7358712c7e0816, type: 3}
   m_Resource: {fileID: 8300000, guid: 2e91f0d0ad64e7549b7358712c7e0816, type: 3}
   m_PlayOnAwake: 1

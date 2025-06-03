@@ -35,6 +35,8 @@ namespace GameFlow
             GameSceneManager.Instance.playerReady = null;
 
             GameSceneManager.Instance.UI.joinText.text = null;
+            //index 99 to stop
+            GameSceneManager.Instance.PlayAudio(99);
             Finish(GameStateType.GAME_END);
             Context.EnterState(GameStateType.NONE);
         }
