@@ -83,8 +83,10 @@ namespace CharacterAttributes
       
       private IEnumerator CoCharging()
       {
+         Debug.Log($"[DASH CHARGE CO] Entered with current charge : {_currentCharge}");
          while (_currentCharge < _maxCharge)
          {
+            Debug.Log($"Entered and is paused : {_isPaused}");
             if (_isPaused)
             {
                yield return null;
@@ -93,10 +95,12 @@ namespace CharacterAttributes
 
             _currentCharge += Time.deltaTime;
             _chargedRatio  = Mathf.Clamp01(_currentCharge / _maxCharge);
+            
+            //Debug.Log($" Current Ratio : {_chargedRatio}");
             yield return null;
          }
 
-         _isFullyCharged = false;
+         _isFullyCharged = true;
          GameEvents.GameEvents.Publish(GameEventType.PLAYER_DASH_CAHRGED);
          _chargedRatio = 1f;
          
