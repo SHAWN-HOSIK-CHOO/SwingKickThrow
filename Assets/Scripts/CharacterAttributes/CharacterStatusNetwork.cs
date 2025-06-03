@@ -194,7 +194,7 @@ namespace CharacterAttributes
             if (!IsOwner)
                 return;
 
-            if (transform.localScale.magnitude >= new Vector3(2.5f, 2.5f, 2.5f).magnitude)
+            if (transform.localScale.magnitude >= new Vector3(2.0f, 2.0f, 2.0f).magnitude)
                 return;
 
             transform.localScale *= factor;
@@ -210,6 +210,14 @@ namespace CharacterAttributes
         public void AddOrMinusMaxHealthClientRPC(float delta)
         {
             maxHealth = Mathf.Max(maxHealth + delta, 50f);
+        }
+
+        [ClientRpc]
+        public void PlayGotItemAudioClientRPC()
+        {
+            if(!IsOwner)
+                return;
+            GameSceneManager.Instance.PlayAudio(1,1);
         }
     }
 }

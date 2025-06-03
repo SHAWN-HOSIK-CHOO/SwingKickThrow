@@ -39,6 +39,7 @@ namespace GameFlow
          GameEvents.GameEvents.Subscribe(GameEvents.GameEventType.GameUpdate, GameTimerUpdate);
          GameSceneManager.Instance.gameTimer.StartCountDown();
          GameEvents.GameEvents.Publish(GameEvents.GameEventType.GameStart);
+         GameSceneManager.Instance.PlayAudio(0,0);
          Finish(GameStateType.GAME_START);
       }
 

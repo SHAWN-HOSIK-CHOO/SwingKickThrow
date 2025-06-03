@@ -9,6 +9,8 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.Audio;
+using UnityEngine.Serialization;
 
 namespace GameFlow
 {
@@ -70,6 +72,8 @@ namespace GameFlow
         [Header("ESC Panel")]
         public GameObject escPanel;
         public Slider volumeSlider;
+        public Slider bgmVolumeSlider;
+        public Slider sfxVolumeSlider;
 
         [Header("Full screen UI ex). Crashed UI")]
         public GameObject splashedScreenUI;
@@ -87,6 +91,35 @@ namespace GameFlow
 
         #endregion
 
+        #region Audio
+
+        public AudioClip[] gameBgMsAudioClips;
+        public AudioClip[] sfxAudioClips;
+        [FormerlySerializedAs("_audioSource")]
+        public AudioSource[] audioSources;
+
+        public void SetVolume(float value)
+        {
+            Debug.Log("[Audio Slider] SetVolume called with value = " + value);
+            AudioListener.volume = value;
+        }
+        
+        public AudioMixer mainMixer;
+
+        public void SetBGMVolume(float volume) // 0.0 ~ 1.0
+        {
+            float dB = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+            mainMixer.SetFloat("BgMVolume", dB);
+        }
+
+        public void SetSfxVolume(float volume)
+        {
+            float dB = Mathf.Log10(Mathf.Clamp(volume, 0.0001f, 1f)) * 20;
+            mainMixer.SetFloat("SFXVolume", dB);
+        }
+        
+        #endregion
+        
         public GameObject pfBoxSpawner;
 
         public void SetPlayerSelectionHandler(PlayerSelectionAndSpawnHandler andSpawnHandler)
@@ -129,7 +162,46 @@ namespace GameFlow
             _splashRect = splashedScreenUI.GetComponent<RectTransform>();
             _playerCrashRect = playerCrashedScreenUI.GetComponent<RectTransform>();
             _enemyCrashRect = enemyCrashedScreenUI.GetComponent<RectTransform>();
-
+            
+            if (volumeSlider != null)
+            {
+                volumeSlider.onValueChanged.RemoveListener(SetVolume);
+                volumeSlider.onValueChanged.AddListener(SetVolume);
+                volumeSlider.value = AudioListener.volume;
+                Debug.Log("[UI Init] Volume slider listener added in Start()");
+            }
+            else
+            {
+                Debug.LogWarning("[UI Init] VolumeSlider is NULL in Start()");
+            }
+            
+            if (bgmVolumeSlider != null)
+            {
+                bgmVolumeSlider.onValueChanged.RemoveListener(SetBGMVolume);
+                bgmVolumeSlider.onValueChanged.AddListener(SetBGMVolume);
+                bgmVolumeSlider.value = 0.2f; 
+                SetBGMVolume(bgmVolumeSlider.value);
+                Debug.Log("[UI Init] BGM volume slider listener added in Start()");
+            }
+            else
+            {
+                Debug.LogWarning("[UI Init] BGM volumeSlider is NULL in Start()");
+            }
+            
+            if (sfxVolumeSlider != null)
+            {
+                sfxVolumeSlider.onValueChanged.RemoveListener(SetSfxVolume);
+                sfxVolumeSlider.onValueChanged.AddListener(SetSfxVolume);
+                sfxVolumeSlider.value = 1f;
+                SetSfxVolume(sfxVolumeSlider.value);
+                Debug.Log("[UI Init] SFX volume slider listener added in Start()");
+            }
+            else
+            {
+                Debug.LogWarning("[UI Init] SFX volumeSlider is NULL in Start()");
+            }
+            
+            escPanel.gameObject.SetActive(false);
 
 
             //로비에서 넘어왔음으로 이미 클라이언트들이 연결 되어 있다고 가정한다.
@@ -139,6 +211,44 @@ namespace GameFlow
             gameSceneFlowContext.EnterState(GameStateType.Game_WAIT);
         }
 
+        public void PlayAudio(int type, int index)
+        {
+            if (index == 99)
+            {
+                for (int i = 0; i < 2; i++)
+                {
+                    if(audioSources[i].isPlaying)
+                        audioSources[i].Stop();
+                }
+                return;
+            }
+            
+            if(audioSources[type].isPlaying)
+                audioSources[type].Stop();
+            
+            if(type == 0)
+                audioSources[type].clip = gameBgMsAudioClips[index];
+            else if (type == 1)
+                audioSources[type].clip = sfxAudioClips[index];
+            
+            audioSources[type].Play();
+        }
+
+        private void OnAudioPlayerCrashed()
+        {
+            PlayAudio(1,0);
+        }
+
+        private void OnAudioPlayerDashed()
+        {
+            PlayAudio(1,3);
+        }
+
+        private void OnAudioPlayerDashCharged()
+        {
+            PlayAudio(1,2);
+        }
+        
         public void LateInitialize()
         {
             gameSceneFlowContext.LateInitialize();
@@ -148,12 +258,19 @@ namespace GameFlow
         {
             GameEvents.GameEvents.Subscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
             GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DEATH, DisplayPlayerCrashedScreenUI);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_CRASH,OnAudioPlayerCrashed);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH,OnAudioPlayerDashed);
+            GameEvents.GameEvents.Subscribe(GameEventType.PLAYER_DASH_CAHRGED,OnAudioPlayerDashCharged);
         }
 
         private void OnDisable()
         {
             GameEvents.GameEvents.Unsubscribe(GameEventType.ENEMY_DEATH, DisplayEnemyCrashedScreenUI);
             GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DEATH, DisplayPlayerCrashedScreenUI);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_CRASH,OnAudioPlayerCrashed);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH,OnAudioPlayerDashed);
+            GameEvents.GameEvents.Unsubscribe(GameEventType.PLAYER_DASH_CAHRGED,OnAudioPlayerDashCharged);
+            volumeSlider.onValueChanged.RemoveListener(SetVolume);
         }
 
         private void DisplayPlayerCrashedScreenUI()
@@ -253,6 +370,16 @@ namespace GameFlow
             }
         }
 
+        private bool _isPaused = false;
+
+        private void TogglePauseMenu()
+        {
+            _isPaused = !_isPaused;
+            escPanel.SetActive(_isPaused);
+            Cursor.visible   = _isPaused;
+            Cursor.lockState = _isPaused ? CursorLockMode.None : CursorLockMode.Locked;
+        }
+        
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.M))
@@ -263,7 +390,13 @@ namespace GameFlow
                 }
                 catch { }
             }
+            
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                TogglePauseMenu();
+            }
         }
+        
     }
 }
 

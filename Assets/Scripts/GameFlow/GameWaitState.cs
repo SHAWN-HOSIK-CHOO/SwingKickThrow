@@ -1,13 +1,14 @@
-using GameFlow;
 using System.Collections;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameWaitState : BaseGameState
+namespace GameFlow
 {
-    public override void LateSetUp()
+    public class GameWaitState : BaseGameState
     {
+        public override void LateSetUp()
+        {
 
     }
     private IEnumerator CheckState()
@@ -55,7 +56,8 @@ public class GameWaitState : BaseGameState
         GameSceneManager.Instance.UI.MainCanvas.gameObject.SetActive(true);
     }
 
-    public override void OnExit()
-    {
+        public override void OnExit()
+        {
+        }
     }
 }
