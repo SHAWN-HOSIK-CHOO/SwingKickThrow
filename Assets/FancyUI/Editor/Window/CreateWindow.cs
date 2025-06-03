@@ -31,19 +31,18 @@ public class CreateWindowView
 
         // 자식인 RenderObj 생성
         GameObject renderObj = new GameObject("RenderObj", typeof(RectTransform));
+        renderObj.AddComponent<RenderObj>();
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
         var image = renderObj.AddComponent<Image>();
         image.color = new Color(1, 1, 1, 0);
         image.raycastTarget = true; 
-        renderObj.AddComponent<RenderTransition>().Owner = w;
-
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         StretchToParent(renderObj.GetComponent<RectTransform>());
         w.__visible = true;
         w.__Interact = true;
-        w.RenderObj = renderObj;
+        w.RenderObj = renderObj.GetComponent<RenderObj>();
         w.__ModalWindow = CreateModalWindowObj(windowGO).GetComponent<ModalWindow>();
         StretchToParent(w.__ModalWindow.GetComponent<RectTransform>());
 
@@ -84,16 +83,15 @@ public class CreateWindowView
         Undo.RegisterCreatedObjectUndo(renderObj, "Create RenderObj");
         renderObj.transform.SetParent(windowGO.transform, false);
         StretchToParent(renderObj.GetComponent<RectTransform>());
+        renderObj.AddComponent<RenderObj>();
         renderObj.AddComponent<CanvasGroup>();
         renderObj.AddComponent<EventTrigger>();
         var image = renderObj.AddComponent<Image>();
         image.color = new Color(1, 1, 1, 0);
         image.raycastTarget = true;
-        renderObj.AddComponent<RenderTransition>().Owner = w;
-
         w.__visible = true;
         w.__Interact = true;
-        w.RenderObj = renderObj;
+        w.RenderObj = renderObj.GetComponent<RenderObj>(); ;
         return windowGO;
     }
 

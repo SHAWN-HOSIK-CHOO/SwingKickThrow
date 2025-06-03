@@ -42,6 +42,7 @@ public class LobbyStackView : MVVM.Utils.StackView
         var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
         if (isGameReady && LobbyManager.isHost)
         {
+            UISoundManager._instance.Notify.Play();
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Flow_", LoadSceneMode.Single);
         }
     }
@@ -71,6 +72,14 @@ public class LobbyStackView : MVVM.Utils.StackView
 
     public async void OnReadyToggle(bool b)
     {
+        if(b)
+        {
+            UISoundManager._instance.OK.Play();
+        }
+        else
+        {
+            UISoundManager._instance.Click.Play();
+        }
         try
         {
             ReadyToggleLabel.text = b ? "Cancel" : "Ready";
@@ -91,6 +100,7 @@ public class LobbyStackView : MVVM.Utils.StackView
 
     public async void OnLeaveButton()
     {
+        UISoundManager._instance.Back.Play();
         try
         {        
             MainWindow.NonInteractable();

@@ -56,6 +56,7 @@ public class HostSetUpStackView : StackView
 
     public async void OnConfirmButton()
     {
+        UISoundManager._instance.OK.Play();
         try
         {
             HostSetupWindow.NonInteractable();

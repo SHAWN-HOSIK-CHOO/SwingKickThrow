@@ -28,16 +28,19 @@ public class LobbyMenuStackView : MVVM.Utils.StackView
     private void OnBackButton()
     {
         StackViewManager.Instance.Pop();
+        UISoundManager._instance.Back.Play();
     }
 
     private void OnHostButton()
     {
         StackViewManager.Instance.Push(HostSetup);
+        UISoundManager._instance.Click.Play();
     }
 
     private void OnJoinButton()
     {
         StackViewManager.Instance.Push(JoinSearch);
+        UISoundManager._instance.Click.Play();
     }
 
 
