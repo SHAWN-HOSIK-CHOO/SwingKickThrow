@@ -1827,7 +1827,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   health: 200
-  timeUntilRespawn: 5
+  timeUntilRespawn: 3
   playerInput: {fileID: 3216707243182190217}
   serverCharacter: {fileID: 0}
   playerUIController: {fileID: 0}
