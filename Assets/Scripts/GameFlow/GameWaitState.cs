@@ -29,14 +29,17 @@ public class GameWaitState : BaseGameState
 
     private IEnumerator WaitConnect()
     {
-        yield return new WaitUntil(() => NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer);
+        yield return new WaitUntil(() =>
+        {
+            Debug.Log($"NetworkManager.Singleton.ConnectedClientsList.Count : {NetworkManager.Singleton.ConnectedClientsList.Count}");
+            return NetworkManager.Singleton.ConnectedClientsList.Count == GameSceneManager.Instance.NumPlayer;
+        });
         if (NetworkManager.Singleton.IsHost)
         {
             GameSceneManager.Instance.SpawnPlayerReady();
             GameSceneManager.Instance.SpawnPlayerSelect();
             GameSceneManager.Instance.SpawnTimer();
             GameSceneManager.Instance.SpawnBoxSpawner();
-
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Main_Flow_Additive", LoadSceneMode.Additive);
             foreach (var kvp in NetworkManager.Singleton.ConnectedClientsList)
             {

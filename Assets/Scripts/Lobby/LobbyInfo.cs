@@ -30,7 +30,7 @@ public class LobbyInfo : MonoBehaviour
         CurPlayer.text = $"{lobby.Players.Count}";
         MaxPlayer.text = $"{lobby.MaxPlayers}";
         SetLockImage(lobby.IsPrivate);
-        toggle.isOn  =isSelected;
+        toggle.isOn  = isSelected;
     }
 
     void SetLockImage(bool b)

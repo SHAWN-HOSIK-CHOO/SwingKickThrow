@@ -6,6 +6,7 @@ using Unity.Services.Authentication;
 using UnityEngine;
 using Unity.Services.Lobbies.Models;
 using Unity.Services.Lobbies;
+using Unity.Netcode;
 
 [DisallowMultipleComponent]
 public class LobbyManager : MonoBehaviour
@@ -30,8 +31,6 @@ public class LobbyManager : MonoBehaviour
     // Frequency for host to call SendHeartbeatPingAsync to keep lobby active.
     // Note that if called to frequently, this will result in rate limit exceptions.
     const float k_HostHeartbeatFrequency = 15;
-
-    public static LobbyManager instance { get; private set; }
 
     public List<Lobby> lobbiesList { get; private set; } = new List<Lobby>();
 
@@ -59,17 +58,6 @@ public class LobbyManager : MonoBehaviour
 
     bool m_WasGameStarted = false;
 
-    void Awake()
-    {
-        if (instance != null && instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            instance = this;
-        }
-    }
 
     async void Update()
     {
@@ -199,8 +187,8 @@ public class LobbyManager : MonoBehaviour
             if (activeLobby != null && isHost)
             {
                 await LobbyService.Instance.DeleteLobbyAsync(activeLobby.Id);
+                NetworkManager.Singleton.Shutdown();
                 if (this == null) return;
-
                 OnPlayerNotInLobby();
             }
         }
@@ -217,8 +205,8 @@ public class LobbyManager : MonoBehaviour
             if (activeLobby != null && isHost)
             {
                 await LobbyService.Instance.DeleteLobbyAsync(activeLobby.Id);
+                NetworkManager.Singleton.Shutdown();
                 if (this == null) return;
-
                 activeLobby = null;
             }
         }
@@ -329,6 +317,7 @@ public class LobbyManager : MonoBehaviour
         try
         {
             await RemovePlayer(playerId);
+            NetworkManager.Singleton.Shutdown();
             if (this == null) return;
 
             OnPlayerNotInLobby();
@@ -452,49 +441,28 @@ public class LobbyManager : MonoBehaviour
     void UpdateLobby(Lobby updatedLobby)
     {
         // Since this is called after an await, ensure that the Lobby wasn't closed while waiting.
-        if (activeLobby == null || updatedLobby == null) return;
+        if (updatedLobby == null) return;
 
-        if (DidPlayersChange(activeLobby.Players, updatedLobby.Players))
+        activeLobby = updatedLobby;
+        players = activeLobby?.Players;
+
+        if (updatedLobby.Players.Exists(player => player.Id == playerId))
         {
-            activeLobby = updatedLobby;
-            players = activeLobby?.Players;
+            var isGameReady = IsGameReady(updatedLobby);
 
-            if (updatedLobby.Players.Exists(player => player.Id == playerId))
-            {
-                var isGameReady = IsGameReady(updatedLobby);
+            OnLobbyChanged?.Invoke(updatedLobby, isGameReady);
+        }
+        else
+        {
+            //ServerlessMultiplayerGameSampleManager.instance.SetReturnToMenuReason(
+            //    ServerlessMultiplayerGameSampleManager.ReturnToMenuReason.PlayerKicked);
 
-                OnLobbyChanged?.Invoke(updatedLobby, isGameReady);
-            }
-            else
-            {
-                //ServerlessMultiplayerGameSampleManager.instance.SetReturnToMenuReason(
-                //    ServerlessMultiplayerGameSampleManager.ReturnToMenuReason.PlayerKicked);
-
-                OnPlayerNotInLobby();
-            }
+            OnPlayerNotInLobby();
         }
     }
 
-    static bool DidPlayersChange(List<Player> oldPlayers, List<Player> newPlayers)
-    {
-        if (oldPlayers.Count != newPlayers.Count)
-        {
-            return true;
-        }
 
-        for (int i = 0; i < newPlayers.Count; i++)
-        {
-            if (oldPlayers[i].Id != newPlayers[i].Id ||
-                oldPlayers[i].Data[k_IsReadyKey].Value != newPlayers[i].Data[k_IsReadyKey].Value)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    static bool IsGameReady(Lobby lobby)
+    static public bool IsGameReady(Lobby lobby)
     {
         if (lobby.Players.Count <= 1)
         {
@@ -553,14 +521,6 @@ public class LobbyManager : MonoBehaviour
                     $"players: {lobby.Players.Count}/{lobby.MaxPlayers}, " +
                     $"id:{lobby.Id}");
             }
-        }
-    }
-
-    void OnDestroy()
-    {
-        if (instance == this)
-        {
-            instance = null;
         }
     }
 }

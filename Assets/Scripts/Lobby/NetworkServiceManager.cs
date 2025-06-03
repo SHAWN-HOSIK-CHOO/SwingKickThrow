@@ -1,8 +1,7 @@
-using GameFlow;
+using System;
 using System.Threading.Tasks;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
-using Unity.Networking.Transport;
 using Unity.Services.Authentication;
 using Unity.Services.Core;
 using Unity.Services.Relay;
@@ -12,24 +11,12 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class NetworkServiceManager : MonoBehaviour
 {
-    public static NetworkServiceManager instance { get; private set; }
 
     [SerializeField]
     UnityTransport m_UnityTransport;
 
     bool m_NetworkManagerInitialized = false;
 
-    void Awake()
-    {
-        if (instance != null && instance != this)
-        {
-            Destroy(this);
-        }
-        else
-        {
-            instance = this;
-        }
-    }
     async void Start()
     {
 #if UNITY_EDITOR
@@ -37,50 +24,59 @@ public class NetworkServiceManager : MonoBehaviour
 #endif
         if (!UnityServices.State.Equals(ServicesInitializationState.Initialized))
         {
-            await UnityServices.InitializeAsync();
+            // 매번 다른 ID로 로그인
+            var options = new InitializationOptions();
+            string randomProfileId = "test_" + Guid.NewGuid().ToString("N").Substring(0, 20);
+            options.SetProfile(randomProfileId); 
+            await UnityServices.InitializeAsync(options);
         }
-
         if (!AuthenticationService.Instance.IsSignedIn)
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            Debug.Log("SignInAnonymouslyAsync");
         }
     }
 
     public async Task<string> InitializeHost(int maxPlayerCount)
     {
-        Allocation allocation = await RelayService.Instance.CreateAllocationAsync(maxPlayerCount);
-        var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+        NetworkManager.Singleton.Shutdown();
 
-        NetworkEndpoint endPoint = NetworkEndpoint.Parse(allocation.RelayServer.IpV4,
-            (ushort)allocation.RelayServer.Port);
+        // ShutdownInProgress가 true인 동안 기다림
+        while (NetworkManager.Singleton.ShutdownInProgress)
+        {
+            await Task.Yield(); // 한 프레임 양보 (CPU blocking 방지)
+        }
 
-        var ipAddress = endPoint.Address.Split(':')[0];
-
-        m_UnityTransport.SetHostRelayData(ipAddress, endPoint.Port,
-            allocation.AllocationIdBytes, allocation.Key,
-            allocation.ConnectionData, false);
-
-        Debug.Log($"Initialized Relay Host and received join code: {joinCode}");
-
+        Allocation joinAllocation = await RelayService.Instance.CreateAllocationAsync(maxPlayerCount);
+        var joinCode = await RelayService.Instance.GetJoinCodeAsync(joinAllocation.AllocationId);
+        var port = joinAllocation.RelayServer.Port;
+        var ip = joinAllocation.RelayServer.IpV4;
+        Debug.Log($"JoinCode : {joinCode}");
+        Debug.Log($"Relay IP: {ip}, Port: {port}");
+        m_UnityTransport.SetConnectionData("0.0.0.0", 0);
+        var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
+        m_UnityTransport.SetRelayServerData(relayServerData);
         NetworkManager.Singleton.StartHost();
-
         m_NetworkManagerInitialized = true;
-
         return joinCode;
     }
 
     public async Task InitializeClient(string relayJoinCode)
     {
+        NetworkManager.Singleton.Shutdown();
+        // ShutdownInProgress가 true인 동안 기다림
+        while (NetworkManager.Singleton.ShutdownInProgress)
+        {
+            await Task.Yield(); // 한 프레임 양보 (CPU blocking 방지)
+        }
+
         var joinAllocation = await RelayService.Instance.JoinAllocationAsync(relayJoinCode);
-        var endPoint = NetworkEndpoint.Parse(joinAllocation.RelayServer.IpV4,
-            (ushort)joinAllocation.RelayServer.Port);
-
-        var ipAddress = endPoint.Address.Split(':')[0];
-
-        m_UnityTransport.SetClientRelayData(ipAddress, endPoint.Port,
-            joinAllocation.AllocationIdBytes, joinAllocation.Key,
-            joinAllocation.ConnectionData, joinAllocation.HostConnectionData, false);
-
+        var port = joinAllocation.RelayServer.Port;
+        var ip = joinAllocation.RelayServer.IpV4;
+        Debug.Log($"Relay IP: {ip}, Port: {port}");
+        m_UnityTransport.SetConnectionData("0.0.0.0", 0);
+        var relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
+        m_UnityTransport.SetRelayServerData(relayServerData);
         NetworkManager.Singleton.StartClient();
 
         m_NetworkManagerInitialized = true;
@@ -92,14 +88,6 @@ public class NetworkServiceManager : MonoBehaviour
         {
             m_NetworkManagerInitialized = false;
             NetworkManager.Singleton.Shutdown();
-        }
-    }
-
-    void OnDestroy()
-    {
-        if (instance == this)
-        {
-            instance = null;
         }
     }
 }

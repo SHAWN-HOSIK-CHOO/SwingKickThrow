@@ -3,13 +3,14 @@ using MVVM.View.Window;
 using System;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class HostSetUpStackView : StackView
 {
-    public LobbyMenuManager LobbySceneManager;
+    public LobbyMenuManager LobbyMenuManager;
     public Window HostSetupWindow;
     public Window HostJoinWindow;
     public Button ConfirmButton;
@@ -34,23 +35,23 @@ public class HostSetUpStackView : StackView
         HostSetupWindow.ShowWindow();
         HostJoinWindow.HideWindow();
 
-        LobbySceneManager.HostName = HostName.text;
-        LobbySceneManager.LobbyName = LobbyName.text;
-        LobbySceneManager.PrivateFlag = Private.isOn;
+        LobbyMenuManager.HostName = HostName.text;
+        LobbyMenuManager.LobbyName = LobbyName.text;
+        LobbyMenuManager.PrivateFlag = Private.isOn;
 
         if (TwoPlayer.isOn)
         {
-            LobbySceneManager.MaxPlayers = 2;
+            LobbyMenuManager.MaxPlayers = 2;
         }
 
         if (ThreePlayer.isOn)
         {
-            LobbySceneManager.MaxPlayers = 3;
+            LobbyMenuManager.MaxPlayers = 3;
         }
 
         if (FourPlayer.isOn)
         {
-            LobbySceneManager.MaxPlayers = 4;
+            LobbyMenuManager.MaxPlayers = 4;
         }
     }
 
@@ -59,11 +60,13 @@ public class HostSetUpStackView : StackView
         try
         {
             HostSetupWindow.NonInteractable();
-            var relayJoinCode = await NetworkServiceManager.instance.InitializeHost(LobbySceneManager.MaxPlayers);
+            var NetworkServiceManager = NetworkManager.Singleton.GetComponent<NetworkServiceManager>();
+            var relayJoinCode = await NetworkServiceManager.InitializeHost(LobbyMenuManager.MaxPlayers);
             if (this == null) return;
 
-            var lobby = await LobbyManager.instance.CreateLobby(LobbySceneManager.LobbyName,
-                LobbySceneManager.MaxPlayers, LobbySceneManager.HostName, LobbySceneManager.PrivateFlag, relayJoinCode);
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            var lobby = await LobbyManager.CreateLobby(LobbyMenuManager.LobbyName,
+                LobbyMenuManager.MaxPlayers, LobbyMenuManager.HostName, LobbyMenuManager.PrivateFlag, relayJoinCode);
             if (this == null) return;
 
             StackViewManager.Instance.Clear();

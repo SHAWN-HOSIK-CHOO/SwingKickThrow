@@ -3,19 +3,21 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Unity.Services.Lobbies.Models;
+using Unity.Netcode;
 public class LobbySceneManager : MonoBehaviour
 {
     public async Task LeaveLobby()
     {
         try
         {
-            if (LobbyManager.instance.isHost)
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            if (LobbyManager.isHost)
             {
-                await LobbyManager.instance.DeleteAnyActiveLobbyWithNotify();
+                await LobbyManager.DeleteAnyActiveLobbyWithNotify();
             }
             else
             {
-                await LobbyManager.instance.LeaveJoinedLobby();
+                await LobbyManager.LeaveJoinedLobby();
             }
             if (this == null) return;
         }

@@ -1,9 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
-using TMPro;
 using Unity.Netcode;
 using Unity.Services.Authentication;
+using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,9 +21,15 @@ public class LobbyStackView : MVVM.Utils.StackView
     {
         LeaveButton.onClick.AddListener(OnLeaveButton);
         ReadyToggle.onValueChanged.AddListener(OnReadyToggle);
+        ReadyToggle.isOn = false;
         PlayerInfoContainer.KickEvent += async (id) => await OnKickEvent(id);
         LobbyManager.OnLobbyChanged += OnLobbyChanged;
         LobbyManager.OnPlayerNotInLobbyEvent += ReturnToMenu;
+        var lobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+        if(lobbyManager.activeLobby != null)
+        {
+            OnLobbyChanged(lobbyManager.activeLobby, LobbyManager.IsGameReady(lobbyManager.activeLobby));
+        }
     }
 
     void ReturnToMenu()
@@ -34,7 +39,8 @@ public class LobbyStackView : MVVM.Utils.StackView
     public void OnLobbyChanged(Lobby updatedLobby, bool isGameReady)
     {
         PlayerInfoContainer.SetPlayers(updatedLobby.Players);
-        if (isGameReady && LobbyManager.instance.isHost)
+        var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+        if (isGameReady && LobbyManager.isHost)
         {
             NetworkManager.Singleton.SceneManager.LoadScene("Game_Flow_", LoadSceneMode.Single);
         }
@@ -45,7 +51,9 @@ public class LobbyStackView : MVVM.Utils.StackView
         try
         {
             MainWindow.NonInteractable();
-            await LobbyManager.instance.RemovePlayer(id);
+
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            await LobbyManager.RemovePlayer(id);
         }
         catch (Exception e)
         {
@@ -65,10 +73,11 @@ public class LobbyStackView : MVVM.Utils.StackView
     {
         try
         {
-            ReadyToggleLabel.text = b ? "Cancle" : "Ready";
+            ReadyToggleLabel.text = b ? "Cancel" : "Ready";
             MainWindow.NonInteractable();
             PlayerInfoContainer.SetPlayerReady(AuthenticationService.Instance.PlayerId, b);
-            await LobbyManager.instance.UpdateReadyState(b);
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            await LobbyManager.UpdateReadyState(b);
         }
         catch (Exception e)
         {

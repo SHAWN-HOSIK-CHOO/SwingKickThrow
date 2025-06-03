@@ -119,7 +119,7 @@ namespace GameFlow
             gameSceneFlowContext.Initialize();
         }
 
-        private void Start()
+        async void Start()
         {
             currentPlayerCrashedUI = playerCrashedScreenUI;
             playerCrashedScreenUI.SetActive(false);
@@ -133,6 +133,8 @@ namespace GameFlow
 
 
             //로비에서 넘어왔음으로 이미 클라이언트들이 연결 되어 있다고 가정한다.
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            await LobbyManager.UpdateReadyState(false);
             LateInitialize();
             gameSceneFlowContext.EnterState(GameStateType.Game_WAIT);
         }

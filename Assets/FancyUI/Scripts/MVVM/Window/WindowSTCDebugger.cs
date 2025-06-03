@@ -1,6 +1,5 @@
 ﻿using MVVM.ViewModel.Window.State;
 using STC;
-using UnityEditor.PackageManager.UI;
 using UnityEngine;
 
 namespace STC

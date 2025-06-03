@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
+using Unity.Netcode;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -19,7 +20,7 @@ public class JoinSearchStackView : StackView
     List<LobbyInfo> LobbyInfoList;
 
     int m_LobbyIndexSelected;
-    ToggleGroup LobbyInfoToggleGroup;
+    public ToggleGroup LobbyInfoToggleGroup;
     public Transform LobbyListContainer;
     public LobbyInfo LobbyInfoPrefab;
     public TMP_InputField NickName;
@@ -52,7 +53,8 @@ public class JoinSearchStackView : StackView
         {
             // Clear any old lobby selection so nothing is selected when player first enters the lobby.
             ClearLobbySelection();
-            var lobbies = await LobbyManager.instance.GetUpdatedLobbiesList();
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            var lobbies = await LobbyManager.GetUpdatedLobbiesList();
             if (this == null) return;
             SetLobbies(lobbies);
             LobbyManager.Log("Showing game select panel", lobbies);
@@ -118,7 +120,8 @@ public class JoinSearchStackView : StackView
                     return;
                 }
 
-                var lobbies = await LobbyManager.instance.GetUpdatedLobbiesList();
+                var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+                var lobbies = await LobbyManager.GetUpdatedLobbiesList();
                 if (this == null) return;
                 // Update the lobbies list, clear lobby selection if no longer valid.
                 UpdateLobbies(lobbies);
@@ -286,7 +289,10 @@ public class JoinSearchStackView : StackView
         try
         {
             var relayJoinCode = lobbyJoined.Data[LobbyManager.k_RelayJoinCodeKey].Value;
-            await NetworkServiceManager.instance.InitializeClient(relayJoinCode);
+
+            var NetworkServiceManager = NetworkManager.Singleton.GetComponent<NetworkServiceManager>();
+
+            await NetworkServiceManager.InitializeClient(relayJoinCode);
         }
         catch (Exception e)
         {
@@ -313,11 +319,12 @@ public class JoinSearchStackView : StackView
         {
             JoinSearchWindow.NonInteractable();
 
-            var lobbiesList = LobbyManager.instance.lobbiesList;
+            var LobbyManager = NetworkManager.Singleton.GetComponent<LobbyManager>();
+            var lobbiesList = LobbyManager.lobbiesList;
             if (m_LobbyIndexSelected >= 0 && m_LobbyIndexSelected <= lobbiesList.Count)
             {
                 var lobbyToJoin = lobbiesList[m_LobbyIndexSelected];
-                var lobbyJoined = await LobbyManager.instance.JoinLobby(lobbyToJoin.Id, NickName.text);
+                var lobbyJoined = await LobbyManager.JoinLobby(lobbyToJoin.Id, NickName.text);
                 if (this == null) return;
 
                 // If lobby no longer exists (i.e. host left) then popup
