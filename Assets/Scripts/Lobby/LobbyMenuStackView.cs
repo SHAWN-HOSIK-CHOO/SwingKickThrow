@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class LobbyMenuStackView : MVVM.Utils.StackView
@@ -48,11 +49,7 @@ public class LobbyMenuStackView : MVVM.Utils.StackView
 
     public override void OnViewStackPopRequest(Stack<MVVM.Utils.StackView> stack)
     {
-        bool Keep = StackViewManager.Instance.StackCount == 1 && StackViewManager.Instance.IsSame(this);
-        if(!Keep)
-        {
-            stack.Pop();
-            HostJoinWindow.HideWindow();
-        }
+        stack.Pop();
+        SceneManager.LoadScene("Game_Intro_");
     }
 }

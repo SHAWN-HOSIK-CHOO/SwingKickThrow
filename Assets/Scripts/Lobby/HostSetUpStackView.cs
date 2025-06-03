@@ -24,7 +24,6 @@ public class HostSetUpStackView : StackView
     public TMP_InputField HostName;
     public TMP_InputField LobbyName;
 
-
     private void Start()
     {
         ConfirmButton.onClick.AddListener(OnConfirmButton);
@@ -83,6 +82,5 @@ public class HostSetUpStackView : StackView
         stack.Pop();
         HostSetupWindow.HideWindow();
         HostJoinWindow.ShowWindow();
-
     }
 }
